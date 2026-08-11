@@ -1,0 +1,28 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { ArrowLeftRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useSessionStore } from "@/lib/store/use-session-store";
+
+export function RoleSwitcher() {
+  const router = useRouter();
+  const user = useSessionStore((s) => s.user);
+  const switchRole = useSessionStore((s) => s.switchRole);
+
+  if (!user || user.roles.length < 2) return null;
+
+  async function toggle() {
+    if (!user) return;
+    const next = user.activeRole === "client" ? "expert" : "client";
+    await switchRole(next);
+    router.push(next === "expert" ? "/expert/dashboard" : "/dashboard");
+  }
+
+  return (
+    <Button variant="secondary" size="sm" onClick={toggle} className="w-full justify-center gap-2">
+      <ArrowLeftRight className="size-3.5" aria-hidden />
+      Switch to {user.activeRole === "client" ? "expert" : "client"} view
+    </Button>
+  );
+}
