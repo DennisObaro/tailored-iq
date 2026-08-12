@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { RotateCcw, AlertTriangle } from "lucide-react";
+import Link from "next/link";
+import { RotateCcw, AlertTriangle, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -23,6 +24,13 @@ export default function DataSettingsPage() {
   return (
     <div className="mx-auto max-w-lg space-y-6 p-6">
       <div>
+        <div className="mb-4 flex items-center gap-1.5 text-xs text-gray-500">
+          <Link href="/settings" className="hover:text-gray-300">
+            Settings
+          </Link>
+          <ChevronRight className="size-3" aria-hidden />
+          <span className="text-gray-300">Demo data</span>
+        </div>
         <h1 className="text-xl font-semibold text-gray-50">Demo data</h1>
         <p className="mt-1 text-sm text-gray-400">
           This is a prototype — all data lives in your browser. You can reset it back to the seeded

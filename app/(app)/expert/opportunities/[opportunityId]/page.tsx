@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ThumbsUp, ThumbsDown } from "lucide-react";
+import Link from "next/link";
+import { ThumbsUp, ThumbsDown, ChevronRight } from "lucide-react";
 import type { Opportunity, Project } from "@/lib/types";
 import * as opportunitiesApi from "@/lib/api/opportunities";
 import * as projectsApi from "@/lib/api/projects";
@@ -65,6 +66,13 @@ export default function OpportunityDetailPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-6">
       <div>
+        <div className="mb-4 flex items-center gap-1.5 text-xs text-gray-500">
+          <Link href="/expert/opportunities" className="hover:text-gray-300">
+            Opportunities
+          </Link>
+          <ChevronRight className="size-3" aria-hidden />
+          <span className="text-gray-300">{opportunity.title}</span>
+        </div>
         <Badge variant="outline">{opportunity.category}</Badge>
         <h1 className="mt-2 text-xl font-semibold text-gray-50">{opportunity.title}</h1>
         <p className="mt-2 text-sm text-gray-300">{opportunity.summary}</p>

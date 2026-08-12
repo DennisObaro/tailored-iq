@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Compass, Briefcase } from "lucide-react";
+import Link from "next/link";
+import { Compass, Briefcase, ChevronRight } from "lucide-react";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import * as usersApi from "@/lib/api/users";
 import { Card } from "@/components/ui/card";
@@ -38,6 +39,13 @@ export default function RolesSettingsPage() {
   return (
     <div className="mx-auto max-w-lg space-y-6 p-6">
       <div>
+        <div className="mb-4 flex items-center gap-1.5 text-xs text-gray-500">
+          <Link href="/settings" className="hover:text-gray-300">
+            Settings
+          </Link>
+          <ChevronRight className="size-3" aria-hidden />
+          <span className="text-gray-300">Roles</span>
+        </div>
         <h1 className="text-xl font-semibold text-gray-50">Roles</h1>
         <p className="mt-1 text-sm text-gray-400">
           You can be a client, an expert, or both at the same time — this never restricts the other.

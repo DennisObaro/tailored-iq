@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Video, ShieldCheck, Star } from "lucide-react";
+import { Video, ShieldCheck, Star, ChevronRight } from "lucide-react";
 import type { Consultation, User, Review } from "@/lib/types";
 import * as consultationsApi from "@/lib/api/consultations";
 import * as usersApi from "@/lib/api/users";
@@ -89,6 +89,16 @@ export default function ConsultationLobbyPage() {
 
   return (
     <div className="mx-auto max-w-lg space-y-6 p-6">
+      <div className="flex items-center gap-1.5 text-xs text-gray-500">
+        <Link href="/conversations" className="hover:text-gray-300">
+          Conversations
+        </Link>
+        <ChevronRight className="size-3" aria-hidden />
+        <span className="text-gray-300">
+          {expert.firstName} {expert.lastName}
+        </span>
+      </div>
+
       <div className="flex items-center gap-3">
         <Avatar firstName={expert.firstName} lastName={expert.lastName} size="lg" />
         <div>

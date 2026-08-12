@@ -236,7 +236,7 @@ export default function DashboardPage() {
 
   const activeProjects = projects.filter((p) => !["completed", "archived"].includes(p.status));
   const displayedProjects = (activeProjects.length > 0 ? activeProjects : projects).slice(0, 2);
-  const hasUrgentAction = actionItems !== null && actionItems.length > 0;
+  const hasRecommended = recommended !== null && recommended.recommendations.length > 0;
 
   const metrics: { value: number | null; label: string; supporting: string; zeroSupporting: string; href: string }[] = [
     {
@@ -248,7 +248,7 @@ export default function DashboardPage() {
     },
     {
       value: playbookReadyCount,
-      label: "Action plans ready",
+      label: "Playbooks ready",
       supporting: "Ready for you to review",
       zeroSupporting: "Nothing waiting for review",
       href: "/playbooks",
@@ -280,7 +280,7 @@ export default function DashboardPage() {
         </div>
         <Button asChild className="gap-1.5">
           <Link href="/chat">
-            Start a new challenge <ArrowRight className="size-4" />
+            Bring a new challenge <ArrowRight className="size-4" />
           </Link>
         </Button>
       </div>
@@ -305,132 +305,153 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <section className={cn("order-2", hasUrgentAction ? "sm:order-2" : "sm:order-1")}>
-        <div className="mb-3 flex items-end justify-between">
-          <div>
-            <h2 className="text-sm font-medium text-gray-300">Your challenges</h2>
-            <p className="mt-1 text-xs text-gray-500">Continue working through the challenges you&apos;re solving.</p>
-          </div>
-          <Link href="/projects" className="inline-flex shrink-0 items-center gap-1 text-xs text-primary-400 hover:text-primary-300">
-            View all <ArrowRight className="size-3" />
-          </Link>
-        </div>
-        <div className={cn("grid gap-3", displayedProjects.length > 1 && "sm:grid-cols-2")}>
-          {displayedProjects.map((p) => (
-            <ProjectCard key={p.id} project={p} />
-          ))}
-        </div>
-      </section>
-
-      <section className={cn("order-1", hasUrgentAction ? "sm:order-1" : "sm:order-2")}>
-        <h2 className="text-sm font-medium text-gray-300">Action required</h2>
-        <p className="mt-1 text-xs text-gray-500">Things that need your attention.</p>
-        <div className="mt-3 space-y-2">
-          {actionItems === null ? (
-            <>
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-16 w-full" />
-            </>
-          ) : actionItems.length > 0 ? (
-            actionItems.map((item) => (
-              <Card key={item.id} className="flex items-center gap-3 border-gray-900 bg-gray-950 p-3.5">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-500/15 text-primary-400">
-                  <item.icon className="size-4" aria-hidden />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-gray-50">{item.title}</p>
-                  <p className="truncate text-xs text-gray-400">{item.description}</p>
-                </div>
-                <Link
-                  href={item.href}
-                  className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary-400 hover:text-primary-300"
-                >
-                  {item.ctaLabel} <ArrowRight className="size-3" />
-                </Link>
-              </Card>
-            ))
-          ) : (
-            <div className="rounded-2xl border border-gray-900 px-4 py-3">
-              <p className="text-sm text-gray-300">You&apos;re all caught up.</p>
-              <p className="mt-0.5 text-xs text-gray-500">Nothing needs your attention right now.</p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className="order-3">
-        <h2 className="text-sm font-medium text-gray-300">Upcoming calls</h2>
-        <p className="mt-1 text-xs text-gray-500">Your scheduled conversations with experts.</p>
-        <div className="mt-3">
-          {upcomingCalls === null ? (
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Skeleton className="h-20 w-full" />
-            </div>
-          ) : upcomingCalls.length > 0 ? (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {upcomingCalls.map(({ consultation, expert }) => (
-                <Card key={consultation.id} className="flex items-center gap-3 border-gray-900 bg-gray-950 p-4">
-                  <Avatar
-                    firstName={expert.user.firstName}
-                    lastName={expert.user.lastName}
-                    src={expert.user.avatarUrl}
-                    online={expert.profile.isOnline}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-50">
-                      {expert.user.firstName} {expert.user.lastName}
-                    </p>
-                    <p className="truncate text-xs text-gray-400">{expert.profile.currentRole}</p>
-                    <div className="mt-1 flex items-center gap-2">
-                      <p className="text-xs text-gray-500">{formatCallWhen(consultation.scheduledFor)}</p>
-                      <StatusBadge status={consultation.status} />
-                    </div>
-                  </div>
-                  <Button asChild size="sm" variant={isCallImminent(consultation.scheduledFor) ? "primary" : "outline"} className="shrink-0">
-                    <Link href={`/consultations/${consultation.id}`}>
-                      {isCallImminent(consultation.scheduledFor) ? "Join call" : "View details"}
-                    </Link>
-                  </Button>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-gray-900 px-4 py-3">
-              <p className="text-sm text-gray-300">No upcoming calls</p>
-              <p className="mt-0.5 text-xs text-gray-500">
-                Need another perspective? Explore experts with experience relevant to the challenges you&apos;re working through.
-              </p>
-              <Link
-                href="/experts"
-                className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary-400 hover:text-primary-300"
-              >
-                Explore experts <ArrowRight className="size-3" />
+      {(() => {
+        const yourChallengesSection = (
+          <section key="challenges">
+            <div className="mb-3 flex items-end justify-between">
+              <div>
+                <h2 className="text-sm font-medium text-gray-300">Your challenges</h2>
+                <p className="mt-1 text-xs text-gray-500">Continue working through the challenges you&apos;re solving.</p>
+              </div>
+              <Link href="/projects" className="inline-flex shrink-0 items-center gap-1 text-xs text-primary-400 hover:text-primary-300">
+                View all <ArrowRight className="size-3" />
               </Link>
             </div>
-          )}
-        </div>
-      </section>
-
-      {recommended && recommended.recommendations.length > 0 && (
-        <section className="order-4">
-          <div className="mb-3 flex items-end justify-between">
-            <div>
-              <h2 className="text-sm font-medium text-gray-300">Experts relevant to you</h2>
-              <p className="mt-1 text-xs text-gray-500">
-                {recommended.hasChats ? "Based on what you've been working on." : "Based on your profile."}
-              </p>
+            <div className={cn("grid gap-3", displayedProjects.length > 1 && "sm:grid-cols-2")}>
+              {displayedProjects.map((p) => (
+                <ProjectCard key={p.id} project={p} />
+              ))}
             </div>
-            <Link href="/experts" className="inline-flex shrink-0 items-center gap-1 text-xs text-primary-400 hover:text-primary-300">
-              Explore all experts <ArrowRight className="size-3" />
-            </Link>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {recommended.recommendations.map((r) => (
-              <ExpertCard key={r.listing.user.id} listing={r.listing} reason={r.reason} />
-            ))}
-          </div>
-        </section>
-      )}
+          </section>
+        );
+
+        const actionRequiredSection = (
+          <section key="action">
+            <h2 className="text-sm font-medium text-gray-300">Action required</h2>
+            <p className="mt-1 text-xs text-gray-500">Things that need your attention.</p>
+            <div className="mt-3 space-y-2">
+              {actionItems === null ? (
+                <>
+                  <Skeleton className="h-16 w-full" />
+                  <Skeleton className="h-16 w-full" />
+                </>
+              ) : actionItems.length > 0 ? (
+                actionItems.map((item) => (
+                  <Card key={item.id} className="flex items-center gap-3 border-gray-900 bg-gray-950 p-3.5">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-500/15 text-primary-400">
+                      <item.icon className="size-4" aria-hidden />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-gray-50">{item.title}</p>
+                      <p className="truncate text-xs text-gray-400">{item.description}</p>
+                    </div>
+                    <Link
+                      href={item.href}
+                      className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary-400 hover:text-primary-300"
+                    >
+                      {item.ctaLabel} <ArrowRight className="size-3" />
+                    </Link>
+                  </Card>
+                ))
+              ) : (
+                <div className="rounded-2xl border border-gray-900 px-4 py-3">
+                  <p className="text-sm text-gray-300">You&apos;re all caught up.</p>
+                  <p className="mt-0.5 text-xs text-gray-500">Nothing needs your attention right now.</p>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+
+        const upcomingCallsSection = (
+          <section key="calls">
+            <h2 className="text-sm font-medium text-gray-300">Upcoming calls</h2>
+            <p className="mt-1 text-xs text-gray-500">Your scheduled conversations with experts.</p>
+            <div className="mt-3">
+              {upcomingCalls === null ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              ) : upcomingCalls.length > 0 ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {upcomingCalls.map(({ consultation, expert }) => (
+                    <Card key={consultation.id} className="flex items-center gap-3 border-gray-900 bg-gray-950 p-4">
+                      <Avatar
+                        firstName={expert.user.firstName}
+                        lastName={expert.user.lastName}
+                        src={expert.user.avatarUrl}
+                        online={expert.profile.isOnline}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-gray-50">
+                          {expert.user.firstName} {expert.user.lastName}
+                        </p>
+                        <p className="truncate text-xs text-gray-400">{expert.profile.currentRole}</p>
+                        <div className="mt-1 flex items-center gap-2">
+                          <p className="text-xs text-gray-500">{formatCallWhen(consultation.scheduledFor)}</p>
+                          <StatusBadge status={consultation.status} />
+                        </div>
+                      </div>
+                      <Button asChild size="sm" variant={isCallImminent(consultation.scheduledFor) ? "primary" : "outline"} className="shrink-0">
+                        <Link href={`/consultations/${consultation.id}`}>
+                          {isCallImminent(consultation.scheduledFor) ? "Join call" : "View details"}
+                        </Link>
+                      </Button>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-gray-900 px-4 py-3">
+                  <p className="text-sm text-gray-300">No upcoming calls</p>
+                  <p className="mt-0.5 text-xs text-gray-500">
+                    Need another perspective? Explore experts with experience relevant to the challenges you&apos;re working through.
+                  </p>
+                  <Link
+                    href="/experts"
+                    className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary-400 hover:text-primary-300"
+                  >
+                    Explore experts <ArrowRight className="size-3" />
+                  </Link>
+                </div>
+              )}
+            </div>
+          </section>
+        );
+
+        const expertsSection = hasRecommended && recommended ? (
+          <section key="experts">
+            <div className="mb-3 flex items-end justify-between">
+              <div>
+                <h2 className="text-sm font-medium text-gray-300">Experts relevant to you</h2>
+                <p className="mt-1 text-xs text-gray-500">
+                  {recommended.hasChats ? "Based on what you've been working on." : "Based on your profile."}
+                </p>
+              </div>
+              <Link href="/experts" className="inline-flex shrink-0 items-center gap-1 text-xs text-primary-400 hover:text-primary-300">
+                Explore all experts <ArrowRight className="size-3" />
+              </Link>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {recommended.recommendations.map((r) => (
+                <ExpertCard key={r.listing.user.id} listing={r.listing} reason={r.reason} truncateReason />
+              ))}
+            </div>
+          </section>
+        ) : null;
+
+        // Baseline priority is action required, your challenges, upcoming calls,
+        // experts — but a section with nothing in it (still-loading sections are
+        // left alone) drops behind whatever does have content, so e.g. recommended
+        // experts float up to fill the gap left by an empty "action required".
+        const orderedSections = [
+          { node: actionRequiredSection, empty: actionItems !== null && actionItems.length === 0 },
+          { node: yourChallengesSection, empty: false },
+          { node: upcomingCallsSection, empty: upcomingCalls !== null && upcomingCalls.length === 0 },
+          ...(expertsSection ? [{ node: expertsSection, empty: false }] : []),
+        ].sort((a, b) => Number(a.empty) - Number(b.empty));
+
+        return orderedSections.map((s) => s.node);
+      })()}
     </div>
   );
 }

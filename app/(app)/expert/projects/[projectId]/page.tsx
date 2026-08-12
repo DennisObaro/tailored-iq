@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import type { Project, Brief, Report } from "@/lib/types";
 import * as projectsApi from "@/lib/api/projects";
 import * as briefsApi from "@/lib/api/briefs";
@@ -48,6 +49,13 @@ export default function ExpertProjectViewPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       <div>
+        <div className="mb-4 flex items-center gap-1.5 text-xs text-gray-500">
+          <Link href="/expert/dashboard" className="hover:text-gray-300">
+            Overview
+          </Link>
+          <ChevronRight className="size-3" aria-hidden />
+          <span className="text-gray-300">{project.title}</span>
+        </div>
         <div className="flex items-center gap-2">
           <StatusBadge status={project.status} />
           {project.category && <Badge variant="outline">{project.category}</Badge>}

@@ -70,9 +70,6 @@ export default function NewChatPage() {
 
   return (
     <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center px-6 text-center">
-      <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-primary-500/15 text-primary-400">
-        <Sparkles className="size-5" aria-hidden />
-      </div>
       <h1 className="text-2xl font-semibold text-gray-50">What are you trying to solve?</h1>
       <p className="mt-2 max-w-md text-sm text-gray-400">
         TailoredIQ will ask the right questions, clarify your situation, and help you find
@@ -80,7 +77,7 @@ export default function NewChatPage() {
       </p>
 
       <div className="mt-8 w-full">
-        <div className="flex items-center gap-3 rounded-full border border-gray-900 bg-gray-950 py-3 pl-5 pr-2 focus-within:ring-2 focus-within:ring-primary-500">
+        <div className="flex items-center gap-3 rounded-full border border-gray-900 bg-gray-950 py-2 pl-5 pr-2 focus-within:ring-2 focus-within:ring-primary-500">
           <Sparkles className="size-4 shrink-0 text-gray-500" aria-hidden />
           <textarea
             value={value}

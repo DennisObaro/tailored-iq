@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Users, BookOpen, FileText } from "lucide-react";
+import { Users, BookOpen, FileText, ChevronRight } from "lucide-react";
 import type { Report, Project } from "@/lib/types";
 import * as reportsApi from "@/lib/api/reports";
 import * as projectsApi from "@/lib/api/projects";
@@ -45,6 +45,13 @@ export default function ReportDetailPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       <div>
+        <div className="mb-4 flex items-center gap-1.5 text-xs text-gray-500">
+          <Link href="/reports" className="hover:text-gray-300">
+            Reports
+          </Link>
+          <ChevronRight className="size-3" aria-hidden />
+          <span className="text-gray-300">{report.category}</span>
+        </div>
         <Badge variant="outline">{report.category}</Badge>
         <h1 className="mt-2 text-xl font-semibold text-gray-50">Report</h1>
         <p className="mt-2 text-sm leading-relaxed text-gray-300">{report.problemSummary}</p>

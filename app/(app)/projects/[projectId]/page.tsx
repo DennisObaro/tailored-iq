@@ -10,7 +10,7 @@ import * as reportsApi from "@/lib/api/reports";
 import * as expertsApi from "@/lib/api/experts";
 import type { ExpertListing } from "@/lib/api/experts";
 import * as playbooksApi from "@/lib/api/playbooks";
-import { BookOpen } from "lucide-react";
+import { BookOpen, ChevronRight } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -119,6 +119,13 @@ export default function ProjectDetailPage() {
     <div className="mx-auto grid max-w-4xl gap-6 p-6 md:grid-cols-[1fr_220px]">
       <div className="flex flex-col gap-6">
         <div>
+          <div className="mb-4 flex items-center gap-1.5 text-xs text-gray-500">
+            <Link href="/projects" className="hover:text-gray-300">
+              Projects
+            </Link>
+            <ChevronRight className="size-3" aria-hidden />
+            <span className="text-gray-300">{project.title}</span>
+          </div>
           <div className="flex items-center gap-2">
             <StatusBadge status={project.status} />
             {project.category && <Badge variant="outline">{project.category}</Badge>}

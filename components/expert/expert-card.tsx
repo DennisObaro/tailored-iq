@@ -4,15 +4,19 @@ import type { ExpertListing } from "@/lib/api/experts";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils/cn";
 
 export function ExpertCard({
   listing,
   projectId,
   reason,
+  truncateReason = false,
 }: {
   listing: ExpertListing;
   projectId?: string;
   reason?: string;
+  /** Clamps the reason chip to one line and stretches it full-width instead of hugging the text. */
+  truncateReason?: boolean;
 }) {
   const { user, profile } = listing;
   const params = new URLSearchParams();
@@ -25,7 +29,10 @@ export function ExpertCard({
     <Link href={href} className="block h-full">
       <Card className="flex h-full flex-col gap-3 border-gray-900 bg-gray-950 p-4 transition-colors hover:bg-gray-900">
         {reason && (
-          <Badge variant="primary" className="w-fit items-start rounded-lg text-left leading-snug">
+          <Badge
+            variant="primary"
+            className={cn("rounded-lg", truncateReason ? "w-full truncate" : "w-fit")}
+          >
             {reason}
           </Badge>
         )}
@@ -34,7 +41,7 @@ export function ExpertCard({
             firstName={user.firstName}
             lastName={user.lastName}
             src={user.avatarUrl}
-            size={reason ? "xl" : "lg"}
+            size="lg"
             online={profile.isOnline}
           />
           <div className="min-w-0 flex-1">
@@ -52,7 +59,6 @@ export function ExpertCard({
             </Badge>
           ))}
         </div>
-        {profile.headline && <p className="text-xs text-gray-500">{profile.headline}</p>}
         <div className="mt-auto flex items-center justify-between pt-1">
           <span className="flex items-center gap-1 text-xs text-gray-500">
             {profile.reviewCount > 0 ? (
