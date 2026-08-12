@@ -85,18 +85,32 @@ body {
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-* {
-  border-color: var(--color-gray-800);
-}
-
 ::selection {
   background: var(--color-primary-500);
   color: var(--color-gray-975);
 }
 
-:focus-visible {
-  outline: 2px solid var(--color-primary-500);
-  outline-offset: 2px;
+@layer base {
+  * {
+    border-color: var(--color-gray-800);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary-500);
+    outline-offset: 2px;
+  }
+
+  /* Chrome/Safari paint autofilled inputs with their own blue/yellow tint
+     that ignores background-color entirely; only this inset box-shadow
+     trick can override it, so autofilled fields stay grayscale. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-gray-50);
+    -webkit-box-shadow: 0 0 0 1000px var(--color-gray-900) inset;
+    box-shadow: 0 0 0 1000px var(--color-gray-900) inset;
+    transition: background-color 9999s ease-in-out 0s;
+  }
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -105,4 +119,22 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-700) transparent;
+}
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-700);
+  border-radius: 9999px;
+}
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-gray-600);
 }

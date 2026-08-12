@@ -64,4 +64,14 @@ export const seedNotifications: Notification[] = [
     read: false,
     createdAt: d(7),
   },
+  {
+    id: "notif_7",
+    userId: DEMO_CLIENT_ID,
+    type: "report_ready",
+    title: "Your report is ready",
+    body: "Your report for \"Entering the Southeast Asia market\" is ready to review.",
+    linkHref: "/reports/report_2",
+    read: false,
+    createdAt: d(11),
+  },
 ];

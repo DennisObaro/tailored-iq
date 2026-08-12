@@ -57,5 +57,6 @@ export interface ExpertProfile {
   totalProjects: number;
   consultationRate: number;
   availabilitySlots: string[]; // ISO strings
+  isOnline: boolean;
   willingness: ("review" | "contribute_insight" | "advisory_call" | "playbook_contribution" | "consulting_engagement")[];
 }

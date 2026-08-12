@@ -1,4 +1,4 @@
-import type { Consultation, Review } from "@/lib/types";
+import type { Consultation, Review, User } from "@/lib/types";
 import { simulateNetwork, simulateGeneration, ApiError } from "./client";
 import { db } from "./_db";
 import { id } from "@/lib/utils/id";
@@ -133,5 +133,27 @@ export async function getReviewForConsultation(consultationId: string): Promise<
   return simulateNetwork(
     () => db.get().reviews.find((r) => r.consultationId === consultationId) ?? null,
     { latency: [60, 120] },
+  );
+}
+
+export interface ReviewListing {
+  review: Review;
+  reviewer: User;
+}
+
+export async function listReviewsForExpert(expertId: string): Promise<ReviewListing[]> {
+  return simulateNetwork(
+    () => {
+      const database = db.get();
+      return database.reviews
+        .filter((r) => r.toUserId === expertId)
+        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+        .map((review) => {
+          const reviewer = database.users.find((u) => u.id === review.fromUserId);
+          return reviewer ? { review, reviewer } : null;
+        })
+        .filter((x): x is ReviewListing => x !== null);
+    },
+    { latency: [100, 200] },
   );
 }

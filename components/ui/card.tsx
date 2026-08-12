@@ -5,7 +5,7 @@ export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElemen
   return (
     <div
       className={cn(
-        "rounded-lg border border-gray-800 bg-gray-900",
+        "rounded-2xl border border-gray-800 bg-gray-900",
         className,
       )}
       {...props}
@@ -43,7 +43,7 @@ export function InteractiveCard({ className, selected, ...props }: InteractiveCa
       role="button"
       tabIndex={0}
       className={cn(
-        "rounded-lg border bg-gray-900 transition-colors cursor-pointer",
+        "rounded-2xl border bg-gray-900 transition-colors cursor-pointer",
         "hover:bg-gray-850 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500",
         selected ? "border-primary-500" : "border-gray-800",
         className,

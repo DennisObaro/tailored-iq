@@ -86,11 +86,15 @@ export default function ExpertDashboardPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="p-4">
           <p className="text-xs text-gray-500">Reputation</p>
-          <p className="mt-1 flex items-center gap-1.5 text-lg font-semibold text-gray-50">
-            <Star className="size-4 fill-primary-400 text-primary-400" aria-hidden />
-            {profile.rating.toFixed(1)}
-            <span className="text-sm font-normal text-gray-500">({profile.reviewCount})</span>
-          </p>
+          {profile.reviewCount > 0 ? (
+            <p className="mt-1 flex items-center gap-1.5 text-lg font-semibold text-gray-50">
+              <Star className="size-4 fill-primary-400 text-primary-400" aria-hidden />
+              {profile.rating.toFixed(1)}
+              <span className="text-sm font-normal text-gray-500">({profile.reviewCount})</span>
+            </p>
+          ) : (
+            <p className="mt-1 text-lg font-semibold text-gray-50">New</p>
+          )}
         </Card>
         <Card className="p-4">
           <p className="text-xs text-gray-500">Active projects</p>

@@ -11,6 +11,7 @@ import { INDUSTRIES, FUNCTIONS, SENIORITIES } from "@/lib/constants/categories";
 export default function OnboardingProfilePage() {
   const router = useRouter();
   const user = useSessionStore((s) => s.user);
+  const refresh = useSessionStore((s) => s.refresh);
   const [industry, setIndustry] = useState(INDUSTRIES[0]);
   const [func, setFunc] = useState(FUNCTIONS[0]);
   const [seniority, setSeniority] = useState(SENIORITIES[0]);
@@ -36,7 +37,9 @@ export default function OnboardingProfilePage() {
             .filter(Boolean),
         });
       }
-      router.push("/onboarding/complete");
+      await usersApi.completeOnboarding(user.id);
+      await refresh();
+      router.push(user.activeRole === "expert" ? "/expert/dashboard" : "/dashboard");
     } finally {
       setSubmitting(false);
     }

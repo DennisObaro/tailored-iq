@@ -116,6 +116,25 @@ export const seedPlaybooks: Playbook[] = [
     createdAt: d(7),
     updatedAt: d(7),
   },
+  {
+    id: "playbook_7",
+    projectId: "project_7",
+    title: "Leadership Alignment Playbook",
+    status: "generating",
+    version: 1,
+    executiveSummary: "",
+    keyInsights: [],
+    recommendedStrategy: "",
+    actionItems: [],
+    frameworks: [],
+    risks: [],
+    successMeasures: [],
+    resources: [],
+    sections: [],
+    expertContributionIds: [],
+    createdAt: d(20),
+    updatedAt: d(20),
+  },
 ];
 
 export const seedContributions: ExpertContribution[] = [

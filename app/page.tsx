@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/layout/logo";
 
 export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-gray-975">
       <header className="flex items-center justify-between px-6 py-5">
-        <span className="text-sm font-semibold tracking-tight text-gray-50">
-          Tailored<span className="text-primary-500">IQ</span>
-        </span>
+        <Logo />
         <div className="flex items-center gap-2">
           <Button asChild variant="ghost" size="sm">
             <Link href="/sign-in">Sign in</Link>

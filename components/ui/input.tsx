@@ -66,7 +66,7 @@ export const Select = React.forwardRef<
   <select
     ref={ref}
     className={cn(
-      "h-9 w-full rounded-md border bg-gray-900 px-3 text-sm text-gray-50",
+      "h-9 w-full rounded-md border bg-gray-900 px-3 text-sm text-gray-50 [color-scheme:dark]",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500",
       "disabled:cursor-not-allowed disabled:opacity-50",
       error ? "border-danger-500" : "border-gray-800",

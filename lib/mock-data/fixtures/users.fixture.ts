@@ -6,6 +6,15 @@ export const DEMO_CLIENT_ID = "user_demo_client";
 export const DEMO_EXPERT_ID = "user_demo_expert";
 export const DEMO_DUAL_ID = "user_demo_dual";
 
+/**
+ * Past clients that exist only to back historical consultations/reviews
+ * (see expert-review-history.fixture.ts) so every expert has real review
+ * data. Not in DEMO_PERSONAS (lib/api/auth.ts), so they never appear as a
+ * sign-in option and never clutter a demo account's own project list.
+ */
+export const PAST_CLIENT_1_ID = "user_past_client_1";
+export const PAST_CLIENT_2_ID = "user_past_client_2";
+
 export const seedUsers: User[] = [
   {
     id: DEMO_CLIENT_ID,
@@ -19,10 +28,33 @@ export const seedUsers: User[] = [
     updatedAt: now,
   },
   {
+    id: PAST_CLIENT_1_ID,
+    firstName: "Michael",
+    lastName: "Torres",
+    email: "michael.torres@example.com",
+    roles: ["client"],
+    activeRole: "client",
+    onboardingComplete: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
+    id: PAST_CLIENT_2_ID,
+    firstName: "Sarah",
+    lastName: "Kim",
+    email: "sarah.kim@example.com",
+    roles: ["client"],
+    activeRole: "client",
+    onboardingComplete: true,
+    createdAt: now,
+    updatedAt: now,
+  },
+  {
     id: DEMO_EXPERT_ID,
     firstName: "Marcus",
     lastName: "Webb",
     email: "demo.expert@tailorediq.com",
+    avatarUrl: "/experts/marcus-webb.jpg",
     roles: ["expert"],
     activeRole: "expert",
     onboardingComplete: true,
@@ -34,6 +66,7 @@ export const seedUsers: User[] = [
     firstName: "Jordan",
     lastName: "Blake",
     email: "demo.dual@tailorediq.com",
+    avatarUrl: "/experts/jordan-blake.jpg",
     roles: ["client", "expert"],
     activeRole: "client",
     onboardingComplete: true,
@@ -45,6 +78,7 @@ export const seedUsers: User[] = [
     firstName: "Priya",
     lastName: "Raman",
     email: "priya.raman@example.com",
+    avatarUrl: "/experts/priya-raman.jpg",
     roles: ["expert"],
     activeRole: "expert",
     onboardingComplete: true,
@@ -56,6 +90,7 @@ export const seedUsers: User[] = [
     firstName: "Daniel",
     lastName: "Okoye",
     email: "daniel.okoye@example.com",
+    avatarUrl: "/experts/daniel-okoye.jpg",
     roles: ["expert"],
     activeRole: "expert",
     onboardingComplete: true,
@@ -67,6 +102,7 @@ export const seedUsers: User[] = [
     firstName: "Sofia",
     lastName: "Marchetti",
     email: "sofia.marchetti@example.com",
+    avatarUrl: "/experts/sofia-marchetti.jpg",
     roles: ["expert"],
     activeRole: "expert",
     onboardingComplete: true,
@@ -78,6 +114,7 @@ export const seedUsers: User[] = [
     firstName: "Liam",
     lastName: "Osei",
     email: "liam.osei@example.com",
+    avatarUrl: "/experts/liam-osei.jpg",
     roles: ["expert"],
     activeRole: "expert",
     onboardingComplete: true,
@@ -89,6 +126,7 @@ export const seedUsers: User[] = [
     firstName: "Naomi",
     lastName: "Fischer",
     email: "naomi.fischer@example.com",
+    avatarUrl: "/experts/naomi-fischer.jpg",
     roles: ["expert"],
     activeRole: "expert",
     onboardingComplete: true,
@@ -100,6 +138,7 @@ export const seedUsers: User[] = [
     firstName: "Ethan",
     lastName: "Kowalski",
     email: "ethan.kowalski@example.com",
+    avatarUrl: "/experts/ethan-kowalski.jpg",
     roles: ["expert"],
     activeRole: "expert",
     onboardingComplete: true,
@@ -111,6 +150,7 @@ export const seedUsers: User[] = [
     firstName: "Grace",
     lastName: "Adeyemi",
     email: "grace.adeyemi@example.com",
+    avatarUrl: "/experts/grace-adeyemi.jpg",
     roles: ["expert"],
     activeRole: "expert",
     onboardingComplete: true,
@@ -168,6 +208,7 @@ export const seedExpertProfiles: ExpertProfile[] = [
       "2026-08-14T15:30:00.000Z",
       "2026-08-15T16:00:00.000Z",
     ],
+    isOnline: true,
     willingness: ["advisory_call", "playbook_contribution", "contribute_insight"],
   },
   {
@@ -192,6 +233,7 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 22,
     consultationRate: 275,
     availabilitySlots: ["2026-08-14T13:00:00.000Z", "2026-08-16T17:00:00.000Z"],
+    isOnline: false,
     willingness: ["advisory_call", "review"],
   },
   {
@@ -216,6 +258,7 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 47,
     consultationRate: 320,
     availabilitySlots: ["2026-08-13T12:00:00.000Z", "2026-08-15T14:00:00.000Z"],
+    isOnline: true,
     willingness: ["advisory_call", "playbook_contribution", "consulting_engagement"],
   },
   {
@@ -240,6 +283,7 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 35,
     consultationRate: 300,
     availabilitySlots: ["2026-08-14T11:00:00.000Z"],
+    isOnline: true,
     willingness: ["advisory_call", "contribute_insight"],
   },
   {
@@ -264,6 +308,7 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 29,
     consultationRate: 290,
     availabilitySlots: ["2026-08-13T16:00:00.000Z", "2026-08-16T10:00:00.000Z"],
+    isOnline: false,
     willingness: ["advisory_call", "playbook_contribution"],
   },
   {
@@ -285,6 +330,7 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 18,
     consultationRate: 220,
     availabilitySlots: ["2026-08-15T09:00:00.000Z"],
+    isOnline: true,
     willingness: ["advisory_call", "review"],
   },
   {
@@ -306,6 +352,7 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 40,
     consultationRate: 340,
     availabilitySlots: ["2026-08-14T09:30:00.000Z"],
+    isOnline: true,
     willingness: ["advisory_call", "consulting_engagement"],
   },
   {
@@ -327,6 +374,7 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 26,
     consultationRate: 260,
     availabilitySlots: ["2026-08-13T10:00:00.000Z"],
+    isOnline: false,
     willingness: ["advisory_call", "playbook_contribution", "contribute_insight"],
   },
   {
@@ -348,6 +396,7 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 52,
     consultationRate: 310,
     availabilitySlots: ["2026-08-15T13:00:00.000Z"],
+    isOnline: true,
     willingness: ["advisory_call", "consulting_engagement"],
   },
 ];

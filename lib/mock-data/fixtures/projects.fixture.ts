@@ -1,5 +1,6 @@
 import type { Project, Brief, Conversation } from "@/lib/types";
 import { DEMO_CLIENT_ID, DEMO_DUAL_ID, DEMO_EXPERT_ID } from "./users.fixture";
+import { historicalProjects } from "./expert-review-history.fixture";
 
 const d = (day: number) => `2026-07-${String(day).padStart(2, "0")}T10:00:00.000Z`;
 
@@ -130,19 +131,21 @@ export const seedProjects: Project[] = [
     title: "Aligning a newly merged leadership team",
     challenge: "After a recent acquisition, our combined leadership team isn't operating as one team yet.",
     category: "Leadership",
-    status: "expert_matching",
+    status: "playbook_in_progress",
     conversationId: "conversation_7",
     briefId: "brief_7",
     reportId: "report_7",
     matchedExpertIds: [DEMO_EXPERT_ID, "user_expert_7"],
+    playbookId: "playbook_7",
     activity: [
       { id: "act_7a", label: "Challenge submitted", timestamp: d(18) },
       { id: "act_7b", label: "Brief confirmed", timestamp: d(18) },
       { id: "act_7c", label: "Report generated", timestamp: d(19) },
       { id: "act_7d", label: "Experts matched", timestamp: d(19) },
+      { id: "act_7e", label: "Playbook generation started", timestamp: d(20) },
     ],
     createdAt: d(18),
-    updatedAt: d(19),
+    updatedAt: d(20),
   },
   {
     id: "project_8",
@@ -164,6 +167,23 @@ export const seedProjects: Project[] = [
     createdAt: d(19),
     updatedAt: d(20),
   },
+  {
+    id: "project_9",
+    clientId: DEMO_DUAL_ID,
+    title: "Standing up a first-time leadership team",
+    challenge: "We just hired our first layer of managers and none of us have led leaders before.",
+    category: "Leadership",
+    status: "completed",
+    matchedExpertIds: [DEMO_EXPERT_ID],
+    consultationId: "consultation_9",
+    activity: [
+      { id: "act_9a", label: "Challenge submitted", timestamp: d(21) },
+      { id: "act_9b", label: "Consultation completed", timestamp: d(22) },
+    ],
+    createdAt: d(21),
+    updatedAt: d(22),
+  },
+  ...historicalProjects,
 ];
 
 export const seedBriefs: Brief[] = [

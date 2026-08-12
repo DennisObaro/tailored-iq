@@ -1,5 +1,6 @@
 import type { Consultation, Review } from "@/lib/types";
 import { DEMO_CLIENT_ID, DEMO_DUAL_ID, DEMO_EXPERT_ID } from "./users.fixture";
+import { historicalConsultations, historicalReviews } from "./expert-review-history.fixture";
 
 const d = (day: number) => `2026-07-${String(day).padStart(2, "0")}T14:00:00.000Z`;
 
@@ -60,6 +61,18 @@ export const seedConsultations: Consultation[] = [
     ],
     createdAt: d(5),
   },
+  {
+    id: "consultation_9",
+    projectId: "project_9",
+    clientId: DEMO_DUAL_ID,
+    expertId: DEMO_EXPERT_ID,
+    scheduledFor: d(22),
+    status: "completed",
+    recordingConsent: true,
+    durationSeconds: 1740,
+    createdAt: d(21),
+  },
+  ...historicalConsultations,
 ];
 
 export const seedReviews: Review[] = [
@@ -75,6 +88,17 @@ export const seedReviews: Review[] = [
     createdAt: d(5),
   },
   {
+    id: "review_9",
+    consultationId: "consultation_9",
+    fromUserId: DEMO_DUAL_ID,
+    toUserId: DEMO_EXPERT_ID,
+    usefulness: 5,
+    understanding: 4,
+    rating: 5,
+    comment: "Practical, no-nonsense advice on making the jump from managing individual contributors to managing managers.",
+    createdAt: d(22),
+  },
+  {
     id: "review_6",
     consultationId: "consultation_6",
     fromUserId: DEMO_DUAL_ID,
@@ -85,4 +109,5 @@ export const seedReviews: Review[] = [
     comment: "Exactly the pragmatic, right-sized advice we needed ahead of diligence.",
     createdAt: d(6),
   },
+  ...historicalReviews,
 ];

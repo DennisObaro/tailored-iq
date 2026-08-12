@@ -119,6 +119,7 @@ export default function ExpertOnboardingPage() {
       totalProjects: existing?.totalProjects ?? 0,
       consultationRate: existing?.consultationRate ?? 200,
       availabilitySlots: existing?.availabilitySlots ?? [],
+      isOnline: existing?.isOnline ?? true,
       willingness,
     };
     await usersApi.upsertExpertProfile(profile);
