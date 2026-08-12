@@ -235,6 +235,7 @@ export default function DashboardPage() {
   }
 
   const activeProjects = projects.filter((p) => !["completed", "archived"].includes(p.status));
+  const displayedProjects = (activeProjects.length > 0 ? activeProjects : projects).slice(0, 2);
   const hasUrgentAction = actionItems !== null && actionItems.length > 0;
 
   const metrics: { value: number | null; label: string; supporting: string; zeroSupporting: string; href: string }[] = [
@@ -314,8 +315,8 @@ export default function DashboardPage() {
             View all <ArrowRight className="size-3" />
           </Link>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {(activeProjects.length > 0 ? activeProjects : projects).slice(0, 2).map((p) => (
+        <div className={cn("grid gap-3", displayedProjects.length > 1 && "sm:grid-cols-2")}>
+          {displayedProjects.map((p) => (
             <ProjectCard key={p.id} project={p} />
           ))}
         </div>

@@ -117,7 +117,7 @@ export default function ExpertOnboardingPage() {
       rating: existing?.rating ?? 0,
       reviewCount: existing?.reviewCount ?? 0,
       totalProjects: existing?.totalProjects ?? 0,
-      consultationRate: existing?.consultationRate ?? 200,
+      consultationRate: existing?.consultationRate ?? 300000,
       availabilitySlots: existing?.availabilitySlots ?? [],
       isOnline: existing?.isOnline ?? true,
       willingness,

@@ -34,3 +34,7 @@ export function formatDuration(seconds: number) {
 export function initials(firstName: string, lastName: string) {
   return `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase();
 }
+
+export function formatCurrency(amount: number) {
+  return `₦${amount.toLocaleString("en-US")}`;
+}

@@ -44,6 +44,8 @@ const STATUS_LABELS: Record<string, { label: string; tone: Tone }> = {
   submitted: { label: "Submitted", tone: "progress" },
   under_review: { label: "Under review", tone: "progress" },
   published: { label: "Published", tone: "success" },
+  owned: { label: "Owned", tone: "success" },
+  locked: { label: "Locked", tone: "neutral" },
 };
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {

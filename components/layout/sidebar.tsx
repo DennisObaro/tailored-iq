@@ -87,35 +87,41 @@ export function Sidebar({ className, forceExpanded }: { className?: string; forc
       </div>
 
       <div className="flex flex-1 flex-col gap-[10px] overflow-y-auto px-5 pb-2">
-        {navItems.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(item.href + "/");
-          const link = (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex h-8 items-center rounded-[10px] text-sm transition-colors",
-                collapsed ? "p-2" : "gap-[6px] pl-3",
-                active
-                  ? "bg-gray-900 text-gray-50"
-                  : "text-gray-400 hover:bg-gray-900 hover:text-gray-100",
-              )}
-              aria-current={active ? "page" : undefined}
-            >
-              <NavIcon icon={item.icon} active={active} className="size-4 shrink-0" />
-              {showLabels && item.label}
-            </Link>
-          );
+        <div className="flex flex-col gap-[4px]">
+          {navItems.map((item) => {
+            const active = pathname === item.href || pathname.startsWith(item.href + "/");
+            const link = (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "group flex h-8 items-center rounded-[10px] text-sm transition-colors duration-[180ms] ease-out",
+                  collapsed ? "p-2" : "gap-[8px] pl-3",
+                  active
+                    ? "bg-gray-900 text-gray-50"
+                    : "text-[#949494] hover:bg-gray-900 hover:text-gray-100 focus-visible:bg-gray-900 focus-visible:text-gray-100",
+                )}
+                aria-current={active ? "page" : undefined}
+              >
+                <NavIcon
+                  icon={item.icon}
+                  active={active}
+                  className="size-4 shrink-0 transition-transform duration-[180ms] ease-out motion-safe:group-hover:-translate-y-[1px] motion-safe:group-hover:scale-[1.08] motion-safe:group-focus-visible:-translate-y-[1px] motion-safe:group-focus-visible:scale-[1.08]"
+                />
+                {showLabels && item.label}
+              </Link>
+            );
 
-          if (!collapsed) return link;
+            if (!collapsed) return link;
 
-          return (
-            <Tooltip key={item.href}>
-              <TooltipTrigger asChild>{link}</TooltipTrigger>
-              <TooltipContent side="right">{item.label}</TooltipContent>
-            </Tooltip>
-          );
-        })}
+            return (
+              <Tooltip key={item.href}>
+                <TooltipTrigger asChild>{link}</TooltipTrigger>
+                <TooltipContent side="right">{item.label}</TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </div>
 
         {showLabels && user.activeRole !== "expert" && <RecentChats />}
       </div>

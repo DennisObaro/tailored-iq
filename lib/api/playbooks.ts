@@ -16,7 +16,7 @@ export async function listPlaybooks(clientId: string): Promise<Playbook[]> {
       const database = db.get();
       const projectIds = new Set(database.projects.filter((p) => p.clientId === clientId).map((p) => p.id));
       return database.playbooks
-        .filter((p) => projectIds.has(p.projectId))
+        .filter((p) => !!p.projectId && projectIds.has(p.projectId))
         .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
     },
     { latency: [120, 250] },

@@ -15,6 +15,15 @@ import type {
 } from "@/lib/types";
 import { seedDatabase } from "@/lib/mock-data/fixtures/seed";
 
+/** Records that a user has unlocked a playbook catalog template. */
+export interface PlaybookUnlock {
+  id: string;
+  userId: string;
+  templateId: string;
+  playbookId: string;
+  unlockedAt: string;
+}
+
 /**
  * Internal mock "database", private to lib/api/*. Nothing outside this
  * directory should import this module directly — go through the typed
@@ -35,6 +44,7 @@ export interface Database {
   reviews: Review[];
   notifications: Notification[];
   opportunities: Opportunity[];
+  playbookUnlocks: PlaybookUnlock[];
 }
 
 const STORAGE_KEY = "tiq_db_v1";

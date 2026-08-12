@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import type { Playbook } from "@/lib/types";
 import * as playbooksApi from "@/lib/api/playbooks";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +52,13 @@ export default function PlaybookDetailPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       <div>
+        <div className="mb-4 flex items-center gap-1.5 text-xs text-gray-500">
+          <Link href="/playbooks" className="hover:text-gray-300">
+            Playbooks
+          </Link>
+          <ChevronRight className="size-3" aria-hidden />
+          <span className="text-gray-300">{playbook.title}</span>
+        </div>
         <div className="flex items-center gap-2">
           <StatusBadge status={playbook.status} />
           <span className="text-xs text-gray-500">v{playbook.version}</span>

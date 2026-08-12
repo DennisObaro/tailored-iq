@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
-import { formatCallWhen, formatRelative } from "@/lib/utils/format";
+import { formatCallWhen, formatRelative, formatCurrency } from "@/lib/utils/format";
 
 export default function ExpertProfilePage() {
   const { expertId } = useParams<{ expertId: string }>();
@@ -236,7 +236,7 @@ export default function ExpertProfilePage() {
         <div className="flex flex-col gap-4 md:sticky md:top-6 md:self-start">
           <Card className="p-4">
             <p className="text-2xl font-semibold text-gray-50">
-              ${profile.consultationRate}
+              {formatCurrency(profile.consultationRate)}
               <span className="text-sm font-normal text-gray-500"> / session</span>
             </p>
             <p className="mt-1 text-xs text-gray-400">{profile.yearsExperience} years of experience</p>

@@ -1,7 +1,8 @@
-import { Sparkles } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import type { ExpertListing } from "@/lib/api/experts";
 import { ExpertCard } from "@/components/expert/expert-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils/cn";
 
 export function SuggestedExpertsPanel({
   projectId,
@@ -12,9 +13,19 @@ export function SuggestedExpertsPanel({
   experts: ExpertListing[];
   loading: boolean;
 }) {
+  const refreshing = loading && experts.length > 0;
+
   return (
     <aside className="hidden w-80 shrink-0 flex-col gap-3 overflow-y-auto border-l border-gray-800 p-5 lg:flex">
-      <h2 className="text-sm font-medium text-gray-300">Relevant to your challenge</h2>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-sm font-medium text-gray-300">Relevant to your challenge</h2>
+        {refreshing && (
+          <span className="flex items-center gap-1 text-xs text-gray-500">
+            <Loader2 className="size-3 animate-spin" aria-hidden />
+            Updating
+          </span>
+        )}
+      </div>
 
       {loading && experts.length === 0 ? (
         <div className="flex flex-col gap-3">
@@ -29,7 +40,7 @@ export function SuggestedExpertsPanel({
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className={cn("flex flex-col gap-3 transition-opacity", refreshing && "opacity-60")}>
           {experts.map((listing) => (
             <ExpertCard key={listing.user.id} listing={listing} projectId={projectId} />
           ))}

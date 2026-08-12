@@ -71,8 +71,7 @@ export async function getExpertsByIds(userIds: string[]): Promise<ExpertListing[
  * Read-only live preview used while a diagnosis chat is still in progress.
  * Unlike matchExpertsForProject, this never mutates the project (no status
  * change, no activity entry, no notification) — it's recomputed every turn
- * and discarded. Returns [] when the conversation doesn't yet contain
- * enough signal to confidently guess a category.
+ * so the panel tracks the conversation as it develops.
  */
 export async function suggestExpertsForConversation(projectId: string): Promise<ExpertListing[]> {
   return simulateNetwork(
@@ -83,15 +82,30 @@ export async function suggestExpertsForConversation(projectId: string): Promise<
       const conversation = database.conversations.find((c) => c.id === project.conversationId);
       if (!conversation) return [];
 
+      const client = database.clientProfiles.find((c) => c.userId === project.clientId);
+
       const text = conversation.messages
         .filter((m) => m.role === "user")
         .map((m) => m.content)
         .join(" ");
       const [top] = scoreCategories(text);
-      if (!top || top.score === 0) return [];
+      let category = top && top.score > 0 ? top.category : null;
 
-      const client = database.clientProfiles.find((c) => c.userId === project.clientId);
-      const matched = matchExperts(database.expertProfiles, top.category, client ? [client.industry] : []);
+      /**
+       * Nothing in the conversation yet carries signal (e.g. right after the
+       * opening message) — fall back to what the client told us about
+       * themselves during onboarding, same chain as getRecommendedExperts,
+       * so the panel isn't empty on turn one and only gets more specific as
+       * the conversation goes on.
+       */
+      if (!category && client) {
+        const profileText = [client.occupation, client.function, ...client.interests].join(" ");
+        const [profileTop] = scoreCategories(profileText).filter((s) => s.score > 0);
+        category = profileTop?.category ?? FUNCTION_TO_CATEGORY[client.function] ?? null;
+      }
+      if (!category) return [];
+
+      const matched = matchExperts(database.expertProfiles, category, client ? [client.industry] : []);
 
       return matched
         .map((profile) => {

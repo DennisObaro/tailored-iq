@@ -22,5 +22,6 @@ export function seedDatabase(): Database {
     reviews: structuredClone(seedReviews),
     notifications: structuredClone(seedNotifications),
     opportunities: structuredClone(seedOpportunities),
+    playbookUnlocks: [],
   };
 }

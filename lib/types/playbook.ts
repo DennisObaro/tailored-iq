@@ -23,7 +23,8 @@ export interface PlaybookSection {
 
 export interface Playbook {
   id: string;
-  projectId: string;
+  /** Absent for playbooks unlocked from the Explore catalog, which aren't tied to a project. */
+  projectId?: string;
   title: string;
   status: PlaybookStatus;
   version: number;
@@ -39,6 +40,22 @@ export interface Playbook {
   expertContributionIds: string[];
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * A pre-written playbook available in Explore. Only the marketing-facing
+ * fields are exposed through this type — the real content lives server-side
+ * (lib/mock-data/fixtures/playbook-catalog.fixture.ts) and only becomes a
+ * real Playbook record once a user unlocks it, so there's nothing to leak
+ * through a locked card or a direct URL.
+ */
+export interface PlaybookTemplate {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  price: number;
+  whatsIncluded: string[];
 }
 
 export interface ExpertContribution {
