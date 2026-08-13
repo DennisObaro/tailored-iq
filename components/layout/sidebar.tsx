@@ -71,7 +71,7 @@ export function Sidebar({ className, forceExpanded }: { className?: string; forc
         )}
       >
         {showLabels && (
-          <Link href={user.activeRole === "expert" ? "/expert/dashboard" : "/dashboard"}>
+          <Link href={user.activeRole === "expert" ? "/expert/dashboard" : "/dashboard"} className="ml-3">
             <Logo />
           </Link>
         )}
