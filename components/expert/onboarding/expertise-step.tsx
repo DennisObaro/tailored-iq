@@ -175,7 +175,7 @@ export function ExpertiseStep({ profile, onSaved, onBack }: StepProps) {
                       type="button"
                       onClick={() => remove(e.label)}
                       aria-label={`Remove ${e.label}`}
-                      className="rounded p-1 text-gray-500 hover:bg-gray-850 hover:text-danger-400"
+                      className="rounded p-1 text-gray-500 hover:bg-gray-900 hover:text-danger-400"
                     >
                       <X className="size-4" aria-hidden />
                     </button>
@@ -183,7 +183,7 @@ export function ExpertiseStep({ profile, onSaved, onBack }: StepProps) {
                 </div>
 
                 {e.evidenceStatus === "needs_evidence" && (
-                  <div className="flex flex-col gap-2 rounded-md bg-gray-950 p-3">
+                  <div className="flex flex-col gap-2 rounded-md bg-gray-975 p-3">
                     <p className="text-sm font-medium text-gray-100">You added {e.label}.</p>
                     <p className="text-xs text-gray-400">
                       Nothing in your CV or profile mentions it. Point us at the experience that supports it — a role, a
@@ -216,7 +216,7 @@ export function ExpertiseStep({ profile, onSaved, onBack }: StepProps) {
                 )}
 
                 {e.supportingEvidence && (
-                  <p className="rounded-md bg-gray-950 p-2 text-xs text-gray-400">{e.supportingEvidence}</p>
+                  <p className="rounded-md bg-gray-975 p-2 text-xs text-gray-400">{e.supportingEvidence}</p>
                 )}
               </div>
             ))

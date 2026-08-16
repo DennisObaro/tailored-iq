@@ -120,7 +120,7 @@ export function QuizStep({ profile, onSaved, onBack }: StepProps) {
                   key={choice}
                   className={cn(
                     "flex cursor-pointer items-start gap-2.5 rounded-lg border p-3 text-sm transition-colors",
-                    selected ? "border-primary-500 bg-primary-500/5 text-gray-50" : "border-gray-800 text-gray-300 hover:bg-gray-850",
+                    selected ? "border-primary-500 bg-primary-500/5 text-gray-50" : "border-gray-800 text-gray-300 hover:bg-gray-900",
                   )}
                 >
                   <input

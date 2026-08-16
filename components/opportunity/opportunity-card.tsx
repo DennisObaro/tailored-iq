@@ -11,7 +11,7 @@ export function OpportunityCard({ listing }: { listing: OpportunityListing }) {
 
   return (
     <Link href={`/expert/opportunities/${opportunity.id}`}>
-      <Card className="flex flex-col gap-2 p-4 transition-colors hover:bg-gray-850">
+      <Card className="flex flex-col gap-2 p-4 transition-colors hover:bg-gray-900">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm font-medium text-gray-50">{opportunity.title}</p>
           <div className="flex items-center gap-1.5">

@@ -18,7 +18,7 @@ export function PlaybookCatalogCard({
   if (owned && playbookId) {
     return (
       <Link href={`/playbooks/${playbookId}`} className="block h-full">
-        <Card className="flex h-full flex-col gap-3 p-5 transition-colors hover:bg-gray-850">
+        <Card className="flex h-full flex-col gap-3 p-5 transition-colors hover:bg-gray-900">
           <div className="flex items-start justify-between gap-2">
             <p className="text-sm font-medium text-gray-50">{template.title}</p>
             <StatusBadge status="owned" />

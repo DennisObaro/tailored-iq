@@ -24,7 +24,7 @@ const NEXT_ACTION_LABEL: Record<ProjectStatus, string> = {
 export function ProjectCard({ project }: { project: Project }) {
   return (
     <Link href={`/projects/${project.id}`}>
-      <Card className="flex flex-col gap-2.5 border-gray-900 bg-gray-950 p-4 transition-colors hover:bg-gray-900">
+      <Card className="flex flex-col gap-2.5 border-gray-900 p-4 transition-colors hover:bg-gray-900">
         <div className="flex items-start justify-between gap-2">
           <p className="text-sm font-medium text-gray-50">{project.title}</p>
           <StatusBadge status={project.status} />

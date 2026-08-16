@@ -288,7 +288,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {metrics.map((metric) => (
           <Link key={metric.label} href={metric.href} className="h-full">
-            <Card className="flex h-full flex-col border-gray-900 bg-gray-950 p-4 transition-colors hover:bg-gray-900">
+            <Card className="flex h-full flex-col border-gray-900 p-4 transition-colors hover:bg-gray-900">
               {metric.value === null ? (
                 <Skeleton className="h-8 w-10" />
               ) : (
@@ -337,7 +337,7 @@ export default function DashboardPage() {
                 </>
               ) : actionItems.length > 0 ? (
                 actionItems.map((item) => (
-                  <Card key={item.id} className="flex items-center gap-3 border-gray-900 bg-gray-950 p-3.5">
+                  <Card key={item.id} className="flex items-center gap-3 border-gray-900 p-3.5">
                     <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gray-850 text-gray-400">
                       <item.icon className="size-4" aria-hidden />
                     </div>
@@ -374,7 +374,7 @@ export default function DashboardPage() {
               ) : upcomingCalls.length > 0 ? (
                 <div className="grid gap-3 sm:grid-cols-2">
                   {upcomingCalls.map(({ consultation, expert }) => (
-                    <Card key={consultation.id} className="flex items-center gap-3 border-gray-900 bg-gray-950 p-4">
+                    <Card key={consultation.id} className="flex items-center gap-3 border-gray-900 p-4">
                       <Avatar
                         firstName={expert.user.firstName}
                         lastName={expert.user.lastName}

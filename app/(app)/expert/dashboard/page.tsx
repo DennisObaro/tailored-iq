@@ -192,7 +192,7 @@ export default function ExpertDashboardPage() {
           <div className="grid gap-3 sm:grid-cols-2">
             {activeProjects.slice(0, 4).map((p) => (
               <Link key={p.id} href={`/expert/projects/${p.id}`}>
-                <Card className="p-4 transition-colors hover:bg-gray-850">
+                <Card className="p-4 transition-colors hover:bg-gray-900">
                   <StatusBadge status={p.status} />
                   <p className="mt-2 text-sm font-medium text-gray-100">{p.title}</p>
                   <p className="mt-1 line-clamp-2 text-xs text-gray-400">{p.challenge}</p>

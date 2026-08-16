@@ -17,7 +17,7 @@ export function ContributionCard({
   href?: string;
 }) {
   const body = (
-    <Card className="flex flex-col gap-2 p-4 transition-colors hover:bg-gray-850">
+    <Card className="flex flex-col gap-2 p-4 transition-colors hover:bg-gray-900">
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="outline">{CONTRIBUTION_TYPE_LABELS[contribution.type]}</Badge>
         <StatusBadge status={contribution.status} />

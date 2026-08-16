@@ -27,7 +27,7 @@ export function ExpertCard({
 
   return (
     <Link href={href} className="block h-full">
-      <Card className="flex h-full flex-col gap-3 border-gray-900 bg-gray-950 p-4 transition-colors hover:bg-gray-900">
+      <Card className="flex h-full flex-col gap-3 border-gray-900 p-4 transition-colors hover:bg-gray-900">
         {reason && (
           <Badge
             variant="primary"

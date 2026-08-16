@@ -33,7 +33,7 @@ export default function ReportsPage() {
         <div className="flex flex-col gap-3">
           {reports.map((r) => (
             <Link key={r.id} href={`/reports/${r.id}`}>
-              <Card className="flex items-center justify-between p-4 transition-colors hover:bg-gray-850">
+              <Card className="flex items-center justify-between p-4 transition-colors hover:bg-gray-900">
                 <div>
                   <p className="text-sm font-medium text-gray-50">{r.problemSummary.slice(0, 90)}...</p>
                   <p className="mt-1 text-xs text-gray-500">Generated {formatDate(r.createdAt)}</p>

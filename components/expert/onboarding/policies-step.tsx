@@ -60,7 +60,7 @@ export function PoliciesStep({ profile, onSaved, onBack }: StepProps) {
           {EXPERT_POLICIES.map((policy) => (
             <label
               key={policy.id}
-              className="flex cursor-pointer items-start gap-3 rounded-lg p-3 transition-colors hover:bg-gray-850"
+              className="flex cursor-pointer items-start gap-3 rounded-lg p-3 transition-colors hover:bg-gray-900"
             >
               <Checkbox
                 className="mt-0.5"

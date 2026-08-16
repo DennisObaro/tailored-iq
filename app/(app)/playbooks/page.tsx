@@ -94,7 +94,7 @@ export default function PlaybooksPage() {
           <div className="flex flex-col gap-3">
             {playbooks.map((p) => (
               <Link key={p.id} href={`/playbooks/${p.id}`}>
-                <Card className="flex items-center justify-between p-4 transition-colors hover:bg-gray-850">
+                <Card className="flex items-center justify-between p-4 transition-colors hover:bg-gray-900">
                   <div>
                     <p className="text-sm font-medium text-gray-50">{p.title}</p>
                     <p className="mt-1 text-xs text-gray-500">

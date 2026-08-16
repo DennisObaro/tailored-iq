@@ -263,7 +263,7 @@ export function EvidenceStep({ profile, onSaved, onBack }: StepProps) {
                       type="button"
                       onClick={() => remove(e.id)}
                       aria-label={`Remove ${e.label}`}
-                      className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-850 hover:text-danger-400"
+                      className="shrink-0 rounded p-1 text-gray-500 hover:bg-gray-900 hover:text-danger-400"
                     >
                       <Trash2 className="size-4" aria-hidden />
                     </button>

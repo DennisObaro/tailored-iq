@@ -51,7 +51,7 @@ export default function ConversationsPage() {
             const expert = experts[c.expertId];
             return (
               <Link key={c.id} href={`/consultations/${c.id}`}>
-                <Card className="flex items-center gap-3 p-4 transition-colors hover:bg-gray-850">
+                <Card className="flex items-center gap-3 p-4 transition-colors hover:bg-gray-900">
                   {expert && <Avatar firstName={expert.firstName} lastName={expert.lastName} />}
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-100">

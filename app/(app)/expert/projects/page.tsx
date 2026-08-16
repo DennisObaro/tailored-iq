@@ -87,7 +87,7 @@ export default function ExpertProjectsPage() {
               const listing = listings.find((l) => l.opportunity.projectId === project.id);
               return (
                 <Link key={project.id} href={`/expert/projects/${project.id}`}>
-                  <Card className="flex flex-col gap-2 p-4 transition-colors hover:bg-gray-850">
+                  <Card className="flex flex-col gap-2 p-4 transition-colors hover:bg-gray-900">
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusBadge status={listing?.stage ?? project.status} />
                       {project.category && <Badge variant="outline">{project.category}</Badge>}

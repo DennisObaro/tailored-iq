@@ -123,7 +123,7 @@ export function OptionCard({
       }}
       className={cn(
         "cursor-pointer p-4 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500",
-        selected ? "border-primary-500 bg-primary-500/5" : "hover:bg-gray-850",
+        selected ? "border-primary-500 bg-primary-500/5" : "hover:bg-gray-900",
       )}
     >
       <p className={cn("text-sm font-medium", selected ? "text-primary-400" : "text-gray-100")}>{title}</p>
