@@ -338,19 +338,18 @@ export default function DashboardPage() {
               ) : actionItems.length > 0 ? (
                 actionItems.map((item) => (
                   <Card key={item.id} className="flex items-center gap-3 border-gray-900 bg-gray-950 p-3.5">
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-500/15 text-primary-400">
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gray-850 text-gray-400">
                       <item.icon className="size-4" aria-hidden />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-gray-50">{item.title}</p>
                       <p className="truncate text-xs text-gray-400">{item.description}</p>
                     </div>
-                    <Link
-                      href={item.href}
-                      className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-primary-400 hover:text-primary-300"
-                    >
-                      {item.ctaLabel} <ArrowRight className="size-3" />
-                    </Link>
+                    <Button asChild size="sm" variant="secondary" className="shrink-0 gap-1">
+                      <Link href={item.href}>
+                        {item.ctaLabel} <ArrowRight className="size-3" />
+                      </Link>
+                    </Button>
                   </Card>
                 ))
               ) : (
