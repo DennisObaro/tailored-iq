@@ -12,14 +12,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { PlaybookActionItemRow } from "@/components/playbook/playbook-action-item";
+import { useSessionStore } from "@/lib/store/use-session-store";
 
 export default function PlaybookDetailPage() {
+  const user = useSessionStore((s) => s.user);
   const { playbookId } = useParams<{ playbookId: string }>();
   const [playbook, setPlaybook] = useState<Playbook | null | undefined>(undefined);
 
   useEffect(() => {
-    playbooksApi.getPlaybook(playbookId).then(setPlaybook);
-  }, [playbookId]);
+    if (!user) return;
+    playbooksApi.getPlaybook(playbookId, user.id).then(setPlaybook);
+  }, [playbookId, user]);
 
   async function changeStatus(itemId: string, status: "not_started" | "in_progress" | "done") {
     if (!playbook) return;

@@ -12,18 +12,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
+import { useSessionStore } from "@/lib/store/use-session-store";
 
 export default function ReportDetailPage() {
+  const user = useSessionStore((s) => s.user);
   const { reportId } = useParams<{ reportId: string }>();
   const [report, setReport] = useState<Report | null | undefined>(undefined);
   const [project, setProject] = useState<Project | null>(null);
 
   useEffect(() => {
-    reportsApi.getReport(reportId).then(async (r) => {
+    if (!user) return;
+    const viewerId = user.id;
+    reportsApi.getReport(reportId, viewerId).then(async (r) => {
       setReport(r);
-      if (r) setProject(await projectsApi.getProject(r.projectId));
+      if (r) setProject(await projectsApi.getProject(r.projectId, viewerId));
     });
-  }, [reportId]);
+  }, [reportId, user]);
 
   if (report === undefined) {
     return (

@@ -5,12 +5,14 @@ import {
   Briefcase01Icon as Briefcase01Stroke,
   ClipboardIcon as ClipboardStroke,
   UserCircle02Icon as UserCircle02Stroke,
+  Award01Icon as Award01Stroke,
 } from "@hugeicons-pro/core-stroke-rounded";
 import {
   DashboardSquare01Icon as DashboardSquare01Solid,
   Briefcase01Icon as Briefcase01Solid,
   ClipboardIcon as ClipboardSolid,
   UserCircle02Icon as UserCircle02Solid,
+  Award01Icon as Award01Solid,
 } from "@hugeicons-pro/core-solid-rounded";
 import {
   HomeIconStroke,
@@ -50,6 +52,7 @@ const DashboardSquare01: IconPair = { Stroke: hugeiconsAdapter(DashboardSquare01
 const Briefcase01: IconPair = { Stroke: hugeiconsAdapter(Briefcase01Stroke), Solid: hugeiconsAdapter(Briefcase01Solid) };
 const Clipboard: IconPair = { Stroke: hugeiconsAdapter(ClipboardStroke), Solid: hugeiconsAdapter(ClipboardSolid) };
 const UserCircle02: IconPair = { Stroke: hugeiconsAdapter(UserCircle02Stroke), Solid: hugeiconsAdapter(UserCircle02Solid) };
+const Award01: IconPair = { Stroke: hugeiconsAdapter(Award01Stroke), Solid: hugeiconsAdapter(Award01Solid) };
 
 // Figma-sourced (file QmKaB3nn1udOAZvu5JAgOE, frame 747:518).
 const Home: IconPair = { Stroke: HomeIconStroke, Solid: HomeIconSolid };
@@ -69,10 +72,14 @@ export const CLIENT_NAV: NavItem[] = [
 ];
 
 export const EXPERT_NAV: NavItem[] = [
-  { label: "Overview", href: "/expert/dashboard", icon: DashboardSquare01 },
+  { label: "Home", href: "/expert/dashboard", icon: Home },
   { label: "Opportunities", href: "/expert/opportunities", icon: Briefcase01 },
-  { label: "Contributions", href: "/expert/contributions/new", icon: Clipboard },
-  { label: "Profile", href: "/expert/onboarding", icon: UserCircle02 },
+  { label: "Projects", href: "/expert/projects", icon: DashboardSquare01 },
+  { label: "Calls", href: "/expert/calls", icon: Conversations },
+  { label: "Contributions", href: "/expert/contributions", icon: Clipboard },
+  { label: "Insights", href: "/expert/insights", icon: Reports },
+  { label: "Rewards", href: "/expert/rewards", icon: Award01 },
+  { label: "Profile", href: "/expert/profile", icon: UserCircle02 },
 ];
 
 // Unchanged: dropdown menu item, not a persistent-selection nav link — stays lucide-react.

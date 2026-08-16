@@ -1,7 +1,6 @@
-import type { User, ClientProfile, ExpertProfile, Role, SuggestedExpertise } from "@/lib/types";
-import { simulateNetwork, simulateGeneration, ApiError } from "./client";
+import type { User, ClientProfile, ExpertProfile, Role } from "@/lib/types";
+import { simulateNetwork, ApiError } from "./client";
 import { db } from "./_db";
-import { suggestExpertise } from "@/lib/ai-sim/expertise-suggester";
 
 export async function getUser(userId: string): Promise<User | null> {
   return simulateNetwork(() => db.get().users.find((u) => u.id === userId) ?? null, {
@@ -63,23 +62,9 @@ export async function getExpertProfile(userId: string): Promise<ExpertProfile | 
   });
 }
 
-export async function analyzeExpertise(
-  bio: string,
-  currentRole: string,
-  yearsExperience: number,
-): Promise<SuggestedExpertise[]> {
-  return simulateGeneration(() => suggestExpertise(bio, currentRole, yearsExperience), {
-    latency: [700, 1200],
-  });
-}
-
-export async function upsertExpertProfile(profile: ExpertProfile): Promise<ExpertProfile> {
-  return simulateNetwork(() =>
-    db.update((d) => {
-      const idx = d.expertProfiles.findIndex((p) => p.userId === profile.userId);
-      if (idx >= 0) d.expertProfiles[idx] = profile;
-      else d.expertProfiles.push(profile);
-      return profile;
-    }),
-  );
-}
+/**
+ * Expert profiles are created and mutated only through lib/api/expert-onboarding.ts,
+ * which enforces the referral gate, the evidence checks and the approval
+ * state machine. There is deliberately no generic upsert here — one would
+ * be a way around all of that.
+ */

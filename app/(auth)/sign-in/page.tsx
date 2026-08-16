@@ -112,6 +112,13 @@ export default function SignInPage() {
           Create account
         </Link>
       </p>
+
+      <p className="text-center text-sm text-gray-400">
+        Invited to join as an expert?{" "}
+        <Link href="/become-an-expert" className="font-medium text-primary-400 hover:text-primary-300">
+          Enter your referral code
+        </Link>
+      </p>
     </div>
   );
 }

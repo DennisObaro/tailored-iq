@@ -21,8 +21,10 @@ import { ProjectTimeline } from "@/components/project/project-timeline";
 import { ExpertCard } from "@/components/expert/expert-card";
 import { formatDate } from "@/lib/utils/format";
 import { LOADING_COPY } from "@/lib/constants/loading-copy";
+import { useSessionStore } from "@/lib/store/use-session-store";
 
 export default function ProjectDetailPage() {
+  const user = useSessionStore((s) => s.user);
   const { projectId } = useParams<{ projectId: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [brief, setBrief] = useState<Brief | null>(null);
@@ -35,10 +37,15 @@ export default function ProjectDetailPage() {
   const matchRequestedRef = useRef(false);
 
   async function load() {
-    const p = await projectsApi.getProject(projectId);
-    if (!p) return;
+    if (!user) return;
+    const p = await projectsApi.getProject(projectId, user.id);
+    if (!p) {
+      // Not this client's project (or gone) — leave the not-found state showing.
+      setLoading(false);
+      return;
+    }
     setProject(p);
-    if (p.briefId) setBrief(await briefsApi.getBrief(p.briefId));
+    if (p.briefId) setBrief(await briefsApi.getBrief(p.briefId, user.id));
     if (p.matchedExpertIds.length > 0) setMatchedExperts(await expertsApi.getExpertsByIds(p.matchedExpertIds));
     setLoading(false);
   }
@@ -46,7 +53,7 @@ export default function ProjectDetailPage() {
   useEffect(() => {
     Promise.resolve().then(() => load());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
+  }, [projectId, user]);
 
   useEffect(() => {
     if (project?.status === "analysing" && !project.reportId && !reportRequestedRef.current) {

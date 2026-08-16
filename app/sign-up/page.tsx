@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { LogoMark } from "@/components/icons/nav-icons";
@@ -11,6 +11,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { TestimonialCarousel } from "@/components/auth/testimonial-carousel";
 import { DotGridBackground } from "@/components/auth/dot-grid-background";
 import { useSessionStore } from "@/lib/store/use-session-store";
+import * as referralsApi from "@/lib/api/expert-referrals";
+import * as expertOnboardingApi from "@/lib/api/expert-onboarding";
+import { clearPendingReferralCode, getPendingReferralCode } from "@/lib/utils/referral-session";
 import { cn } from "@/lib/utils/cn";
 
 interface FormErrors {
@@ -38,9 +41,19 @@ function validatePassword(value: string) {
   return undefined;
 }
 
-export default function SignUpPage() {
+function SignUpForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const signUp = useSessionStore((s) => s.signUp);
+
+  /**
+   * Set only when arriving from the verified referral gate. It decides
+   * which account gets created — an expert signup still creates one
+   * ordinary account, just with the expert role attached and the referral
+   * bound to it.
+   */
+  const referralCode = searchParams.get("referral") ?? getPendingReferralCode();
+  const isExpertSignUp = !!referralCode;
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -86,7 +99,22 @@ export default function SignUpPage() {
 
     setSubmitting(true);
     try {
-      await signUp({ firstName, lastName, email, password, roles: ["client"] });
+      const user = await signUp({
+        firstName,
+        lastName,
+        email,
+        password,
+        roles: isExpertSignUp ? ["expert"] : ["client"],
+      });
+
+      if (isExpertSignUp && referralCode) {
+        await referralsApi.claimReferralCode(referralCode, user.id, user.email);
+        await expertOnboardingApi.startExpertOnboarding(user.id, referralCode);
+        clearPendingReferralCode();
+        router.push("/expert/onboarding");
+        return;
+      }
+
       router.push("/onboarding/profile");
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Something went wrong.");
@@ -103,9 +131,13 @@ export default function SignUpPage() {
             <LogoMark className="h-9 w-auto text-gray-950" />
           </span>
 
-          <h1 className="mt-[50px] w-full text-xl font-semibold text-gray-50">Create your TailoredIQ account</h1>
+          <h1 className="mt-[50px] w-full text-xl font-semibold text-gray-50">
+            {isExpertSignUp ? "Create your expert account" : "Create your TailoredIQ account"}
+          </h1>
           <p className="mt-2.5 w-full text-sm text-gray-400">
-            Get strategic guidance grounded in real-world experience.
+            {isExpertSignUp
+              ? "Your referral code is verified. This takes a minute — the rest of your profile comes next."
+              : "Get strategic guidance grounded in real-world experience."}
           </p>
 
           <form onSubmit={onSubmit} noValidate className="mt-8 flex w-full flex-col gap-4">
@@ -234,5 +266,13 @@ export default function SignUpPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-975" />}>
+      <SignUpForm />
+    </Suspense>
   );
 }

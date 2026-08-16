@@ -1,13 +1,31 @@
 import type { Playbook } from "@/lib/types";
 import { simulateGeneration, ApiError } from "./client";
 import { db } from "./_db";
+import { canViewProject } from "./_access";
 import { id } from "@/lib/utils/id";
 import { generatePlaybook } from "@/lib/ai-sim/playbook-generator";
 
-export async function getPlaybook(playbookId: string): Promise<Playbook | null> {
-  return simulateGeneration(() => db.get().playbooks.find((p) => p.id === playbookId) ?? null, {
-    latency: [80, 200],
-  });
+export async function getPlaybook(playbookId: string, viewerId?: string): Promise<Playbook | null> {
+  return simulateGeneration(
+    () => {
+      const database = db.get();
+      const playbook = database.playbooks.find((p) => p.id === playbookId) ?? null;
+      if (!playbook) return null;
+      /**
+       * A catalog-unlocked playbook has no project — it belongs to whoever
+       * unlocked it, so authorisation runs against the unlock record.
+       */
+      if (viewerId) {
+        if (playbook.projectId) {
+          if (!canViewProject(database, playbook.projectId, viewerId)) return null;
+        } else if (!database.playbookUnlocks.some((u) => u.playbookId === playbook.id && u.userId === viewerId)) {
+          return null;
+        }
+      }
+      return playbook;
+    },
+    { latency: [80, 200] },
+  );
 }
 
 export async function listPlaybooks(clientId: string): Promise<Playbook[]> {

@@ -12,6 +12,12 @@ import type {
   Review,
   Notification,
   Opportunity,
+  ExpertReferral,
+  ExpertPolicyAcceptance,
+  ExpertQuizAttempt,
+  ExpertPointsTransaction,
+  ExpertPeerReview,
+  CallForInsight,
 } from "@/lib/types";
 import { seedDatabase } from "@/lib/mock-data/fixtures/seed";
 
@@ -45,9 +51,21 @@ export interface Database {
   notifications: Notification[];
   opportunities: Opportunity[];
   playbookUnlocks: PlaybookUnlock[];
+  /**
+   * Expert-network tables. Evidence, expertise and availability are
+   * deliberately NOT separate tables — they only ever exist as part of one
+   * ExpertProfile and are stored on it, so there's no second source of
+   * truth for the same facts.
+   */
+  expertReferrals: ExpertReferral[];
+  expertPolicyAcceptances: ExpertPolicyAcceptance[];
+  expertQuizAttempts: ExpertQuizAttempt[];
+  expertPointsTransactions: ExpertPointsTransaction[];
+  expertPeerReviews: ExpertPeerReview[];
+  callsForInsight: CallForInsight[];
 }
 
-const STORAGE_KEY = "tiq_db_v1";
+const STORAGE_KEY = "tiq_db_v2";
 const SESSION_KEY = "tiq_session_v1";
 
 let cache: Database | null = null;

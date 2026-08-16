@@ -1,20 +1,33 @@
 import type { Brief } from "@/lib/types";
 import { simulateGeneration, ApiError } from "./client";
 import { db } from "./_db";
+import { canViewProject } from "./_access";
 import { id } from "@/lib/utils/id";
 import { generateBrief } from "@/lib/ai-sim/brief-generator";
 import { categorizeBrief } from "@/lib/ai-sim/categorizer";
 
-export async function getBrief(briefId: string): Promise<Brief | null> {
-  return simulateGeneration(() => db.get().briefs.find((b) => b.id === briefId) ?? null, {
-    latency: [80, 200],
-  });
+export async function getBrief(briefId: string, viewerId?: string): Promise<Brief | null> {
+  return simulateGeneration(
+    () => {
+      const database = db.get();
+      const brief = database.briefs.find((b) => b.id === briefId) ?? null;
+      if (!brief) return null;
+      if (viewerId && !canViewProject(database, brief.projectId, viewerId)) return null;
+      return brief;
+    },
+    { latency: [80, 200] },
+  );
 }
 
-export async function getBriefByProject(projectId: string): Promise<Brief | null> {
-  return simulateGeneration(() => db.get().briefs.find((b) => b.projectId === projectId) ?? null, {
-    latency: [80, 200],
-  });
+export async function getBriefByProject(projectId: string, viewerId?: string): Promise<Brief | null> {
+  return simulateGeneration(
+    () => {
+      const database = db.get();
+      if (viewerId && !canViewProject(database, projectId, viewerId)) return null;
+      return database.briefs.find((b) => b.projectId === projectId) ?? null;
+    },
+    { latency: [80, 200] },
+  );
 }
 
 export async function createBriefFromConversation(projectId: string): Promise<Brief> {

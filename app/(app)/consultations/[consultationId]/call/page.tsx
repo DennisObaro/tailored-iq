@@ -27,7 +27,7 @@ export default function CallPage() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const c = await consultationsApi.getConsultation(consultationId);
+      const c = await consultationsApi.getConsultation(consultationId, currentUser?.id);
       if (!c || cancelled) return;
       setConsultation(c);
       const e = await usersApi.getUser(c.expertId);
@@ -38,7 +38,7 @@ export default function CallPage() {
     return () => {
       cancelled = true;
     };
-  }, [consultationId]);
+  }, [consultationId, currentUser?.id]);
 
   useEffect(() => {
     if (!consultation) return;

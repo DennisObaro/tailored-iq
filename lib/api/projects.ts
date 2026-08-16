@@ -1,6 +1,7 @@
 import type { Project, Conversation } from "@/lib/types";
 import { simulateNetwork, ApiError } from "./client";
 import { db } from "./_db";
+import { canViewProject } from "./_access";
 import { id } from "@/lib/utils/id";
 
 export async function listProjects(clientId: string): Promise<Project[]> {
@@ -25,10 +26,21 @@ export async function listProjectsForExpert(expertId: string): Promise<Project[]
   );
 }
 
-export async function getProject(projectId: string): Promise<Project | null> {
-  return simulateNetwork(() => db.get().projects.find((p) => p.id === projectId) ?? null, {
-    latency: [100, 250],
-  });
+/**
+ * Pass `viewerId` whenever the result will be shown to somebody — an
+ * unauthorised read returns null rather than throwing, so a page renders
+ * its ordinary "we couldn't find this" state and nothing confirms that the
+ * project exists.
+ */
+export async function getProject(projectId: string, viewerId?: string): Promise<Project | null> {
+  return simulateNetwork(
+    () => {
+      const database = db.get();
+      if (viewerId && !canViewProject(database, projectId, viewerId)) return null;
+      return database.projects.find((p) => p.id === projectId) ?? null;
+    },
+    { latency: [100, 250] },
+  );
 }
 
 function titleFromChallenge(challenge: string) {

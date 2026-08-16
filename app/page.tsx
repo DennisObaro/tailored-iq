@@ -41,6 +41,12 @@ export default function LandingPage() {
             <Link href="/sign-in">Sign in</Link>
           </Button>
         </div>
+        <p className="mt-6 text-sm text-gray-400">
+          Have experience worth sharing?{" "}
+          <Link href="/become-an-expert" className="font-medium text-primary-400 hover:text-primary-300">
+            Become an expert
+          </Link>
+        </p>
       </main>
 
       <footer className="px-6 py-6 text-center text-xs text-gray-600">

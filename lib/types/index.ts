@@ -7,3 +7,4 @@ export * from "./consultation";
 export * from "./playbook";
 export * from "./opportunity";
 export * from "./notification";
+export * from "./expert";

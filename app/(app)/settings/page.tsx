@@ -59,6 +59,20 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
+          <CardTitle>Expert review queue</CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-between gap-3">
+          <p className="text-sm text-gray-400">
+            Approve or decline experts awaiting verification. Behind an internal admin role in a real deployment.
+          </p>
+          <Button asChild variant="outline" size="sm" className="shrink-0">
+            <Link href="/settings/expert-review">Open</Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Demo data</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-between">

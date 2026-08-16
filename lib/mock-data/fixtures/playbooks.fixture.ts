@@ -144,10 +144,16 @@ export const seedContributions: ExpertContribution[] = [
     projectId: "project_1",
     playbookId: "playbook_1",
     type: "playbook_input",
+    title: "Coach the managers before rolling out self-authored plans",
     content:
       "Before rolling out self-authored plans broadly, invest a short session in manager coaching skills. Without it, managers default back to a checklist mindset and the redesign underperforms.",
     status: "published",
+    peerReviewIds: [],
+    incorporated: true,
+    acceptedAt: d(6),
+    pointsAwarded: 35,
     createdAt: d(6),
+    updatedAt: d(6),
   },
   {
     id: "contribution_6",
@@ -155,9 +161,15 @@ export const seedContributions: ExpertContribution[] = [
     projectId: "project_6",
     playbookId: "playbook_6",
     type: "playbook_input",
+    title: "Start the audit committee small",
     content:
       "Keep the audit committee to two board members plus the CFO initially — investors care more that it exists and meets consistently than about its size.",
     status: "published",
+    peerReviewIds: [],
+    incorporated: true,
+    acceptedAt: d(7),
+    pointsAwarded: 35,
     createdAt: d(7),
+    updatedAt: d(7),
   },
 ];

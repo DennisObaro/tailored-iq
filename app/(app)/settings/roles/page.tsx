@@ -1,31 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Compass, Briefcase, ChevronRight } from "lucide-react";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import * as usersApi from "@/lib/api/users";
+import * as expertApi from "@/lib/api/expert-onboarding";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 export default function RolesSettingsPage() {
   const router = useRouter();
   const user = useSessionStore((s) => s.user);
   const refresh = useSessionStore((s) => s.refresh);
-  const [addingExpert, setAddingExpert] = useState(false);
   const [addingClient, setAddingClient] = useState(false);
+  const [expertStatus, setExpertStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user?.roles.includes("expert")) return;
+    expertApi.getExpertProfile(user.id).then((p) => setExpertStatus(p?.verificationStatus ?? null));
+  }, [user]);
 
   if (!user) return null;
-
-  async function addExpertRole() {
-    setAddingExpert(true);
-    await usersApi.addRole(user!.id, "expert");
-    await usersApi.switchActiveRole(user!.id, "expert");
-    await refresh();
-    setAddingExpert(false);
-    router.push("/expert/onboarding");
-  }
 
   async function addClientRole() {
     setAddingClient(true);
@@ -72,12 +70,23 @@ export default function RolesSettingsPage() {
           <Briefcase className="size-4 text-primary-400" aria-hidden />
           <div>
             <p className="text-sm font-medium text-gray-100">Contribute expertise</p>
-            <p className="text-xs text-gray-500">{user.roles.includes("expert") ? "Active" : "Not active"}</p>
+            <p className="text-xs text-gray-500">
+              {user.roles.includes("expert")
+                ? "Active"
+                : "By invitation only — you'll need a referral code from an existing expert."}
+            </p>
           </div>
         </div>
-        {!user.roles.includes("expert") && (
-          <Button size="sm" variant="outline" loading={addingExpert} onClick={addExpertRole}>
-            Enable
+        {user.roles.includes("expert") ? (
+          expertStatus && <StatusBadge status={expertStatus} />
+        ) : (
+          /**
+           * Deliberately routed through the referral gate rather than
+           * straight to onboarding: enabling a role must never be a way
+           * around the invitation requirement.
+           */
+          <Button asChild size="sm" variant="outline">
+            <Link href="/become-an-expert">Enter referral code</Link>
           </Button>
         )}
       </Card>

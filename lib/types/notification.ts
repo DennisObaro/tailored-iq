@@ -8,7 +8,10 @@ export type NotificationType =
   | "playbook_updated"
   | "expert_onboarding_action"
   | "opportunity_new"
-  | "contribution_added";
+  | "contribution_added"
+  | "expert_status_changed"
+  | "contribution_reviewed"
+  | "peer_review_requested";
 
 export interface Notification {
   id: string;

@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { formatCallWhen, formatRelative, formatCurrency } from "@/lib/utils/format";
+import { helpAreaLabel } from "@/lib/constants/expert";
 
 export default function ExpertProfilePage() {
   const { expertId } = useParams<{ expertId: string }>();
@@ -60,7 +61,17 @@ export default function ExpertProfilePage() {
   }
 
   const { user, profile } = listing;
-  const helpItems = profile.suggestedExpertise.length > 0 ? profile.suggestedExpertise.map((s) => s.label) : profile.expertiseTags;
+  /**
+   * What this expert can help with, in the client's terms: the problems
+   * they selected during onboarding, falling back to expertise areas for
+   * profiles created before help areas existed.
+   */
+  const helpItems =
+    profile.helpAreas.length > 0
+      ? profile.helpAreas.map(helpAreaLabel)
+      : profile.expertise.length > 0
+        ? profile.expertise.map((e) => e.label)
+        : profile.expertiseTags;
   const hasAvailability = profile.availabilitySlots.length > 0;
   const bookHref = projectId ? `/experts/${user.id}/book?projectId=${projectId}` : `/experts/${user.id}/book`;
 

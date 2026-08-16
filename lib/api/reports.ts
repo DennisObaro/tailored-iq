@@ -1,13 +1,21 @@
 import type { Report } from "@/lib/types";
 import { simulateGeneration, ApiError } from "./client";
 import { db } from "./_db";
+import { canViewProject } from "./_access";
 import { id } from "@/lib/utils/id";
 import { generateReport } from "@/lib/ai-sim/report-generator";
 
-export async function getReport(reportId: string): Promise<Report | null> {
-  return simulateGeneration(() => db.get().reports.find((r) => r.id === reportId) ?? null, {
-    latency: [80, 200],
-  });
+export async function getReport(reportId: string, viewerId?: string): Promise<Report | null> {
+  return simulateGeneration(
+    () => {
+      const database = db.get();
+      const report = database.reports.find((r) => r.id === reportId) ?? null;
+      if (!report) return null;
+      if (viewerId && !canViewProject(database, report.projectId, viewerId)) return null;
+      return report;
+    },
+    { latency: [80, 200] },
+  );
 }
 
 export async function listReports(clientId: string): Promise<Report[]> {

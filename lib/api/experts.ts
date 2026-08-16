@@ -1,7 +1,7 @@
 import type { User, ExpertProfile, Project } from "@/lib/types";
 import { simulateNetwork, simulateGeneration, ApiError } from "./client";
 import { db } from "./_db";
-import { matchExperts } from "@/lib/ai-sim/expert-matcher";
+import { matchExperts, scoreExperts } from "@/lib/ai-sim/expert-matcher";
 import { scoreCategories } from "@/lib/ai-sim/categorizer";
 import { id } from "@/lib/utils/id";
 import { listProjects } from "./projects";
@@ -11,8 +11,14 @@ export interface ExpertListing {
   profile: ExpertProfile;
 }
 
+/**
+ * Client-facing listing. Filters to approved experts on the way out —
+ * a pending, restricted or rejected profile is not something a client
+ * should be able to see, search or book (spec §30).
+ */
 function joinExperts(database: ReturnType<typeof db.get>): ExpertListing[] {
   return database.expertProfiles
+    .filter((profile) => profile.verificationStatus === "approved")
     .map((profile) => {
       const user = database.users.find((u) => u.id === profile.userId);
       return user ? { user, profile } : null;
@@ -125,13 +131,59 @@ export async function matchExpertsForProject(projectId: string): Promise<ExpertL
       if (!project) throw new ApiError("Project not found.", "NOT_FOUND");
       const client = d.clientProfiles.find((c) => c.userId === project.clientId);
 
-      const matched = matchExperts(d.expertProfiles, project.category ?? "Strategy", client ? [client.industry] : []);
+      const category = project.category ?? "Strategy";
+      const scored = scoreExperts(
+        d.expertProfiles,
+        category,
+        client ? [client.industry] : [],
+        project.challenge,
+      ).slice(0, 3);
+      const matched = scored.map((m) => m.expert);
 
       const now = new Date().toISOString();
       project.matchedExpertIds = matched.map((e) => e.userId);
       project.status = "expert_matching";
       project.updatedAt = now;
       project.activity.push({ id: id("act"), label: "Experts matched", timestamp: now });
+
+      /**
+       * The other half of matching: each matched expert gets a real
+       * opportunity in their own dashboard. Without this the client sees
+       * "experts matched" while nothing ever reaches the expert side.
+       */
+      for (const match of scored) {
+        const alreadyOffered = d.opportunities.some(
+          (o) => o.projectId === project.id && o.expertId === match.expert.userId,
+        );
+        if (alreadyOffered) continue;
+
+        const opportunityId = id("opportunity");
+        d.opportunities.unshift({
+          id: opportunityId,
+          projectId: project.id,
+          expertId: match.expert.userId,
+          title: project.title,
+          summary: project.challenge,
+          relevanceReason: match.reason,
+          category,
+          requestedContributions: match.expert.willingness.includes("advisory_call")
+            ? ["advisory_call", "playbook_contribution"]
+            : ["review", "contribute_insight"],
+          response: null,
+          offeredContributions: [],
+          createdAt: now,
+        });
+        d.notifications.unshift({
+          id: id("notif"),
+          userId: match.expert.userId,
+          type: "opportunity_new",
+          title: "New opportunity",
+          body: `A leader needs help with "${project.title}".`,
+          linkHref: `/expert/opportunities/${opportunityId}`,
+          read: false,
+          createdAt: now,
+        });
+      }
       d.notifications.unshift({
         id: id("notif"),
         userId: project.clientId,
@@ -303,4 +355,54 @@ export async function getRecommendedExperts(clientId: string, limit = 3): Promis
   }
 
   return { hasChats: projects.length > 0, recommendations };
+}
+
+export interface PeerExpertListing {
+  user: User;
+  profile: ExpertProfile;
+  /** Expertise this peer shares with the viewing expert — the reason to collaborate. */
+  sharedCategories: string[];
+  publishedContributions: number;
+}
+
+/**
+ * Expert-to-expert discovery (spec §22). Deliberately separate from
+ * listExperts: this is the peer view — standing and contribution history
+ * rather than consultation rates and booking.
+ */
+export async function listPeerExperts(viewerId: string, search?: string): Promise<PeerExpertListing[]> {
+  return simulateNetwork(
+    () => {
+      const database = db.get();
+      const viewer = database.expertProfiles.find((p) => p.userId === viewerId);
+      const viewerTags = viewer?.expertiseTags ?? [];
+
+      return database.expertProfiles
+        .filter((p) => p.verificationStatus === "approved" && p.userId !== viewerId)
+        .map((profile): PeerExpertListing | null => {
+          const user = database.users.find((u) => u.id === profile.userId);
+          if (!user) return null;
+          return {
+            user,
+            profile,
+            sharedCategories: profile.expertiseTags.filter((t) => viewerTags.includes(t)),
+            publishedContributions: database.contributions.filter(
+              (c) => c.expertId === profile.userId && c.status === "published",
+            ).length,
+          };
+        })
+        .filter((x): x is PeerExpertListing => x !== null)
+        .filter((listing) => {
+          if (!search) return true;
+          const q = search.toLowerCase();
+          return (
+            `${listing.user.firstName} ${listing.user.lastName}`.toLowerCase().includes(q) ||
+            listing.profile.headline.toLowerCase().includes(q) ||
+            listing.profile.expertiseTags.some((t) => t.toLowerCase().includes(q))
+          );
+        })
+        .sort((a, b) => b.sharedCategories.length - a.sharedCategories.length || b.profile.points - a.profile.points);
+    },
+    { latency: [150, 320] },
+  );
 }

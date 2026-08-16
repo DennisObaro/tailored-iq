@@ -46,6 +46,23 @@ const STATUS_LABELS: Record<string, { label: string; tone: Tone }> = {
   published: { label: "Published", tone: "success" },
   owned: { label: "Owned", tone: "success" },
   locked: { label: "Locked", tone: "neutral" },
+  // Expert engagement stages (lib/types/opportunity.ts)
+  new: { label: "New", tone: "progress" },
+  reviewing: { label: "Reviewing", tone: "progress" },
+  accepted: { label: "Accepted", tone: "success" },
+  contributing: { label: "Contributing", tone: "progress" },
+  call_scheduled: { label: "Call scheduled", tone: "progress" },
+  call_completed: { label: "Call completed", tone: "success" },
+  playbook_contribution: { label: "Playbook contribution", tone: "progress" },
+  declined: { label: "Declined", tone: "neutral" },
+  // Contribution lifecycle (lib/types/expert.ts)
+  changes_requested: { label: "Changes requested", tone: "warning" },
+  // Referral states (lib/types/expert.ts)
+  unused: { label: "Unused", tone: "neutral" },
+  claimed: { label: "Claimed", tone: "progress" },
+  activated: { label: "Activated", tone: "success" },
+  expired: { label: "Expired", tone: "neutral" },
+  revoked: { label: "Withdrawn", tone: "danger" },
 };
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {

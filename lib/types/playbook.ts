@@ -57,14 +57,3 @@ export interface PlaybookTemplate {
   price: number;
   whatsIncluded: string[];
 }
-
-export interface ExpertContribution {
-  id: string;
-  expertId: string;
-  projectId: string;
-  playbookId?: string;
-  type: "insight" | "review" | "playbook_input";
-  content: string;
-  status: "draft" | "submitted" | "under_review" | "approved" | "published";
-  createdAt: string;
-}

@@ -14,6 +14,7 @@ export const seedOpportunities: Opportunity[] = [
     category: "Leadership",
     requestedContributions: ["advisory_call", "playbook_contribution"],
     response: null,
+    offeredContributions: [],
     createdAt: d(19),
   },
   {
@@ -26,6 +27,7 @@ export const seedOpportunities: Opportunity[] = [
     category: "People & Culture",
     requestedContributions: ["advisory_call", "contribute_insight"],
     response: null,
+    offeredContributions: [],
     createdAt: d(20),
   },
   {
@@ -38,6 +40,7 @@ export const seedOpportunities: Opportunity[] = [
     category: "People & Culture",
     requestedContributions: ["advisory_call"],
     response: null,
+    offeredContributions: [],
     createdAt: d(20),
   },
 ];
