@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Compass, Briefcase, ChevronRight } from "lucide-react";
+import { Compass, Briefcase, ChevronRight } from "@/components/icons";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import * as usersApi from "@/lib/api/users";
 import * as expertApi from "@/lib/api/expert-onboarding";

@@ -1,4 +1,4 @@
-import { Star, MapPin, Building2, Clock } from "lucide-react";
+import { StarFilled, MapPin, Building2, Clock } from "@/components/icons";
 import type { ExpertProfile, User } from "@/lib/types";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +56,7 @@ export function ExpertProfilePreview({
               )}
               {profile.reviewCount > 0 && (
                 <span className="flex items-center gap-1.5">
-                  <Star className="size-3.5 fill-primary-400 text-primary-400" aria-hidden />
+                  <StarFilled className="size-3.5 text-primary-400" aria-hidden />
                   {profile.rating.toFixed(1)} ({profile.reviewCount})
                 </span>
               )}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight } from "@/components/icons";
 import type { Playbook } from "@/lib/types";
 import * as playbooksApi from "@/lib/api/playbooks";
 import { Badge } from "@/components/ui/badge";

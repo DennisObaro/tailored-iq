@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, ChevronRight, Lock } from "lucide-react";
+import { CheckCircle2, ChevronRight, Lock } from "@/components/icons";
 import type { PlaybookTemplate } from "@/lib/types";
 import * as catalogApi from "@/lib/api/playbook-catalog";
 import { useSessionStore } from "@/lib/store/use-session-store";

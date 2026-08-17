@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mic, MicOff, Video, VideoOff, PhoneOff } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, PhoneOff } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { formatDuration } from "@/lib/utils/format";
 

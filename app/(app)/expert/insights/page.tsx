@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BookOpen, Users } from "lucide-react";
+import { BookOpen, Users } from "@/components/icons";
 import type { ExpertContributionType } from "@/lib/types";
 import * as contributionsApi from "@/lib/api/contributions";
 import * as expertsApi from "@/lib/api/experts";

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, ShieldCheck } from "lucide-react";
+import { ChevronRight, ShieldCheck } from "@/components/icons";
 import * as expertApi from "@/lib/api/expert-onboarding";
 import { ExpertProfilePreview } from "@/components/expert/expert-profile-preview";
 import { Card } from "@/components/ui/card";

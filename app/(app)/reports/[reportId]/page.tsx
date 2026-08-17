@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Users, BookOpen, FileText, ChevronRight } from "lucide-react";
+import { Users, BookOpen, FileText, ChevronRight } from "@/components/icons";
 import type { Report, Project } from "@/lib/types";
 import * as reportsApi from "@/lib/api/reports";
 import * as projectsApi from "@/lib/api/projects";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Award, Copy, Check, UserPlus } from "lucide-react";
+import { Award, Copy, Check, UserPlus } from "@/components/icons";
 import type { ExpertPointsTransaction } from "@/lib/types";
 import * as pointsApi from "@/lib/api/expert-points";
 import * as referralsApi from "@/lib/api/expert-referrals";

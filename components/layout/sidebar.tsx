@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ChevronDown, LogOut, Settings } from "lucide-react";
+import { ChevronDown, LogOut, Settings } from "@/components/icons";
 import { getNavItems, SETTINGS_NAV } from "@/lib/constants/nav";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import { useUiStore } from "@/lib/store/use-ui-store";

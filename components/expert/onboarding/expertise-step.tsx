@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, Plus, X, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Sparkles, Plus, X, ShieldAlert, ShieldCheck } from "@/components/icons";
 import type { ExpertExpertise } from "@/lib/types";
 import * as api from "@/lib/api/expert-onboarding";
 import { CATEGORIES } from "@/lib/constants/categories";

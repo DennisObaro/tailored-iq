@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { Check } from "@/components/icons";
 import { PROJECT_STATUS_ORDER, PROJECT_TIMELINE_STEPS, type ProjectStatus } from "@/lib/types";
 import { cn } from "@/lib/utils/cn";
 

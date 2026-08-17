@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Save, Send } from "lucide-react";
+import { Save, Send } from "@/components/icons";
 import type { CallForInsight, ExpertContributionType, ExpertProfile, Project } from "@/lib/types";
 import * as projectsApi from "@/lib/api/projects";
 import * as contributionsApi from "@/lib/api/contributions";

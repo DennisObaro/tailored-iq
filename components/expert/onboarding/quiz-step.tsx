@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, XCircle, RotateCcw } from "lucide-react";
+import { CheckCircle2, XCircle, RotateCcw } from "@/components/icons";
 import * as api from "@/lib/api/expert-onboarding";
 import { QUIZ_PASS_MARK, QUIZ_QUESTIONS } from "@/lib/constants/expert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

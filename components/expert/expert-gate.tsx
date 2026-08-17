@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Lock } from "lucide-react";
+import { Lock } from "@/components/icons";
 import type { ExpertProfile } from "@/lib/types";
 import { getExpertAccess, missingSteps } from "@/lib/utils/expert-access";
 import { ONBOARDING_STEPS } from "@/lib/constants/expert";

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RotateCcw, AlertTriangle, ChevronRight } from "lucide-react";
+import { RotateCcw, AlertTriangle, ChevronRight } from "@/components/icons";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 

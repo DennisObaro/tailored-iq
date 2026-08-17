@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Circle, Loader2, Clock } from "lucide-react";
+import { CheckCircle2, Circle, Loader2, Clock } from "@/components/icons";
 import type { ExpertProfile } from "@/lib/types";
 import * as expertApi from "@/lib/api/expert-onboarding";
 import { useSessionStore } from "@/lib/store/use-session-store";

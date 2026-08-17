@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BookOpen } from "lucide-react";
+import { BookOpen } from "@/components/icons";
 import type { Playbook, PlaybookTemplate } from "@/lib/types";
 import * as playbooksApi from "@/lib/api/playbooks";
 import * as catalogApi from "@/lib/api/playbook-catalog";

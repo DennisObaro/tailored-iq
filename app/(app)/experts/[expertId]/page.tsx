@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Star, ExternalLink, Calendar, ChevronRight } from "lucide-react";
+import { Star, StarFilled, ExternalLink, Calendar, ChevronRight } from "@/components/icons";
 import * as expertsApi from "@/lib/api/experts";
 import type { ExpertListing } from "@/lib/api/experts";
 import * as consultationsApi from "@/lib/api/consultations";
@@ -112,7 +112,7 @@ export default function ExpertProfilePage() {
               <span className="inline-flex items-center gap-1 align-middle text-gray-300">
                 {profile.reviewCount > 0 ? (
                   <>
-                    <Star className="size-3.5 fill-current text-primary-400" aria-hidden />
+                    <StarFilled className="size-3.5 text-primary-400" aria-hidden />
                     {profile.rating.toFixed(1)} from {profile.reviewCount} reviews
                   </>
                 ) : (
@@ -231,9 +231,13 @@ export default function ExpertProfilePage() {
                         <span className="shrink-0 text-xs text-gray-500">{formatRelative(review.createdAt)}</span>
                       </div>
                       <span className="mt-0.5 flex items-center gap-0.5 text-primary-400">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} className={`size-3 ${i < review.rating ? "fill-current" : "text-gray-700"}`} aria-hidden />
-                        ))}
+                        {Array.from({ length: 5 }).map((_, i) =>
+                          i < review.rating ? (
+                            <StarFilled key={i} className="size-3" aria-hidden />
+                          ) : (
+                            <Star key={i} className="size-3 text-gray-700" aria-hidden />
+                          ),
+                        )}
                       </span>
                       <p className="mt-1.5 text-sm leading-relaxed text-gray-300">{review.comment}</p>
                     </div>

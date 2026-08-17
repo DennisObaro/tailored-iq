@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, Send } from "lucide-react";
+import { Eye, Send } from "@/components/icons";
 import type { ExpertOnboardingStep, User } from "@/lib/types";
 import * as api from "@/lib/api/expert-onboarding";
 import { ONBOARDING_STEPS, REQUIRED_STEPS } from "@/lib/constants/expert";

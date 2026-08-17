@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, CheckCircle2 } from "lucide-react";
+import { BookOpen, CheckCircle2 } from "@/components/icons";
 import type { Brief, Conversation, Project } from "@/lib/types";
 import * as projectsApi from "@/lib/api/projects";
 import * as conversationsApi from "@/lib/api/conversations";

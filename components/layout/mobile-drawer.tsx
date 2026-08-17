@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+import { X } from "@/components/icons";
 import { useUiStore } from "@/lib/store/use-ui-store";
 import { Sidebar } from "./sidebar";
 

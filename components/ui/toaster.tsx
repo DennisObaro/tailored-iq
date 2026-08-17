@@ -1,7 +1,7 @@
 "use client";
 
 import * as Toast from "@radix-ui/react-toast";
-import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
+import { CheckCircle2, AlertCircle, Info, X } from "@/components/icons";
 import { useUiStore } from "@/lib/store/use-ui-store";
 import { cn } from "@/lib/utils/cn";
 

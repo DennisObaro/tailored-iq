@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Video, ShieldCheck, Star, ChevronRight, HandHeart } from "lucide-react";
+import { Video, ShieldCheck, Star, StarFilled, ChevronRight, HandHeart } from "@/components/icons";
 import type { Consultation, ExpertWillingness, User, Review } from "@/lib/types";
 import * as consultationsApi from "@/lib/api/consultations";
 import * as usersApi from "@/lib/api/users";
@@ -32,7 +32,11 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((n) => (
         <button key={n} onClick={() => onChange(n)} aria-label={`${n} star${n > 1 ? "s" : ""}`} type="button">
-          <Star className={`size-5 ${n <= value ? "fill-primary-400 text-primary-400" : "text-gray-700"}`} />
+          {n <= value ? (
+            <StarFilled className="size-5 text-primary-400" />
+          ) : (
+            <Star className="size-5 text-gray-700" />
+          )}
         </button>
       ))}
     </div>

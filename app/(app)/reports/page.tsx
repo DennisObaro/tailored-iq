@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FileText } from "lucide-react";
+import { FileText } from "@/components/icons";
 import type { Report } from "@/lib/types";
 import * as reportsApi from "@/lib/api/reports";
 import { useSessionStore } from "@/lib/store/use-session-store";

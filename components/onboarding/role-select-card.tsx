@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { IconComponent } from "@/components/icons";
 import { InteractiveCard } from "@/components/ui/card";
 import { cn } from "@/lib/utils/cn";
 
@@ -9,7 +9,7 @@ export function RoleSelectCard({
   selected,
   onSelect,
 }: {
-  icon: LucideIcon;
+  icon: IconComponent;
   title: string;
   description: string;
   selected: boolean;

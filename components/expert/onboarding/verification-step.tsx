@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ShieldCheck, FileText, Link2, Briefcase, UserCheck } from "lucide-react";
+import { ShieldCheck, FileText, Link2, Briefcase, UserCheck } from "@/components/icons";
 import * as api from "@/lib/api/expert-onboarding";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

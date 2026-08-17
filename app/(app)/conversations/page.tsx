@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { MessagesSquare } from "lucide-react";
+import { MessagesSquare } from "@/components/icons";
 import type { Consultation, User } from "@/lib/types";
 import * as consultationsApi from "@/lib/api/consultations";
 import * as usersApi from "@/lib/api/users";

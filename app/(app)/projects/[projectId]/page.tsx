@@ -10,7 +10,7 @@ import * as reportsApi from "@/lib/api/reports";
 import * as expertsApi from "@/lib/api/experts";
 import type { ExpertListing } from "@/lib/api/experts";
 import * as playbooksApi from "@/lib/api/playbooks";
-import { BookOpen, ChevronRight } from "lucide-react";
+import { BookOpen, ChevronRight } from "@/components/icons";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

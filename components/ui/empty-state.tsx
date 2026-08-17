@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { IconComponent } from "@/components/icons";
 import { cn } from "@/lib/utils/cn";
 
 export function EmptyState({
@@ -8,7 +8,7 @@ export function EmptyState({
   action,
   className,
 }: {
-  icon?: LucideIcon;
+  icon?: IconComponent;
   title: string;
   description?: string;
   action?: React.ReactNode;

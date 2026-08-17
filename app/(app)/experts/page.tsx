@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, Sparkles, Users } from "lucide-react";
+import { Search, Sparkles, Users } from "@/components/icons";
 import * as expertsApi from "@/lib/api/experts";
 import type { ExpertListing, RecommendedExpertsResult } from "@/lib/api/experts";
 import { ExpertCard } from "@/components/expert/expert-card";

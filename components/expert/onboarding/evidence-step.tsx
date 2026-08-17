@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { FileText, Link2, Trash2, Upload, Sparkles } from "lucide-react";
+import { FileText, Link2, Trash2, Upload, Sparkles } from "@/components/icons";
 import type { ExpertEvidence } from "@/lib/types";
 import * as api from "@/lib/api/expert-onboarding";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

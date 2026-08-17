@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FolderKanban } from "lucide-react";
+import { FolderKanban } from "@/components/icons";
 import type { Project } from "@/lib/types";
 import * as projectsApi from "@/lib/api/projects";
 import { useSessionStore } from "@/lib/store/use-session-store";

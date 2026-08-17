@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Award, Briefcase, ClipboardList, PenLine, Star, Users, Video } from "lucide-react";
+import { ArrowRight, Award, Briefcase, ClipboardList, PenLine, StarFilled, Users, Video } from "@/components/icons";
 import type { Consultation, ExpertContribution, ExpertProfile, Project } from "@/lib/types";
 import * as expertApi from "@/lib/api/expert-onboarding";
 import * as opportunitiesApi from "@/lib/api/opportunities";
@@ -274,7 +274,7 @@ export default function ExpertDashboardPage() {
             <p className="text-xs text-gray-500">Client feedback</p>
             {profile.reviewCount > 0 ? (
               <p className="mt-1 flex items-center gap-1.5 text-lg font-semibold text-gray-50">
-                <Star className="size-4 fill-primary-400 text-primary-400" aria-hidden />
+                <StarFilled className="size-4 text-primary-400" aria-hidden />
                 {profile.rating.toFixed(1)}
                 <span className="text-sm font-normal text-gray-500">({profile.reviewCount})</span>
               </p>

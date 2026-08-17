@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, Lock, Lightbulb, FileText } from "lucide-react";
+import { ChevronRight, Lock, Lightbulb, FileText } from "@/components/icons";
 import type { Brief, Consultation, ExpertContribution, ExpertProfile, Project, Report } from "@/lib/types";
 import * as projectsApi from "@/lib/api/projects";
 import * as briefsApi from "@/lib/api/briefs";

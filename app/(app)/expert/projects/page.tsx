@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList } from "@/components/icons";
 import type { ExpertProfile, Project } from "@/lib/types";
 import * as projectsApi from "@/lib/api/projects";
 import * as opportunitiesApi from "@/lib/api/opportunities";

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight } from "@/components/icons";
 import type { Project } from "@/lib/types";
 import * as expertsApi from "@/lib/api/experts";
 import type { ExpertListing } from "@/lib/api/experts";

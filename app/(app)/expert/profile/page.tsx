@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Eye, Pencil, Star } from "lucide-react";
+import { Eye, Pencil, StarFilled } from "@/components/icons";
 import type { ExpertContribution, ExpertProfile } from "@/lib/types";
 import * as expertApi from "@/lib/api/expert-onboarding";
 import * as consultationsApi from "@/lib/api/consultations";
@@ -210,7 +210,7 @@ export default function ExpertProfilePage() {
                     {reviewer.firstName} {reviewer.lastName}
                   </span>
                   <span className="flex items-center gap-1 text-xs text-primary-400">
-                    <Star className="size-3.5 fill-primary-400" aria-hidden />
+                    <StarFilled className="size-3.5 text-primary-400" aria-hidden />
                     {review.rating}
                   </span>
                   <span className="text-xs text-gray-500">{formatDate(review.createdAt)}</span>

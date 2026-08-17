@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUp, Compass, Globe, Sparkles, TrendingUp, UserPlus, Users } from "lucide-react";
+import { ArrowUp, Compass, Globe, Sparkles, TrendingUp, UserPlus, Users } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import * as projectsApi from "@/lib/api/projects";

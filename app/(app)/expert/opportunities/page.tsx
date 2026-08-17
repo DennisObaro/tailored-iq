@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Briefcase } from "lucide-react";
+import { Briefcase } from "@/components/icons";
 import type { ExpertProfile } from "@/lib/types";
 import * as opportunitiesApi from "@/lib/api/opportunities";
 import * as expertApi from "@/lib/api/expert-onboarding";

@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { PenLine, MessagesSquare, Megaphone, Plus } from "lucide-react";
+import { PenLine, MessagesSquare, Megaphone, Plus } from "@/components/icons";
 import type { ExpertContribution, ExpertProfile } from "@/lib/types";
 import * as contributionsApi from "@/lib/api/contributions";
 import * as expertApi from "@/lib/api/expert-onboarding";

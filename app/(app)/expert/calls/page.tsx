@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Video } from "lucide-react";
+import { Video } from "@/components/icons";
 import type { Consultation, ExpertProfile, Project } from "@/lib/types";
 import * as consultationsApi from "@/lib/api/consultations";
 import * as projectsApi from "@/lib/api/projects";

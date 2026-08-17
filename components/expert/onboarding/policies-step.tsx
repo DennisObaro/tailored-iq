@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "@/components/icons";
 import * as api from "@/lib/api/expert-onboarding";
 import { EXPERT_POLICIES, EXPERT_POLICY_VERSION } from "@/lib/constants/expert";
 import { Card, CardContent } from "@/components/ui/card";

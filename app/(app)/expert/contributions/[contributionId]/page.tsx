@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, Check, MessageSquareWarning, Send } from "lucide-react";
+import { ChevronRight, Check, MessageSquareWarning, Send } from "@/components/icons";
 import type { ExpertContribution, ExpertPeerReview, ExpertProfile, User } from "@/lib/types";
 import * as contributionsApi from "@/lib/api/contributions";
 import * as expertApi from "@/lib/api/expert-onboarding";

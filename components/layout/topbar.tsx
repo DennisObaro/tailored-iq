@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { Bell, Menu } from "lucide-react";
+import { Bell, Menu } from "@/components/icons";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import { useNotificationsStore } from "@/lib/store/use-notifications-store";
 import { useUiStore } from "@/lib/store/use-ui-store";

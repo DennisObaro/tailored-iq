@@ -1,5 +1,3 @@
-import type { SVGProps } from "react";
-import { HugeiconsIcon } from "@hugeicons/react";
 import {
   DashboardSquare01Icon as DashboardSquare01Stroke,
   Briefcase01Icon as Briefcase01Stroke,
@@ -28,7 +26,8 @@ import {
   ReportsIconStroke,
   ReportsIconSolid,
 } from "@/components/icons/nav-icons";
-import { Settings } from "lucide-react";
+import { Settings } from "@/components/icons";
+import { hugeiconsAdapter } from "@/components/icons/hugeicon";
 import type { Role } from "@/lib/types";
 import type { IconPair } from "@/components/ui/nav-icon";
 
@@ -39,14 +38,9 @@ export interface NavItem {
 }
 
 // Nav items with no equivalent in the sourced Figma icon set stay on
-// Hugeicons Pro. These adapters just give HugeiconsIcon the same
+// Hugeicons Pro; hugeiconsAdapter gives those the same
 // (props) => <svg /> shape as the Figma-sourced components, so NavIcon
 // doesn't need to know or care where any given icon comes from.
-function hugeiconsAdapter(icon: Parameters<typeof HugeiconsIcon>[0]["icon"]) {
-  return function Adapter(props: SVGProps<SVGSVGElement> & { strokeWidth?: number }) {
-    return <HugeiconsIcon icon={icon} {...props} />;
-  };
-}
 
 const DashboardSquare01: IconPair = { Stroke: hugeiconsAdapter(DashboardSquare01Stroke), Solid: hugeiconsAdapter(DashboardSquare01Solid) };
 const Briefcase01: IconPair = { Stroke: hugeiconsAdapter(Briefcase01Stroke), Solid: hugeiconsAdapter(Briefcase01Solid) };
@@ -82,7 +76,8 @@ export const EXPERT_NAV: NavItem[] = [
   { label: "Profile", href: "/expert/profile", icon: UserCircle02 },
 ];
 
-// Unchanged: dropdown menu item, not a persistent-selection nav link — stays lucide-react.
+// Settings is a dropdown menu item, not a persistent-selection nav link,
+// so it takes the plain icon rather than a stroke/solid IconPair.
 export const SETTINGS_NAV = { label: "Settings", href: "/settings", icon: Settings };
 
 export function getNavItems(role: Role): NavItem[] {

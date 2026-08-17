@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { StarFilled } from "@/components/icons";
 import type { ExpertListing } from "@/lib/api/experts";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
@@ -63,7 +63,7 @@ export function ExpertCard({
           <span className="flex items-center gap-1 text-xs text-gray-500">
             {profile.reviewCount > 0 ? (
               <>
-                <Star className="size-3 fill-current" aria-hidden />
+                <StarFilled className="size-3" aria-hidden />
                 {profile.rating.toFixed(1)}
                 <span>({profile.reviewCount})</span>
               </>

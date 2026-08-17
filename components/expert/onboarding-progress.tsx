@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { Check } from "@/components/icons";
 import type { ExpertOnboardingStep, ExpertProfile } from "@/lib/types";
 import { ONBOARDING_STEPS } from "@/lib/constants/expert";
 import { cn } from "@/lib/utils/cn";
