@@ -65,7 +65,7 @@ export interface Database {
   callsForInsight: CallForInsight[];
 }
 
-const STORAGE_KEY = "tiq_db_v2";
+const STORAGE_KEY = "tiq_db_v3";
 const SESSION_KEY = "tiq_session_v1";
 
 let cache: Database | null = null;

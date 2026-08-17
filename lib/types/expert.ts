@@ -34,6 +34,13 @@ export interface ExpertReferral {
   claimedAt?: string;
   /** Set when the referred expert is approved — the point a referral "counts". */
   activatedAt?: string;
+  /**
+   * An evergreen code (demo/standing invitation) rather than a single-use
+   * one. Claiming it never consumes it — it mints a normal single-use
+   * referral bound to the claiming user, so everything downstream
+   * (activation, crediting, the profile's referralCode) is unchanged.
+   */
+  reusable?: boolean;
 }
 
 /* ---------------------------------------------------------------- evidence */

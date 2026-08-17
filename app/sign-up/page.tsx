@@ -45,6 +45,7 @@ function SignUpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const signUp = useSessionStore((s) => s.signUp);
+  const refresh = useSessionStore((s) => s.refresh);
 
   /**
    * Set only when arriving from the verified referral gate. It decides
@@ -111,6 +112,13 @@ function SignUpForm() {
         await referralsApi.claimReferralCode(referralCode, user.id, user.email);
         await expertOnboardingApi.startExpertOnboarding(user.id, referralCode);
         clearPendingReferralCode();
+        /**
+         * startExpertOnboarding flips onboardingComplete/activeRole on the
+         * stored user; without re-reading it the session still holds the
+         * just-created record, and the app shell bounces an expert into
+         * client profile onboarding.
+         */
+        await refresh();
         router.push("/expert/onboarding");
         return;
       }
@@ -256,6 +264,15 @@ function SignUpForm() {
               Sign in
             </Link>
           </p>
+
+          {!isExpertSignUp && (
+            <p className="mt-3 text-center text-sm text-gray-400">
+              Invited to join as an expert?{" "}
+              <Link href="/become-an-expert" className="font-medium text-primary-400 hover:text-primary-300">
+                Enter your referral code
+              </Link>
+            </p>
+          )}
         </div>
       </div>
 

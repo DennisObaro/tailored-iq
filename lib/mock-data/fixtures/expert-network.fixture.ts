@@ -18,6 +18,7 @@ const aug = (day: number, hour = 10) => `2026-08-${String(day).padStart(2, "0")}
  * invalid/expired/already-used paths are all reachable in the demo without
  * anyone having to construct them:
  *
+ *   EMP-DEMO2026 — evergreen: reusable, never expires, never consumed
  *   EMP-MARCUS24 — valid, issued by Marcus Webb (use this one)
  *   EMP-JORDAN77 — valid, issued by Jordan Blake
  *   EMP-FOUNDER1 — valid, platform-issued, no referring expert
@@ -26,6 +27,14 @@ const aug = (day: number, hour = 10) => `2026-08-${String(day).padStart(2, "0")}
  *   EMP-REVOKED1 — revoked by the referrer
  */
 export const seedExpertReferrals: ExpertReferral[] = [
+  {
+    id: "referral_evergreen",
+    code: "EMP-DEMO2026",
+    referrerName: "TailoredIQ",
+    status: "unused",
+    createdAt: d(1),
+    reusable: true,
+  },
   {
     id: "referral_1",
     code: "EMP-MARCUS24",

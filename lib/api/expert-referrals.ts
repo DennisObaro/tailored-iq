@@ -16,13 +16,29 @@ function normalize(code: string) {
 }
 
 /**
+ * A code string identifies one referral, except for an evergreen code —
+ * every single-use referral minted from it carries the same code string.
+ * So a lookup prefers the record bound to the asking user, then the
+ * evergreen master, and only then whatever matched.
+ */
+function findByCode(referrals: ExpertReferral[], code: string, userId?: string): ExpertReferral | undefined {
+  const wanted = normalize(code);
+  const matches = referrals.filter((r) => r.code === wanted);
+  return (
+    (userId ? matches.find((r) => r.referredUserId === userId) : undefined) ??
+    matches.find((r) => r.reusable) ??
+    matches[0]
+  );
+}
+
+/**
  * The first gate of the expert flow (spec RULE 1). Read-only — validating a
  * code never consumes it, so a user can check a code, leave, and come back.
  */
 export async function validateReferralCode(code: string): Promise<ReferralValidation> {
   return simulateNetwork(
     () => {
-      const referral = db.get().expertReferrals.find((r) => r.code === normalize(code));
+      const referral = findByCode(db.get().expertReferrals, code);
 
       if (!referral) {
         return {
@@ -70,9 +86,32 @@ export async function validateReferralCode(code: string): Promise<ReferralValida
 export async function claimReferralCode(code: string, userId: string, email?: string): Promise<ExpertReferral> {
   return simulateNetwork(() =>
     db.update((d) => {
-      const referral = d.expertReferrals.find((r) => r.code === normalize(code));
+      const referral = findByCode(d.expertReferrals, code, userId);
       if (!referral) throw new ApiError("That referral code couldn't be verified.", "NOT_FOUND");
       if (referral.status === "revoked") throw new ApiError("That referral code has been withdrawn.", "REVOKED");
+
+      /**
+       * An evergreen code is never consumed: claiming it mints an ordinary
+       * single-use referral bound to this user, which is what everything
+       * downstream (onboarding, activation, crediting) then works against.
+       */
+      if (referral.reusable) {
+        const now = new Date().toISOString();
+        const minted: ExpertReferral = {
+          id: id("referral"),
+          code: referral.code,
+          referrerUserId: referral.referrerUserId,
+          referrerName: referral.referrerName,
+          referredUserId: userId,
+          referredEmail: email,
+          status: "claimed",
+          createdAt: now,
+          claimedAt: now,
+        };
+        d.expertReferrals.push(minted);
+        return minted;
+      }
+
       if (referral.referredUserId && referral.referredUserId !== userId) {
         throw new ApiError("That referral code has already been used.", "ALREADY_USED");
       }

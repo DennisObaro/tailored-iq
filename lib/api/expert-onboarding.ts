@@ -79,7 +79,11 @@ function markStep(profile: ExpertProfile, step: ExpertOnboardingStep) {
 export async function startExpertOnboarding(userId: string, referralCode: string): Promise<ExpertProfile> {
   return simulateNetwork(() =>
     db.update((d) => {
-      const referral = d.expertReferrals.find((r) => r.code === referralCode.trim().toUpperCase());
+      const wanted = referralCode.trim().toUpperCase();
+      /** Prefer the record bound to this user — an evergreen code is shared. */
+      const referral =
+        d.expertReferrals.find((r) => r.code === wanted && r.referredUserId === userId) ??
+        d.expertReferrals.find((r) => r.code === wanted);
       if (!referral || referral.referredUserId !== userId) {
         throw new ApiError(
           "We couldn't match a verified referral code to your account. Start again from the referral step.",
