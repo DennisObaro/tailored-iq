@@ -3,7 +3,18 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ThumbsUp, ThumbsDown, ChevronRight, Lock } from "lucide-react";
+import {
+  ThumbsUp,
+  ThumbsDown,
+  ChevronRight,
+  Lock,
+  ClipboardCheck,
+  Lightbulb,
+  Phone,
+  BookOpen,
+  Briefcase,
+  type IconComponent,
+} from "@/components/icons";
 import type { ExpertProfile, ExpertWillingness, Project } from "@/lib/types";
 import * as opportunitiesApi from "@/lib/api/opportunities";
 import * as projectsApi from "@/lib/api/projects";
@@ -27,6 +38,14 @@ const CONTRIBUTION_DESCRIPTIONS: Record<ExpertWillingness, string> = {
   advisory_call: "Talk to the client directly about their situation.",
   playbook_contribution: "Strengthen the playbook they'll actually work from.",
   consulting_engagement: "Take on longer, paid work beyond a single conversation.",
+};
+
+const CONTRIBUTION_ICONS: Record<ExpertWillingness, IconComponent> = {
+  review: ClipboardCheck,
+  contribute_insight: Lightbulb,
+  advisory_call: Phone,
+  playbook_contribution: BookOpen,
+  consulting_engagement: Briefcase,
 };
 
 const ALL: ExpertWillingness[] = [
@@ -63,13 +82,13 @@ export default function OpportunityDetailPage() {
         const p = await expertApi.getExpertProfile(user.id);
         if (!cancelled) {
           setProfile(p);
-          setOffered(
-            result.opportunity.offeredContributions.length > 0
-              ? result.opportunity.offeredContributions
-              : (p?.willingness ?? []).filter((w) =>
-                  result.opportunity.requestedContributions.includes(w as never),
-                ),
-          );
+          /**
+           * Only a response already given comes back pre-selected. What the
+           * expert is generally willing to do decides which options appear,
+           * not which are ticked — this question is what they'll take on
+           * *here*, and pre-ticking it answers it for them.
+           */
+          setOffered(result.opportunity.offeredContributions);
         }
       }
       if (result.canViewClientDetail) {
@@ -203,7 +222,7 @@ export default function OpportunityDetailPage() {
               The client asked for {opportunity.requestedContributions.map((c) => WILLINGNESS_LABELS[c].toLowerCase()).join(", ")}.
               Offer only what you actually want to take on.
             </p>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid auto-rows-fr gap-3 sm:grid-cols-2">
               {available.map((w) => (
                 <OptionCard
                   key={w}
@@ -211,6 +230,7 @@ export default function OpportunityDetailPage() {
                   onToggle={() => setOffered((prev) => (prev.includes(w) ? prev.filter((x) => x !== w) : [...prev, w]))}
                   title={WILLINGNESS_LABELS[w]}
                   description={CONTRIBUTION_DESCRIPTIONS[w]}
+                  icon={CONTRIBUTION_ICONS[w]}
                 />
               ))}
             </div>

@@ -1,4 +1,4 @@
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles } from "@/components/icons";
 import type { ExpertListing } from "@/lib/api/experts";
 import { ExpertCard } from "@/components/expert/expert-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,14 +17,17 @@ export function SuggestedExpertsPanel({
 
   return (
     <aside className="hidden w-80 shrink-0 flex-col gap-3 overflow-y-auto border-l border-gray-800 p-5 lg:flex">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-medium text-gray-300">Relevant to your challenge</h2>
-        {refreshing && (
-          <span className="flex items-center gap-1 text-xs text-gray-500">
-            <Loader2 className="size-3 animate-spin" aria-hidden />
-            Updating
-          </span>
-        )}
+      {/*
+        Every answer narrows the match, so the heading says which of the two
+        things is true right now: still choosing, or here's who fits. It's
+        the only cue that the panel is reacting to what was just typed —
+        the cards themselves often change by one name or not at all.
+      */}
+      <div className="flex items-center gap-2">
+        <h2 aria-live="polite" className="text-sm font-medium text-gray-300">
+          {loading ? "Choosing the best experts for you" : "Relevant experts for you"}
+        </h2>
+        {loading && <Loader2 className="size-3 shrink-0 animate-spin text-gray-500" aria-hidden />}
       </div>
 
       {loading && experts.length === 0 ? (

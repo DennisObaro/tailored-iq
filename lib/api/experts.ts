@@ -120,7 +120,12 @@ export async function suggestExpertsForConversation(projectId: string): Promise<
         })
         .filter((x): x is ExpertListing => x !== null);
     },
-    { latency: [150, 300] },
+    /**
+     * Slower than a plain read on purpose: this re-runs after every answer
+     * and the panel narrates it ("Choosing the best experts for you"), so
+     * it needs long enough to be read rather than seen as a flicker.
+     */
+    { latency: [700, 1100] },
   );
 }
 

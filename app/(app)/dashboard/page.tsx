@@ -1,20 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowRight,
   ArrowUp,
-  Briefcase,
   Calendar,
   ClipboardList,
   FileText,
   MessageSquare,
-  Store,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+  type IconComponent,
+} from "@/components/icons";
+import {
+  Store01Icon,
+  UserGroupIcon,
+  UserCheck01Icon,
+  UserAdd01Icon,
+  ChartUpIcon,
+  AiBrain01Icon,
+  Wallet01Icon,
+  HierarchyIcon,
+  Compass01Icon,
+} from "@hugeicons-pro/core-stroke-rounded";
+import { hugeiconsAdapter } from "@/components/icons/hugeicon";
 import type { Consultation, NotificationType, Project } from "@/lib/types";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import * as projectsApi from "@/lib/api/projects";
@@ -29,13 +38,14 @@ import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Avatar } from "@/components/ui/avatar";
 import { ProjectCard } from "@/components/project/project-card";
+import { SuggestionCarousel, type Suggestion } from "@/components/chat/suggestion-carousel";
 import { ExpertCard } from "@/components/expert/expert-card";
 import { formatCallWhen, isCallImminent } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 
 interface ActionItem {
   id: string;
-  icon: LucideIcon;
+  icon: IconComponent;
   title: string;
   description: string;
   ctaLabel: string;
@@ -47,7 +57,7 @@ interface UpcomingCall {
   expert: ExpertListing;
 }
 
-const ACTION_ITEM_META: Partial<Record<NotificationType, { icon: LucideIcon; ctaLabel: string }>> = {
+const ACTION_ITEM_META: Partial<Record<NotificationType, { icon: IconComponent; ctaLabel: string }>> = {
   report_ready: { icon: FileText, ctaLabel: "View report" },
   playbook_ready: { icon: ClipboardList, ctaLabel: "View action plan" },
   playbook_updated: { icon: ClipboardList, ctaLabel: "View update" },
@@ -56,28 +66,33 @@ const ACTION_ITEM_META: Partial<Record<NotificationType, { icon: LucideIcon; cta
   contribution_added: { icon: MessageSquare, ctaLabel: "Review response" },
 };
 
-const SUGGESTED_PROMPTS = [
-  { icon: Store, prompt: "Entering a new market" },
-  { icon: Users, prompt: "Building a stronger leadership team" },
-  { icon: Briefcase, prompt: "Hiring and retaining top talent" },
+/**
+ * Questions rather than topics: the composer is asking what decision you
+ * are facing, and a decision is easier to recognise than a category.
+ * Grouped in threes because the carousel rotates a whole set at a time.
+ */
+const SUGGESTED_QUESTION_SETS: Suggestion[][] = [
+  [
+    { text: "Should we enter a new market now?", icon: hugeiconsAdapter(Store01Icon) },
+    { text: "How do I build a stronger leadership team?", icon: hugeiconsAdapter(UserGroupIcon) },
+    { text: "How can we retain our best people?", icon: hugeiconsAdapter(UserCheck01Icon) },
+  ],
+  [
+    { text: "Should we hire a COO at this stage?", icon: hugeiconsAdapter(UserAdd01Icon) },
+    { text: "How do I scale without losing efficiency?", icon: hugeiconsAdapter(ChartUpIcon) },
+    { text: "Where should we start with AI adoption?", icon: hugeiconsAdapter(AiBrain01Icon) },
+  ],
+  [
+    { text: "Raise more capital, or focus on profitability?", icon: hugeiconsAdapter(Wallet01Icon) },
+    { text: "How do we restructure a growing team?", icon: hugeiconsAdapter(HierarchyIcon) },
+    { text: "How do I prepare for a major decision?", icon: hugeiconsAdapter(Compass01Icon) },
+  ],
 ];
 
 const HOW_IT_WORKS = [
-  {
-    number: "01",
-    title: "We understand your challenge",
-    description: "TailoredIQ asks the right questions to understand your situation and turn it into a clear brief.",
-  },
-  {
-    number: "02",
-    title: "Get clarity on your options",
-    description: "Receive a concise assessment highlighting key considerations and possible ways forward.",
-  },
-  {
-    number: "03",
-    title: "Go deeper",
-    description: "Connect with relevant expert for deeper guidance or request a tailored playbook.",
-  },
+  { number: "01", title: "We'll understand your challenge" },
+  { number: "02", title: "We'll help you find a way forward" },
+  { number: "03", title: "We'll connect you with the right experience" },
 ];
 
 function greeting() {
@@ -92,7 +107,9 @@ export default function DashboardPage() {
   const user = useSessionStore((s) => s.user);
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [value, setValue] = useState("");
+  const [inputActive, setInputActive] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [actionItems, setActionItems] = useState<ActionItem[] | null>(null);
   const [upcomingCalls, setUpcomingCalls] = useState<UpcomingCall[] | null>(null);
   const [upcomingCallsCount, setUpcomingCallsCount] = useState<number | null>(null);
@@ -179,46 +196,52 @@ export default function DashboardPage() {
         </p>
 
         <div className="mt-10 w-full max-w-3xl">
-          <div className="relative min-h-32 w-full rounded-[28px] bg-gray-950 px-6 pt-6 pb-14 focus-within:ring-2 focus-within:ring-primary-500">
-            <textarea
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  start(value);
-                }
-              }}
-              placeholder="Describe your business challenge..."
-              rows={1}
-              disabled={submitting}
-              className="w-full resize-none bg-transparent text-left text-sm italic text-gray-50 placeholder:italic placeholder:text-gray-400 focus-visible:outline-none disabled:opacity-50"
-            />
-            <Button
-              size="icon"
-              className="absolute bottom-3 right-4 h-8 w-8 rounded-full"
-              loading={submitting}
-              disabled={!value.trim()}
-              onClick={() => start(value)}
-              aria-label="Start a challenge"
-            >
-              <ArrowUp className="size-4" aria-hidden />
-            </Button>
-          </div>
-        </div>
+          {/* One frame, two layers: the message surface, and a strip of
+              example questions under it. The examples belong to the
+              composer rather than floating beneath it as navigation. */}
+          <div className="w-full rounded-[28px] bg-gray-950 p-2">
+            <div className="relative min-h-28 w-full rounded-[22px] bg-gray-900 px-5 pt-5 pb-14 focus-within:ring-2 focus-within:ring-primary-500">
+              <textarea
+                ref={inputRef}
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onFocus={() => setInputActive(true)}
+                onBlur={() => setInputActive(false)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    start(value);
+                  }
+                }}
+                placeholder="What are you trying to figure out?"
+                rows={1}
+                disabled={submitting}
+                className="w-full resize-none bg-transparent text-left text-sm italic text-gray-50 placeholder:italic placeholder:text-gray-400 focus-visible:outline-none disabled:opacity-50"
+              />
+              <Button
+                size="icon"
+                className="absolute bottom-3 right-3 h-8 w-8 rounded-full"
+                loading={submitting}
+                disabled={!value.trim()}
+                onClick={() => start(value)}
+                aria-label="Start a challenge"
+              >
+                <ArrowUp className="size-4" aria-hidden />
+              </Button>
+            </div>
 
-        <div className="mt-6 flex flex-nowrap justify-center gap-2.5">
-          {SUGGESTED_PROMPTS.map(({ icon: Icon, prompt }) => (
-            <button
-              key={prompt}
-              onClick={() => start(prompt)}
+            <SuggestionCarousel
+              /* Left padding matches the input surface, so the chips line up with the message text above them. */
+              className="px-5 py-3"
+              sets={SUGGESTED_QUESTION_SETS}
               disabled={submitting}
-              className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-gray-800 px-3.5 py-2.5 text-sm text-gray-300 hover:border-gray-700 hover:bg-gray-900 disabled:opacity-50"
-            >
-              <Icon className="size-[22px] text-gray-500" aria-hidden />
-              {prompt}
-            </button>
-          ))}
+              paused={inputActive || value.trim().length > 0}
+              onSelect={(suggestion) => {
+                setValue(suggestion);
+                inputRef.current?.focus();
+              }}
+            />
+          </div>
         </div>
 
         <div className="mt-6 grid w-full max-w-3xl grid-cols-1 gap-6 rounded-[28px] border border-gray-800 p-5 text-left sm:grid-cols-3 sm:divide-x sm:divide-gray-800">
@@ -226,7 +249,6 @@ export default function DashboardPage() {
             <div key={step.number} className="sm:px-5 sm:first:pl-0 sm:last:pr-0">
               <p className="text-xl font-medium text-gray-500">{step.number}</p>
               <p className="mt-2.5 text-sm font-medium text-gray-50">{step.title}</p>
-              <p className="mt-1.5 text-sm text-gray-400">{step.description}</p>
             </div>
           ))}
         </div>
