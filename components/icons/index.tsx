@@ -6,6 +6,7 @@ import {
   ArrowUpIcon as ArrowUpStroke,
   AwardIcon as AwardStroke,
   BellIcon as BellStroke,
+  Bookmark02Icon as BookmarkStroke,
   BookOpenIcon as BookOpenStroke,
   BriefcaseIcon as BriefcaseStroke,
   Building02Icon as Building2Stroke,
@@ -33,8 +34,10 @@ import {
   Loading03Icon as Loader2Stroke,
   LockIcon as LockStroke,
   Logout01Icon as LogOutStroke,
+  Mail01Icon as MailStroke,
   MapPinIcon as MapPinStroke,
   MegaphoneIcon as MegaphoneStroke,
+  Moon02Icon as MoonStroke,
   MenuIcon as MenuStroke,
   Message01Icon as MessageSquareStroke,
   MessageNotification01Icon as MessageSquareWarningStroke,
@@ -54,12 +57,14 @@ import {
   SecurityWarningIcon as ShieldAlertStroke,
   SecurityCheckIcon as ShieldCheckStroke,
   SparklesIcon as SparklesStroke,
+  Sun03Icon as SunStroke,
   StarIcon as StarStroke,
   ThumbsDownIcon as ThumbsDownStroke,
   ThumbsUpIcon as ThumbsUpStroke,
   Delete02Icon as Trash2Stroke,
   ChartUpIcon as TrendingUpStroke,
   UploadIcon as UploadStroke,
+  UserCircleIcon as UserCircleStroke,
   UserCheckIcon as UserCheckStroke,
   UserAdd01Icon as UserPlusStroke,
   UserMultipleIcon as UsersStroke,
@@ -68,7 +73,10 @@ import {
   Cancel01Icon as XStroke,
   CancelCircleIcon as XCircleStroke,
 } from "@hugeicons-pro/core-stroke-rounded";
-import { StarIcon as StarSolid } from "@hugeicons-pro/core-solid-rounded";
+import {
+  Bookmark02Icon as BookmarkSolid,
+  StarIcon as StarSolid,
+} from "@hugeicons-pro/core-solid-rounded";
 import { hugeiconsAdapter, type IconComponent } from "./hugeicon";
 
 /**
@@ -89,6 +97,9 @@ export const ArrowRight = hugeiconsAdapter(ArrowRightStroke);
 export const ArrowUp = hugeiconsAdapter(ArrowUpStroke);
 export const Award = hugeiconsAdapter(AwardStroke);
 export const Bell = hugeiconsAdapter(BellStroke);
+export const Bookmark = hugeiconsAdapter(BookmarkStroke);
+/** The filled counterpart, for a bookmark that's already been set. */
+export const BookmarkFilled = hugeiconsAdapter(BookmarkSolid);
 export const BookOpen = hugeiconsAdapter(BookOpenStroke);
 export const Briefcase = hugeiconsAdapter(BriefcaseStroke);
 export const Building2 = hugeiconsAdapter(Building2Stroke);
@@ -116,8 +127,10 @@ export const Link2 = hugeiconsAdapter(Link2Stroke);
 export const Loader2 = hugeiconsAdapter(Loader2Stroke);
 export const Lock = hugeiconsAdapter(LockStroke);
 export const LogOut = hugeiconsAdapter(LogOutStroke);
+export const Mail = hugeiconsAdapter(MailStroke);
 export const MapPin = hugeiconsAdapter(MapPinStroke);
 export const Megaphone = hugeiconsAdapter(MegaphoneStroke);
+export const Moon = hugeiconsAdapter(MoonStroke);
 export const Menu = hugeiconsAdapter(MenuStroke);
 export const MessageSquare = hugeiconsAdapter(MessageSquareStroke);
 export const MessageSquareWarning = hugeiconsAdapter(MessageSquareWarningStroke);
@@ -137,6 +150,7 @@ export const Settings = hugeiconsAdapter(SettingsStroke);
 export const ShieldAlert = hugeiconsAdapter(ShieldAlertStroke);
 export const ShieldCheck = hugeiconsAdapter(ShieldCheckStroke);
 export const Sparkles = hugeiconsAdapter(SparklesStroke);
+export const Sun = hugeiconsAdapter(SunStroke);
 export const Star = hugeiconsAdapter(StarStroke);
 export const ThumbsDown = hugeiconsAdapter(ThumbsDownStroke);
 export const ThumbsUp = hugeiconsAdapter(ThumbsUpStroke);
@@ -144,6 +158,7 @@ export const Trash2 = hugeiconsAdapter(Trash2Stroke);
 export const TrendingUp = hugeiconsAdapter(TrendingUpStroke);
 export const Upload = hugeiconsAdapter(UploadStroke);
 export const UserCheck = hugeiconsAdapter(UserCheckStroke);
+export const UserCircle = hugeiconsAdapter(UserCircleStroke);
 export const UserPlus = hugeiconsAdapter(UserPlusStroke);
 export const Users = hugeiconsAdapter(UsersStroke);
 export const Video = hugeiconsAdapter(VideoStroke);

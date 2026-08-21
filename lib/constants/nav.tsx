@@ -59,7 +59,7 @@ const Reports: IconPair = { Stroke: ReportsIconStroke, Solid: ReportsIconSolid }
 export const CLIENT_NAV: NavItem[] = [
   { label: "Home", href: "/dashboard", icon: Home },
   { label: "Ask TailoredIQ", href: "/chat", icon: Chat },
-  { label: "Reports", href: "/reports", icon: Reports },
+  { label: "Executive summaries", href: "/reports", icon: Reports },
   { label: "Playbooks", href: "/playbooks", icon: Playbooks },
   { label: "Experts", href: "/experts", icon: Experts },
   { label: "Conversations", href: "/conversations", icon: Conversations },
@@ -72,6 +72,7 @@ export const EXPERT_NAV: NavItem[] = [
   { label: "Calls", href: "/expert/calls", icon: Conversations },
   { label: "Contributions", href: "/expert/contributions", icon: Clipboard },
   { label: "Insights", href: "/expert/insights", icon: Reports },
+  { label: "Conversations", href: "/conversations", icon: Conversations },
   { label: "Rewards", href: "/expert/rewards", icon: Award01 },
   { label: "Profile", href: "/expert/profile", icon: UserCircle02 },
 ];

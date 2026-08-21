@@ -5,7 +5,7 @@ type Variant = "default" | "primary" | "success" | "danger" | "outline";
 
 const variantClasses: Record<Variant, string> = {
   default: "bg-gray-850 text-gray-300",
-  primary: "bg-primary-500/15 text-primary-400",
+  primary: "bg-primary-500/15 text-gold",
   success: "bg-success-500/15 text-success-400",
   danger: "bg-danger-500/15 text-danger-400",
   outline: "border border-gray-800 text-gray-300",

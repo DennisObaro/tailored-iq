@@ -13,10 +13,12 @@ import { useSessionStore } from "@/lib/store/use-session-store";
 import { Avatar } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/input";
+import { Select, Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { SlotPicker } from "@/components/booking/slot-picker";
+
+const NEW_CHALLENGE = "__new__";
 
 export default function BookConsultationPage() {
   const { expertId } = useParams<{ expertId: string }>();
@@ -27,6 +29,7 @@ export default function BookConsultationPage() {
   const [listing, setListing] = useState<ExpertListing | null | undefined>(undefined);
   const [eligibleProjects, setEligibleProjects] = useState<Project[]>([]);
   const [projectId, setProjectId] = useState(searchParams.get("projectId") ?? "");
+  const [newChallenge, setNewChallenge] = useState("");
   const [slot, setSlot] = useState<string | null>(null);
   const [booking, setBooking] = useState(false);
   const [error, setError] = useState(false);
@@ -44,18 +47,33 @@ export default function BookConsultationPage() {
     });
   }, [user, projectId]);
 
+  /**
+   * The deliberate "I haven't worked this out yet" option — a client can come
+   * straight to an expert without going through the diagnosis chat, and the
+   * expert builds the brief with them on the call.
+   *
+   * A sentinel rather than the empty string, because "" is what the select
+   * holds before the project list has loaded, and the effect above fills
+   * that in with the first eligible project — an explicit choice has to be
+   * distinguishable from an unanswered one or it gets overwritten.
+   */
+  const isNewChallenge = projectId === NEW_CHALLENGE;
+  const canBook = Boolean(slot) && (isNewChallenge ? newChallenge.trim().length > 0 : Boolean(projectId));
+
   async function confirmBooking() {
-    if (!user || !slot || !projectId) return;
+    if (!user || !slot || !canBook) return;
     setBooking(true);
     setError(false);
     try {
-      const consultation = await consultationsApi.bookConsultation({
-        projectId,
+      const { conversationId } = await consultationsApi.bookConsultation({
+        ...(isNewChallenge ? { newChallenge: newChallenge.trim() } : { projectId }),
         clientId: user.id,
         expertId,
         scheduledFor: slot,
       });
-      router.push(`/consultations/${consultation.id}`);
+      // Into the conversation rather than the call page: the useful thing to
+      // do between booking and the call is talk to the expert.
+      router.push(`/conversations/${conversationId}`);
     } catch {
       setError(true);
     } finally {
@@ -112,14 +130,33 @@ export default function BookConsultationPage() {
             Which challenge is this for?
           </label>
           <Select id="project" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
-            {eligibleProjects.length === 0 && <option value="">No eligible projects</option>}
             {eligibleProjects.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.title}
               </option>
             ))}
+            <option value={NEW_CHALLENGE}>A new challenge — we&apos;ll define it on the call</option>
           </Select>
         </div>
+
+        {isNewChallenge && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-300" htmlFor="new-challenge">
+              What&apos;s on your mind?
+            </label>
+            <Textarea
+              id="new-challenge"
+              rows={3}
+              value={newChallenge}
+              onChange={(e) => setNewChallenge(e.target.value)}
+              placeholder="A line or two is enough — you'll work through it together on the call."
+            />
+            <p className="text-xs text-gray-500">
+              {expertUser.firstName} will walk you through the questions we&apos;d normally ask, and write up your
+              brief from the conversation.
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-col gap-1.5">
           <p className="text-sm font-medium text-gray-300">Pick a time</p>
@@ -142,7 +179,7 @@ export default function BookConsultationPage() {
       <Button
         size="lg"
         className="w-full justify-center"
-        disabled={!slot || !projectId}
+        disabled={!canBook}
         loading={booking}
         onClick={confirmBooking}
       >

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, CheckCircle2 } from "@/components/icons";
 import type { Brief, Conversation, Project } from "@/lib/types";
+import { PROJECT_STATUS_ORDER } from "@/lib/types";
 import * as projectsApi from "@/lib/api/projects";
 import * as conversationsApi from "@/lib/api/conversations";
 import * as briefsApi from "@/lib/api/briefs";
@@ -12,10 +13,11 @@ import * as expertsApi from "@/lib/api/experts";
 import type { ExpertListing } from "@/lib/api/experts";
 import * as reportsApi from "@/lib/api/reports";
 import * as playbooksApi from "@/lib/api/playbooks";
+import { PLAYBOOK_TURNAROUND } from "@/lib/api/playbooks";
 import { ChatMessageBubble } from "@/components/chat/chat-message-bubble";
 import { TypingIndicator } from "@/components/chat/typing-indicator";
 import { ChatInput } from "@/components/chat/chat-input";
-import { SuggestedExpertsPanel } from "@/components/chat/suggested-experts-panel";
+import { RelevantExpertsPanel } from "@/components/expert/relevant-experts-panel";
 import { ExpertCard } from "@/components/expert/expert-card";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,8 +50,12 @@ export default function ChatConversationPage() {
   const [expertsLoading, setExpertsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  async function refreshSuggestions(convo: Conversation) {
-    if (convo.status === "complete") return;
+  /**
+   * Runs on every turn, including the last one: the brief stays editable
+   * after the diagnosis wraps up, so the wide list has to survive that
+   * window rather than freezing when the conversation closes.
+   */
+  async function refreshSuggestions() {
     setExpertsLoading(true);
     try {
       const listings = await expertsApi.suggestExpertsForConversation(projectId);
@@ -78,7 +84,7 @@ export default function ChatConversationPage() {
       if (cancelled) return;
       setConversation(c);
       setLoading(false);
-      if (c) refreshSuggestions(c);
+      if (c) refreshSuggestions();
     }
     load();
     return () => {
@@ -111,7 +117,7 @@ export default function ChatConversationPage() {
       .startConversation(conversation.id)
       .then((updated) => {
         setConversation(updated);
-        refreshSuggestions(updated);
+        refreshSuggestions();
       })
       .catch(() => setError(true))
       .finally(() => setSending(false));
@@ -177,9 +183,8 @@ export default function ChatConversationPage() {
     setError(false);
     setStage("playbook");
     try {
-      await playbooksApi.generatePlaybookForProject(project.id);
-      const updated = await projectsApi.getProject(project.id);
-      if (updated) setProject(updated);
+      const updated = await playbooksApi.requestPlaybookForProject(project.id);
+      setProject(updated);
     } catch {
       setError(true);
     } finally {
@@ -193,7 +198,7 @@ export default function ChatConversationPage() {
     try {
       const updated = await conversationsApi.postMessage(conversation.id, content);
       setConversation(updated);
-      refreshSuggestions(updated);
+      refreshSuggestions();
     } catch {
       setError(true);
     } finally {
@@ -246,6 +251,16 @@ export default function ChatConversationPage() {
 
   if (!conversation) return null;
 
+  /**
+   * Confirming the brief is the commitment point: it's what triggers the real
+   * matching run, so it's also where the rail stops offering a browsable pool
+   * and starts showing the three people actually matched to this challenge.
+   * Between confirm and those three arriving the panel sits in its loading
+   * state, which reads as the narrowing itself.
+   */
+  const briefConfirmed =
+    PROJECT_STATUS_ORDER.indexOf(project?.status ?? "draft") >= PROJECT_STATUS_ORDER.indexOf("analysing");
+
   return (
     <div className="flex h-full">
       <div className="flex h-full min-w-0 flex-1 flex-col">
@@ -261,7 +276,7 @@ export default function ChatConversationPage() {
               <Card className="p-4">
                 <div>
                   <p className="text-sm font-semibold text-gray-50">Here&apos;s what I understand</p>
-                  <p className="text-xs text-gray-500">Review and edit before we generate your report.</p>
+                  <p className="text-xs text-gray-500">Review and edit before we generate your executive summary.</p>
                 </div>
                 <div className="mt-2 flex flex-col">
                   {BRIEF_FIELD_DEFS.map((f) => (
@@ -294,9 +309,9 @@ export default function ChatConversationPage() {
 
             {project?.reportId && (
               <div className="flex flex-col gap-2">
-                <p className="text-base leading-relaxed text-gray-100">Your report is ready.</p>
+                <p className="text-base leading-relaxed text-gray-100">Your executive summary is ready.</p>
                 <Button asChild size="sm" variant="outline" className="w-fit">
-                  <Link href={`/reports/${project.reportId}`}>Read report</Link>
+                  <Link href={`/reports/${project.reportId}`}>Read executive summary</Link>
                 </Button>
               </div>
             )}
@@ -319,17 +334,35 @@ export default function ChatConversationPage() {
 
             {stage === "playbook" && <TypingIndicator label={LOADING_COPY.playbook[0]} />}
 
-            {project?.reportId && project.matchedExpertIds.length > 0 && !project.playbookId && stage !== "playbook" && (
+            {project?.reportId &&
+              project.matchedExpertIds.length > 0 &&
+              !project.playbookId &&
+              project.status !== "playbook_in_progress" &&
+              stage !== "playbook" && (
+                <div className="flex flex-col gap-2">
+                  <p className="text-base leading-relaxed text-gray-100">
+                    {project.consultationId
+                      ? "Now that you've spoken with an expert, one of them can turn your executive summary and what you learned into a tailored playbook with concrete next steps."
+                      : "Whenever you're ready, an expert can turn your executive summary into a tailored playbook with concrete next steps — talking to one first can sharpen it, but isn't required."}
+                  </p>
+                  <Button size="sm" className="w-fit gap-1.5" onClick={getPlaybook}>
+                    <BookOpen className="size-3.5" aria-hidden />
+                    Get a playbook
+                  </Button>
+                </div>
+              )}
+
+            {/* A playbook is written by a person, so the wait is the honest
+                thing to lead with rather than a spinner that implies seconds. */}
+            {project?.status === "playbook_in_progress" && !project.playbookId && (
               <div className="flex flex-col gap-2">
                 <p className="text-base leading-relaxed text-gray-100">
-                  {project.consultationId
-                    ? "Now that you've spoken with an expert, I can turn your report and what you learned into a tailored playbook with concrete next steps."
-                    : "Whenever you're ready, I can turn your report into a tailored playbook with concrete next steps — talking to an expert first can sharpen it, but isn't required."}
+                  Your request has been sent to an expert.
                 </p>
-                <Button size="sm" className="w-fit gap-1.5" onClick={getPlaybook}>
-                  <BookOpen className="size-3.5" aria-hidden />
-                  Get a playbook
-                </Button>
+                <p className="text-base leading-relaxed text-gray-400">
+                  Playbooks usually take {PLAYBOOK_TURNAROUND} — an expert works through your challenge
+                  and vets the plan before it reaches you. We&apos;ll let you know the moment it lands.
+                </p>
               </div>
             )}
 
@@ -349,7 +382,14 @@ export default function ChatConversationPage() {
           </div>
         </div>
       </div>
-      <SuggestedExpertsPanel projectId={projectId} experts={suggestedExperts} loading={expertsLoading} />
+      <RelevantExpertsPanel
+        projectId={projectId}
+        variant={briefConfirmed ? "relevant" : "potential"}
+        experts={briefConfirmed ? matchedExperts : suggestedExperts}
+        loading={briefConfirmed ? matchedExperts.length === 0 : expertsLoading}
+        emptyMessage="Still learning about your challenge — relevant experience will show up here as we talk."
+        className="thin-scrollbar hidden w-80 shrink-0 overflow-y-auto border-l border-gray-800 p-5 lg:flex"
+      />
     </div>
   );
 }

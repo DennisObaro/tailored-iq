@@ -23,7 +23,20 @@ export interface OpportunityListing {
 
 export function engagementStage(opportunity: Opportunity, project: Project | undefined): ExpertEngagementStage {
   if (opportunity.response === "not_for_me") return "declined";
-  if (opportunity.response !== "interested") return opportunity.viewedAt ? "reviewing" : "new";
+
+  /**
+   * A direct intake has its own two-step arc and skips the interest question
+   * entirely — the client already chose this expert. It's "pending" until the
+   * brief exists, and from there rejoins the normal lifecycle below.
+   */
+  if (opportunity.kind === "direct_intake") {
+    if (!project) return "intake_pending";
+    if (!project.briefId) return "intake_pending";
+    if (project.status === "brief_submitted" || project.status === "analysing") return "intake_submitted";
+  } else {
+    if (opportunity.response !== "interested") return opportunity.viewedAt ? "reviewing" : "new";
+  }
+
   if (!project) return "accepted";
 
   switch (project.status) {

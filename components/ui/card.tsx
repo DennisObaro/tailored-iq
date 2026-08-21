@@ -5,7 +5,10 @@ export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElemen
   return (
     <div
       className={cn(
-        "rounded-2xl border border-gray-800 bg-gray-950",
+        // shadow-card is `none` in dark (surfaces there lift by being brighter
+        // than the page) and a real two-layer shadow in light, where there is no
+        // brightness headroom above white.
+        "rounded-2xl border border-gray-800 bg-gray-950 shadow-card",
         className,
       )}
       {...props}
@@ -43,7 +46,7 @@ export function InteractiveCard({ className, selected, ...props }: InteractiveCa
       role="button"
       tabIndex={0}
       className={cn(
-        "rounded-2xl border bg-gray-950 transition-colors cursor-pointer",
+        "rounded-2xl border bg-gray-950 shadow-card transition-colors cursor-pointer",
         "hover:bg-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500",
         selected ? "border-primary-500" : "border-gray-800",
         className,

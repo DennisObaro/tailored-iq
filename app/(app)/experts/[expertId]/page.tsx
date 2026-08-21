@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Star, StarFilled, ExternalLink, Calendar, ChevronRight } from "@/components/icons";
 import * as expertsApi from "@/lib/api/experts";
+import * as savedExpertsApi from "@/lib/api/saved-experts";
 import type { ExpertListing } from "@/lib/api/experts";
 import * as consultationsApi from "@/lib/api/consultations";
 import type { ReviewListing } from "@/lib/api/consultations";
@@ -15,16 +16,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
+import { SaveExpertButton } from "@/components/expert/save-expert-button";
+import { MessageExpertButton } from "@/components/conversation/message-expert-button";
 import { formatCallWhen, formatRelative, formatCurrency } from "@/lib/utils/format";
 import { helpAreaLabel } from "@/lib/constants/expert";
+import { useSessionStore } from "@/lib/store/use-session-store";
 
 export default function ExpertProfilePage() {
+  // `viewer` rather than `user`: further down, `user` is the expert being viewed.
+  const viewer = useSessionStore((s) => s.user);
   const { expertId } = useParams<{ expertId: string }>();
   const searchParams = useSearchParams();
   const projectId = searchParams.get("projectId");
   const reason = searchParams.get("reason");
 
   const [listing, setListing] = useState<ExpertListing | null | undefined>(undefined);
+  const [saved, setSaved] = useState(false);
   const [advisoryCount, setAdvisoryCount] = useState<number | null>(null);
   const [contributionCount, setContributionCount] = useState<number | null>(null);
   const [reviews, setReviews] = useState<ReviewListing[] | null>(null);
@@ -32,6 +39,17 @@ export default function ExpertProfilePage() {
   useEffect(() => {
     expertsApi.getExpert(expertId).then(setListing);
   }, [expertId]);
+
+  useEffect(() => {
+    if (!viewer) return;
+    savedExpertsApi.listSavedExpertIds(viewer.id).then((ids) => setSaved(ids.includes(expertId)));
+  }, [viewer, expertId]);
+
+  async function toggleSaved(next: boolean) {
+    if (!viewer) return;
+    setSaved(next);
+    await savedExpertsApi.setExpertSaved(viewer.id, expertId, next);
+  }
 
   useEffect(() => {
     consultationsApi.listConsultationsForExpert(expertId).then((consultations) => {
@@ -112,7 +130,7 @@ export default function ExpertProfilePage() {
               <span className="inline-flex items-center gap-1 align-middle text-gray-300">
                 {profile.reviewCount > 0 ? (
                   <>
-                    <StarFilled className="size-3.5 text-primary-400" aria-hidden />
+                    <StarFilled className="size-3.5 text-gold" aria-hidden />
                     {profile.rating.toFixed(1)} from {profile.reviewCount} reviews
                   </>
                 ) : (
@@ -134,13 +152,21 @@ export default function ExpertProfilePage() {
           </div>
         </div>
 
-        {profile.linkedinUrl && (
-          <Button asChild variant="outline" size="sm" className="shrink-0 gap-1.5">
-            <a href={profile.linkedinUrl} target="_blank" rel="noreferrer">
-              LinkedIn <ExternalLink className="size-3.5" aria-hidden />
-            </a>
-          </Button>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          <SaveExpertButton
+            variant="labelled"
+            saved={saved}
+            onToggle={toggleSaved}
+            name={`${user.firstName} ${user.lastName}`}
+          />
+          {profile.linkedinUrl && (
+            <Button asChild variant="outline" size="sm" className="shrink-0 gap-1.5">
+              <a href={profile.linkedinUrl} target="_blank" rel="noreferrer">
+                LinkedIn <ExternalLink className="size-3.5" aria-hidden />
+              </a>
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-[1fr_260px]">
@@ -230,7 +256,7 @@ export default function ExpertProfilePage() {
                         </p>
                         <span className="shrink-0 text-xs text-gray-500">{formatRelative(review.createdAt)}</span>
                       </div>
-                      <span className="mt-0.5 flex items-center gap-0.5 text-primary-400">
+                      <span className="mt-0.5 flex items-center gap-0.5 text-gold">
                         {Array.from({ length: 5 }).map((_, i) =>
                           i < review.rating ? (
                             <StarFilled key={i} className="size-3" aria-hidden />
@@ -276,6 +302,9 @@ export default function ExpertProfilePage() {
                     Book a consultation
                   </Link>
                 </Button>
+                {/* The lighter way in: establish whether this expert is the
+                    right person before committing to an hour with them. */}
+                <MessageExpertButton expert={user} projectId={projectId} />
               </>
             ) : (
               <>

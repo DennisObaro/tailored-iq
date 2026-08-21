@@ -53,11 +53,18 @@ export function seedDatabase(): Database {
     notifications: structuredClone(seedNotifications),
     opportunities: structuredClone(seedOpportunities),
     playbookUnlocks: [],
+    /** Nothing pre-saved: a saved list the client didn't choose isn't a saved list. */
+    savedExperts: [],
     expertReferrals: structuredClone(seedExpertReferrals),
     expertPolicyAcceptances: structuredClone(seedExpertPolicyAcceptances),
     expertQuizAttempts: structuredClone(seedExpertQuizAttempts),
     expertPointsTransactions: structuredClone(seedExpertPointsTransactions),
     expertPeerReviews: structuredClone(seedExpertPeerReviews),
     callsForInsight: structuredClone(seedCallsForInsight),
+    /** Live-brief pings are created as clients submit; there's nothing meaningful to pre-seed. */
+    expertBriefParticipations: [],
+    /** A thread only exists once a client reaches out, so there's nothing to pre-seed. */
+    expertConversations: [],
+    conversationMessages: [],
   };
 }

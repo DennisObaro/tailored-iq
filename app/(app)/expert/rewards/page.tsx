@@ -100,7 +100,7 @@ export default function ExpertRewardsPage() {
                 <p className="mt-2 text-2xl font-semibold text-gray-50">{standing.points} points</p>
                 <p className="mt-0.5 text-sm text-gray-400">{standing.level.blurb}</p>
               </div>
-              <Award className="size-8 text-primary-400" aria-hidden />
+              <Award className="size-8 text-gold" aria-hidden />
             </div>
 
             {standing.next && (
@@ -251,7 +251,7 @@ export default function ExpertRewardsPage() {
                           {POINT_SOURCE_LABELS[t.source]} · {formatRelative(t.createdAt)}
                         </p>
                       </div>
-                      <span className="shrink-0 tabular-nums text-primary-400">+{t.points}</span>
+                      <span className="shrink-0 tabular-nums text-gold">+{t.points}</span>
                     </div>
                   ))}
                 </CardContent>

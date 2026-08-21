@@ -80,7 +80,7 @@ export default function ExpertInsightsPage() {
               className={cn(
                 "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
                 filter === f.key
-                  ? "border-primary-500 bg-primary-500/15 text-primary-400"
+                  ? "border-primary-500 bg-primary-500/15 text-gold"
                   : "border-gray-800 text-gray-400 hover:text-gray-200",
               )}
             >
@@ -164,7 +164,7 @@ export default function ExpertInsightsPage() {
                   )}
                 </div>
                 {sharedCategories.length > 0 && (
-                  <p className="text-xs text-primary-400">
+                  <p className="text-xs text-gold">
                     You both work in {sharedCategories.slice(0, 2).join(" and ").toLowerCase()}
                   </p>
                 )}

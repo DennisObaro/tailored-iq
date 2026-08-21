@@ -56,7 +56,7 @@ export function ExpertProfilePreview({
               )}
               {profile.reviewCount > 0 && (
                 <span className="flex items-center gap-1.5">
-                  <StarFilled className="size-3.5 text-primary-400" aria-hidden />
+                  <StarFilled className="size-3.5 text-gold" aria-hidden />
                   {profile.rating.toFixed(1)} ({profile.reviewCount})
                 </span>
               )}
@@ -78,7 +78,7 @@ export function ExpertProfilePreview({
               <ul className="flex flex-col gap-1.5 text-sm text-gray-300">
                 {profile.helpAreas.map((areaId) => (
                   <li key={areaId} className="flex gap-2">
-                    <span className="text-primary-400" aria-hidden>
+                    <span className="text-gold" aria-hidden>
                       &middot;
                     </span>
                     {helpAreaLabel(areaId)}

@@ -24,7 +24,7 @@ function StageRow({ label, state }: { label: string; state: State }) {
       <Icon
         className={cn(
           "size-4 shrink-0",
-          state === "done" ? "text-success-400" : state === "current" ? "animate-spin text-primary-400" : "text-gray-700",
+          state === "done" ? "text-success-400" : state === "current" ? "animate-spin text-gold" : "text-gray-700",
         )}
         aria-hidden
       />

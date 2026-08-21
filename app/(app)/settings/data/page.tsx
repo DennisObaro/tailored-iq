@@ -40,8 +40,8 @@ export default function DataSettingsPage() {
 
       <Card className="flex flex-col gap-4 p-5">
         <div className="flex items-start gap-2 text-sm text-gray-300">
-          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-primary-400" aria-hidden />
-          Resetting will sign you out and permanently discard every project, brief, report, consultation,
+          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden />
+          Resetting will sign you out and permanently discard every project, brief, executive summary, consultation,
           and playbook created in this browser — including the seeded demo accounts&apos; current state.
         </div>
         {!confirming ? (

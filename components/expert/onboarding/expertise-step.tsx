@@ -161,7 +161,7 @@ export function ExpertiseStep({ profile, onSaved, onBack }: StepProps) {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="flex items-center gap-2 text-sm text-gray-100">
                     {e.evidenceStatus === "needs_evidence" ? (
-                      <ShieldAlert className="size-4 text-primary-400" aria-hidden />
+                      <ShieldAlert className="size-4 text-gold" aria-hidden />
                     ) : (
                       <ShieldCheck className="size-4 text-success-400" aria-hidden />
                     )}

@@ -28,7 +28,7 @@ Pages and components only ever import from `lib/api/*`. `lib/mock-data/*` (seed 
 
 ### The mock database
 
-`lib/api/_db.ts` holds an in-memory `Database` object (seeded from `lib/mock-data/fixtures/seed.ts` on first load) that's mirrored to `localStorage` under the key `tiq_db_v2` (bump this key whenever the `Database` shape changes — a stale blob deserializes into a database missing the new tables). It's only ever touched through:
+`lib/api/_db.ts` holds an in-memory `Database` object (seeded from `lib/mock-data/fixtures/seed.ts` on first load) that's mirrored to `localStorage` under the key `tiq_db_v6` (bump this key whenever the `Database` shape changes — a stale blob deserializes into a database missing the new tables). It's only ever touched through:
 - `db.get()` — returns a deep clone (never a live reference, so mutating the result can't leak into the store)
 - `db.update(mutator)` — runs a mutator against the real cache, persists, returns a clone of the result
 - `db.reset()` — reseeds from fixtures (exposed in-app at `/settings/data` as "Reset demo data")

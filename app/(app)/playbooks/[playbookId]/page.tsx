@@ -5,24 +5,68 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "@/components/icons";
 import type { Playbook } from "@/lib/types";
+import type { ExpertListing } from "@/lib/api/experts";
 import * as playbooksApi from "@/lib/api/playbooks";
-import { Badge } from "@/components/ui/badge";
+import * as expertsApi from "@/lib/api/experts";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { PlaybookActionItemRow } from "@/components/playbook/playbook-action-item";
+import { RelevantExpertsPanel } from "@/components/expert/relevant-experts-panel";
+import { DocumentShell } from "@/components/document/document-shell";
+import { DocumentSection, type DocumentSectionSpec } from "@/components/document/document-section";
+import {
+  DocumentLead,
+  DocumentList,
+  DocumentProse,
+  DocumentTermList,
+} from "@/components/document/document-prose";
+import { slugify } from "@/components/document/slugify";
+import { formatDate } from "@/lib/utils/format";
 import { useSessionStore } from "@/lib/store/use-session-store";
 
 export default function PlaybookDetailPage() {
   const user = useSessionStore((s) => s.user);
   const { playbookId } = useParams<{ playbookId: string }>();
   const [playbook, setPlaybook] = useState<Playbook | null | undefined>(undefined);
+  const [experts, setExperts] = useState<ExpertListing[]>([]);
+  const [expertsLoading, setExpertsLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
     playbooksApi.getPlaybook(playbookId, user.id).then(setPlaybook);
   }, [playbookId, user]);
+
+  /**
+   * A catalog-unlocked playbook has no project behind it, so there are no
+   * matched experts to reuse — the rail falls back to scoring the playbook's
+   * own words. Depends on those words rather than the playbook object so
+   * ticking an action item off doesn't re-run the match.
+   */
+  const matchProjectId = playbook?.projectId;
+  const matchText = playbook
+    ? [playbook.title, playbook.executiveSummary, ...playbook.keyInsights].join(" ")
+    : "";
+
+  useEffect(() => {
+    if (!user || !matchText) return;
+    let cancelled = false;
+    async function loadExperts(clientId: string) {
+      setExpertsLoading(true);
+      const listings = await expertsApi.getRelevantExperts({
+        clientId,
+        projectId: matchProjectId,
+        text: matchText,
+      });
+      if (cancelled) return;
+      setExperts(listings);
+      setExpertsLoading(false);
+    }
+    loadExperts(user.id);
+    return () => {
+      cancelled = true;
+    };
+  }, [user, matchProjectId, matchText]);
 
   async function changeStatus(itemId: string, status: "not_started" | "in_progress" | "done") {
     if (!playbook) return;
@@ -52,54 +96,45 @@ export default function PlaybookDetailPage() {
 
   const doneCount = playbook.actionItems.filter((a) => a.status === "done").length;
 
-  return (
-    <div className="mx-auto max-w-3xl space-y-6 p-6">
-      <div>
-        <div className="mb-4 flex items-center gap-1.5 text-xs text-gray-500">
-          <Link href="/playbooks" className="hover:text-gray-300">
-            Playbooks
-          </Link>
-          <ChevronRight className="size-3" aria-hidden />
-          <span className="text-gray-300">{playbook.title}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <StatusBadge status={playbook.status} />
-          <span className="text-xs text-gray-500">v{playbook.version}</span>
-        </div>
-        <h1 className="mt-2 text-xl font-semibold text-gray-50">{playbook.title}</h1>
-        <p className="mt-2 text-sm leading-relaxed text-gray-300">{playbook.executiveSummary}</p>
-      </div>
+  const expertsPanel = {
+    projectId: playbook.projectId,
+    experts,
+    loading: expertsLoading,
+    emptyMessage: "No expert experience matches this playbook yet — we'll surface people as soon as one does.",
+  };
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Key insights</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="list-disc space-y-1.5 pl-4 text-sm text-gray-300">
-            {playbook.keyInsights.map((k, i) => (
-              <li key={i}>{k}</li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recommended strategy</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-300">{playbook.recommendedStrategy}</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle>Recommended actions</CardTitle>
-          <span className="text-xs text-gray-500">
-            {doneCount}/{playbook.actionItems.length} done
-          </span>
-        </CardHeader>
-        <CardContent className="flex flex-col">
+  /*
+    The document's sections, declared once. The table of contents and the body
+    are both rendered from this array, so the two can't drift apart — and a
+    playbook that's still generating (every field empty) drops all of them
+    rather than printing a run of blank headings.
+  */
+  const sections: DocumentSectionSpec[] = [
+    {
+      id: "executive-summary",
+      label: "Executive summary",
+      has: Boolean(playbook.executiveSummary),
+      content: <DocumentLead>{playbook.executiveSummary}</DocumentLead>,
+    },
+    {
+      id: "key-insights",
+      label: "Key insights",
+      has: playbook.keyInsights.length > 0,
+      content: <DocumentList items={playbook.keyInsights} />,
+    },
+    {
+      id: "recommended-strategy",
+      label: "Recommended strategy",
+      has: Boolean(playbook.recommendedStrategy),
+      content: <DocumentProse>{playbook.recommendedStrategy}</DocumentProse>,
+    },
+    {
+      id: "recommended-actions",
+      label: "Recommended actions",
+      has: playbook.actionItems.length > 0,
+      meta: `${doneCount}/${playbook.actionItems.length} done`,
+      content: (
+        <div className="flex flex-col">
           {playbook.actionItems.map((item) => (
             <PlaybookActionItemRow
               key={item.id}
@@ -107,74 +142,91 @@ export default function PlaybookDetailPage() {
               onChangeStatus={(status) => changeStatus(item.id, status)}
             />
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      ),
+    },
+    ...playbook.sections.map((s) => ({
+      id: slugify(s.heading),
+      label: s.heading,
+      has: Boolean(s.body),
+      content: <DocumentProse>{s.body}</DocumentProse>,
+    })),
+    {
+      id: "frameworks",
+      label: "Frameworks",
+      has: playbook.frameworks.length > 0,
+      content: <DocumentTermList items={playbook.frameworks} />,
+    },
+    {
+      id: "risks",
+      label: "Risks & considerations",
+      has: playbook.risks.length > 0,
+      content: <DocumentList items={playbook.risks} />,
+    },
+    {
+      id: "success-measures",
+      label: "Success measures",
+      has: playbook.successMeasures.length > 0,
+      content: <DocumentList items={playbook.successMeasures} />,
+    },
+    {
+      id: "resources",
+      label: "Resources",
+      has: playbook.resources.length > 0,
+      content: <DocumentTermList items={playbook.resources} />,
+    },
+  ].filter((s) => s.has);
 
-      {playbook.sections.map((s) => (
-        <Card key={s.heading}>
-          <CardHeader>
-            <CardTitle>{s.heading}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm leading-relaxed text-gray-300">{s.body}</p>
-          </CardContent>
-        </Card>
+  const header = (
+    <header>
+      <div className="mb-5 flex items-center gap-1.5 text-xs text-gray-500">
+        <Link href="/playbooks" className="hover:text-gray-300">
+          Playbooks
+        </Link>
+        <ChevronRight className="size-3" aria-hidden />
+        <span className="text-gray-300">{playbook.title}</span>
+      </div>
+      <h1 className="font-document text-[2rem] font-normal leading-tight text-gray-50">
+        {playbook.title}
+      </h1>
+      {/* The status is real state and keeps its badge; the rest is a byline. */}
+      <div className="mt-3 flex items-center gap-2.5">
+        <StatusBadge status={playbook.status} />
+        <span className="text-sm text-gray-400">
+          v{playbook.version} · Updated {formatDate(playbook.updatedAt)}
+        </span>
+      </div>
+    </header>
+  );
+
+  return (
+    <DocumentShell
+      contents={sections.map(({ id, label }) => ({ id, label }))}
+      header={header}
+      aside={
+        <RelevantExpertsPanel
+          {...expertsPanel}
+          className="hidden w-80 shrink-0 overflow-y-auto border-l border-gray-800 p-5 lg:flex"
+        />
+      }
+    >
+      {sections.map(({ id, label, meta, content }) => (
+        <DocumentSection key={id} id={id} label={label} meta={meta}>
+          {content}
+        </DocumentSection>
       ))}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Frameworks</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-1.5">
-            {playbook.frameworks.map((f) => (
-              <Badge key={f} variant="outline">
-                {f}
-              </Badge>
-            ))}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Risks & considerations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="list-disc space-y-1 pl-4 text-sm text-gray-300">
-              {playbook.risks.map((r, i) => (
-                <li key={i}>{r}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Success measures</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="list-disc space-y-1 pl-4 text-sm text-gray-300">
-            {playbook.successMeasures.map((m, i) => (
-              <li key={i}>{m}</li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
-
-      {playbook.resources.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Resources</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-1.5">
-            {playbook.resources.map((r) => (
-              <Badge key={r} variant="outline">
-                {r}
-              </Badge>
-            ))}
-          </CardContent>
-        </Card>
+      {/* A playbook mid-generation has no content yet — say so rather than showing a bare page. */}
+      {sections.length === 0 && (
+        <DocumentProse>This playbook is still being generated — check back in a moment.</DocumentProse>
       )}
-    </div>
+
+      {/*
+        Narrow screens have no room for the rail, so the same panel falls to
+        the end of the document instead of disappearing — on a phone the
+        experts are the next thing to do after reading.
+      */}
+      <RelevantExpertsPanel {...expertsPanel} className="lg:hidden" />
+    </DocumentShell>
   );
 }

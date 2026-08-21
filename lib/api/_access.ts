@@ -22,3 +22,16 @@ export function canViewProject(d: Database, projectId: string, viewerId: string)
   const expert = d.expertProfiles.find((p) => p.userId === viewerId);
   return expert?.verificationStatus === "approved";
 }
+
+/**
+ * A private thread is visible to exactly the two people in it.
+ *
+ * Deliberately not routed through project membership: a brief broadcast to
+ * ten experts puts all ten in a position to accept and work the project, and
+ * none of them may read what the client said privately to one of the others.
+ */
+export function canViewExpertConversation(d: Database, conversationId: string, viewerId: string): boolean {
+  const conversation = d.expertConversations.find((c) => c.id === conversationId);
+  if (!conversation) return false;
+  return conversation.clientId === viewerId || conversation.expertId === viewerId;
+}

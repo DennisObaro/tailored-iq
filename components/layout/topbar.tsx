@@ -57,7 +57,7 @@ export function Topbar({ title }: { title?: string }) {
             <DropdownMenuLabel className="p-0">Notifications</DropdownMenuLabel>
             {unreadCount > 0 && user && (
               <button
-                className="text-xs text-primary-400 hover:text-primary-300"
+                className="text-xs text-gold hover:text-gold-soft"
                 onClick={() => markAllRead(user.id)}
               >
                 Mark all read

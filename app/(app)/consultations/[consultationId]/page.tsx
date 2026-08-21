@@ -33,7 +33,7 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
       {[1, 2, 3, 4, 5].map((n) => (
         <button key={n} onClick={() => onChange(n)} aria-label={`${n} star${n > 1 ? "s" : ""}`} type="button">
           {n <= value ? (
-            <StarFilled className="size-5 text-primary-400" />
+            <StarFilled className="size-5 text-gold" />
           ) : (
             <Star className="size-5 text-gray-700" />
           )}
@@ -163,7 +163,7 @@ export default function ConsultationLobbyPage() {
       {consultation.status === "scheduled" && (
         <Card className="flex flex-col gap-4 p-5">
           <div className="flex items-start gap-2 text-xs text-gray-400">
-            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary-400" aria-hidden />
+            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden />
             This call happens on TailoredIQ and will be recorded and transcribed with your consent, to help
             capture useful insights for your project.
           </div>
@@ -247,7 +247,7 @@ export default function ConsultationLobbyPage() {
               <Card className="flex flex-col gap-4 p-5">
                 <div>
                   <p className="flex items-center gap-1.5 text-sm font-medium text-gray-50">
-                    <HandHeart className="size-4 text-primary-400" aria-hidden />
+                    <HandHeart className="size-4 text-gold" aria-hidden />
                     Could you support this project further?
                   </p>
                   <p className="mt-1 text-xs text-gray-400">

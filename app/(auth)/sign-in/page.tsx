@@ -108,14 +108,14 @@ export default function SignInPage() {
 
       <p className="text-center text-sm text-gray-400">
         Don&apos;t have an account?{" "}
-        <Link href="/sign-up" className="font-medium text-primary-400 hover:text-primary-300">
+        <Link href="/sign-up" className="font-medium text-gold hover:text-gold-soft">
           Create account
         </Link>
       </p>
 
       <p className="text-center text-sm text-gray-400">
         Invited to join as an expert?{" "}
-        <Link href="/become-an-expert" className="font-medium text-primary-400 hover:text-primary-300">
+        <Link href="/become-an-expert" className="font-medium text-gold hover:text-gold-soft">
           Enter your referral code
         </Link>
       </p>

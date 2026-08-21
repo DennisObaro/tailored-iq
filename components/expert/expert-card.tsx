@@ -4,6 +4,7 @@ import type { ExpertListing } from "@/lib/api/experts";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { SaveExpertButton } from "@/components/expert/save-expert-button";
 import { cn } from "@/lib/utils/cn";
 
 export function ExpertCard({
@@ -11,12 +12,21 @@ export function ExpertCard({
   projectId,
   reason,
   truncateReason = false,
+  saved,
+  onToggleSaved,
 }: {
   listing: ExpertListing;
   projectId?: string;
   reason?: string;
   /** Clamps the reason chip to one line and stretches it full-width instead of hugging the text. */
   truncateReason?: boolean;
+  saved?: boolean;
+  /**
+   * Opt-in: the save control only appears where a parent is tracking the
+   * client's saved set. Call sites that just list experts (the chat rail, a
+   * project's matches) pass neither and render exactly as before.
+   */
+  onToggleSaved?: (next: boolean) => void;
 }) {
   const { user, profile } = listing;
   const params = new URLSearchParams();
@@ -71,8 +81,17 @@ export function ExpertCard({
               "New · no reviews yet"
             )}
           </span>
-          <span className="inline-flex h-8 items-center justify-center rounded-[10px] border border-gray-800 px-3 text-xs font-medium text-gray-50">
-            View profile
+          <span className="flex items-center gap-1.5">
+            {onToggleSaved && (
+              <SaveExpertButton
+                saved={saved ?? false}
+                onToggle={onToggleSaved}
+                name={`${user.firstName} ${user.lastName}`}
+              />
+            )}
+            <span className="inline-flex h-8 items-center justify-center rounded-[10px] border border-gray-800 px-3 text-xs font-medium text-gray-50">
+              View profile
+            </span>
           </span>
         </div>
       </Card>

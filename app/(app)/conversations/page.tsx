@@ -3,69 +3,114 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MessagesSquare } from "@/components/icons";
-import type { Consultation, User } from "@/lib/types";
-import * as consultationsApi from "@/lib/api/consultations";
-import * as usersApi from "@/lib/api/users";
+import type { ConversationListing } from "@/lib/api/expert-conversations";
+import * as conversationsApi from "@/lib/api/expert-conversations";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import { Avatar } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatDateTime } from "@/lib/utils/format";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { formatRelative } from "@/lib/utils/format";
+import { cn } from "@/lib/utils/cn";
 
 export default function ConversationsPage() {
   const user = useSessionStore((s) => s.user);
-  const [consultations, setConsultations] = useState<Consultation[] | null>(null);
-  const [experts, setExperts] = useState<Record<string, User>>({});
+  const [listings, setListings] = useState<ConversationListing[] | null>(null);
 
   useEffect(() => {
     if (!user) return;
-    consultationsApi.listConsultationsForClient(user.id).then(async (list) => {
-      setConsultations(list);
-      const uniqueIds = [...new Set(list.map((c) => c.expertId))];
-      const users = await Promise.all(uniqueIds.map((id) => usersApi.getUser(id)));
-      const map: Record<string, User> = {};
-      users.forEach((u) => {
-        if (u) map[u.id] = u;
-      });
-      setExperts(map);
-    });
+    conversationsApi.listConversationsForUser(user.id).then(setListings);
   }, [user]);
 
-  return (
-    <div className="mx-auto max-w-2xl p-6">
-      <h1 className="mb-6 text-xl font-semibold text-gray-50">Conversations</h1>
+  const isExpertView = listings?.some((l) => l.conversation.expertId === user?.id) ?? false;
 
-      {!consultations ? (
-        <Skeleton className="h-32 w-full" />
-      ) : consultations.length === 0 ? (
-        <EmptyState
-          icon={MessagesSquare}
-          title="No expert conversations yet."
-          description="Once we match you with relevant experience, your conversations will appear here."
-        />
-      ) : (
-        <div className="flex flex-col gap-3">
-          {consultations.map((c) => {
-            const expert = experts[c.expertId];
-            return (
-              <Link key={c.id} href={`/consultations/${c.id}`}>
-                <Card className="flex items-center gap-3 p-4 transition-colors hover:bg-gray-900">
-                  {expert && <Avatar firstName={expert.firstName} lastName={expert.lastName} />}
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-100">
-                      {expert ? `${expert.firstName} ${expert.lastName}` : "Expert"}
-                    </p>
-                    <p className="text-xs text-gray-500">{formatDateTime(c.scheduledFor)}</p>
-                  </div>
-                  <StatusBadge status={c.status} />
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+  return (
+    <div className="mx-auto max-w-3xl p-6">
+      <h1 className="text-xl font-semibold text-gray-50">Conversations</h1>
+      <p className="mt-1 text-sm text-gray-400">
+        {isExpertView
+          ? "Clients you're working with, and the challenge behind each one."
+          : "Where you and an expert work through one of your challenges."}
+      </p>
+
+      <div className="mt-6">
+        {!listings ? (
+          <Skeleton className="h-32 w-full" />
+        ) : listings.length === 0 ? (
+          <EmptyState
+            icon={MessagesSquare}
+            title="Your conversations will appear here."
+            description={
+              isExpertView
+                ? "When a client engages with you, you'll be able to continue the conversation here."
+                : "Connect with an expert to start a conversation around a challenge you're working through."
+            }
+            action={
+              !isExpertView ? (
+                <Button asChild size="sm">
+                  <Link href="/experts">Explore experts</Link>
+                </Button>
+              ) : undefined
+            }
+          />
+        ) : (
+          <div className="flex flex-col gap-2">
+            {listings.map((listing) => {
+              const unread = listing.unreadCount > 0;
+              return (
+                <Link key={listing.conversation.id} href={`/conversations/${listing.conversation.id}`}>
+                  <Card
+                    className={cn(
+                      "flex items-start gap-3 p-4 transition-colors hover:bg-gray-900",
+                      // Unread leans on weight and the existing gold accent rather
+                      // than a new colour — the same cue the rest of the app uses.
+                      unread && "border-primary-500/30",
+                    )}
+                  >
+                    <Avatar
+                      firstName={listing.counterpart.firstName}
+                      lastName={listing.counterpart.lastName}
+                      src={listing.counterpart.avatarUrl}
+                      size="lg"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className={cn("truncate text-sm text-gray-100", unread && "font-medium text-gray-50")}>
+                          {listing.counterpart.firstName} {listing.counterpart.lastName}
+                        </p>
+                        <span className="shrink-0 text-xs text-gray-500">
+                          {formatRelative(listing.lastMessage?.createdAt ?? listing.conversation.updatedAt)}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 truncate text-xs text-gray-400">{listing.projectTitle}</p>
+                      <p
+                        className={cn(
+                          "mt-1.5 truncate text-sm",
+                          unread ? "text-gray-200" : "text-gray-500",
+                        )}
+                      >
+                        {listing.lastMessage
+                          ? `${listing.lastMessage.senderRole === "system" ? "" : listing.lastMessage.senderId === user?.id ? "You: " : ""}${listing.lastMessage.content}`
+                          : "No messages yet."}
+                      </p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <StatusBadge status={listing.stage} />
+                        {unread && (
+                          <span className="rounded-full bg-primary-500 px-1.5 py-0.5 text-[11px] font-medium text-primary-foreground">
+                            {listing.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

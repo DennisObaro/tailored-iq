@@ -209,8 +209,8 @@ export default function ExpertProfilePage() {
                   <span className="text-sm text-gray-200">
                     {reviewer.firstName} {reviewer.lastName}
                   </span>
-                  <span className="flex items-center gap-1 text-xs text-primary-400">
-                    <StarFilled className="size-3.5 text-primary-400" aria-hidden />
+                  <span className="flex items-center gap-1 text-xs text-gold">
+                    <StarFilled className="size-3.5 text-gold" aria-hidden />
                     {review.rating}
                   </span>
                   <span className="text-xs text-gray-500">{formatDate(review.createdAt)}</span>

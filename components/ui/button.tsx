@@ -8,7 +8,7 @@ type Size = "sm" | "md" | "lg" | "icon";
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-primary-500 text-gray-975 hover:bg-primary-400 active:bg-primary-600 disabled:bg-gray-800 disabled:text-gray-500",
+    "bg-primary-500 text-primary-foreground hover:bg-primary-400 active:bg-primary-600 disabled:bg-gray-800 disabled:text-gray-500",
   secondary:
     "bg-gray-850 text-gray-50 hover:bg-gray-800 active:bg-gray-700 disabled:bg-gray-900 disabled:text-gray-600",
   outline:
@@ -16,7 +16,7 @@ const variantClasses: Record<Variant, string> = {
   ghost:
     "bg-transparent text-gray-300 hover:bg-gray-900 hover:text-gray-50 active:bg-gray-850 disabled:text-gray-600",
   danger:
-    "bg-danger-500 text-gray-50 hover:bg-danger-400 active:bg-danger-500 disabled:bg-gray-800 disabled:text-gray-500",
+    "bg-danger-500 text-destructive-foreground hover:bg-danger-400 active:bg-danger-500 disabled:bg-gray-800 disabled:text-gray-500",
 };
 
 const sizeClasses: Record<Size, string> = {

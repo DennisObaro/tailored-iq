@@ -31,7 +31,7 @@ export function RoleSelectCard({
       <div
         className={cn(
           "flex size-9 shrink-0 items-center justify-center rounded-md",
-          selected ? "bg-primary-500/15 text-primary-400" : "bg-gray-850 text-gray-400",
+          selected ? "bg-primary-500/15 text-gold" : "bg-gray-850 text-gray-400",
         )}
       >
         <Icon className="size-4" aria-hidden />

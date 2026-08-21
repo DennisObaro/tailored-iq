@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Search, Sparkles, Users } from "@/components/icons";
+import { useCallback, useEffect, useState } from "react";
+import { Bookmark, Search, Sparkles, Users } from "@/components/icons";
 import * as expertsApi from "@/lib/api/experts";
+import * as savedExpertsApi from "@/lib/api/saved-experts";
 import type { ExpertListing, RecommendedExpertsResult } from "@/lib/api/experts";
 import { ExpertCard } from "@/components/expert/expert-card";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils/cn";
 const TABS = [
   { key: "recommended", label: "Recommended" },
   { key: "all", label: "All experts" },
+  { key: "saved", label: "Saved" },
 ] as const;
 
 export default function ExpertsPage() {
@@ -24,6 +26,8 @@ export default function ExpertsPage() {
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("recommended");
   const [listings, setListings] = useState<ExpertListing[] | null>(null);
   const [recommended, setRecommended] = useState<RecommendedExpertsResult | null>(null);
+  const [saved, setSaved] = useState<ExpertListing[] | null>(null);
+  const [savedIds, setSavedIds] = useState<string[] | null>(null);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
 
@@ -35,6 +39,43 @@ export default function ExpertsPage() {
     if (!user) return;
     expertsApi.getRecommendedExperts(user.id).then(setRecommended);
   }, [user]);
+
+  /**
+   * The ids are loaded for every tab, not just Saved: the same expert can be
+   * on screen in Recommended or All, and its bookmark has to already know
+   * whether it's set.
+   */
+  useEffect(() => {
+    if (!user) return;
+    savedExpertsApi.listSavedExpertIds(user.id).then(setSavedIds);
+    savedExpertsApi.listSavedExperts(user.id).then(setSaved);
+  }, [user]);
+
+  /**
+   * Optimistic on both fronts — the ids (which drive every bookmark on the
+   * page) and the Saved tab's own list, so switching straight to it after
+   * saving doesn't show a stale list while the write settles.
+   */
+  const toggleSaved = useCallback(
+    async (listing: ExpertListing, next: boolean) => {
+      if (!user) return;
+      const expertId = listing.user.id;
+      setSavedIds((ids) =>
+        next ? [...(ids ?? []), expertId] : (ids ?? []).filter((i) => i !== expertId),
+      );
+      setSaved((list) =>
+        next
+          ? [listing, ...(list ?? []).filter((l) => l.user.id !== expertId)]
+          : (list ?? []).filter((l) => l.user.id !== expertId),
+      );
+      await savedExpertsApi.setExpertSaved(user.id, expertId, next);
+    },
+    [user],
+  );
+
+  /** Until the ids land, no bookmark claims to be set. */
+  const isSaved = (expertId: string) => savedIds?.includes(expertId) ?? false;
+  const savedCount = savedIds?.length ?? 0;
 
   return (
     <div className="mx-auto max-w-4xl p-6">
@@ -56,12 +97,15 @@ export default function ExpertsPage() {
             )}
           >
             {t.label}
+            {t.key === "saved" && savedCount > 0 && (
+              <span className="ml-1.5 text-xs text-gray-500">{savedCount}</span>
+            )}
           </button>
         ))}
       </div>
 
-      {tab === "recommended" ? (
-        recommended === null ? (
+      {tab === "recommended" &&
+        (recommended === null ? (
           <div className="grid gap-3 sm:grid-cols-2">
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-32 w-full" />
@@ -75,7 +119,13 @@ export default function ExpertsPage() {
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
               {recommended.recommendations.map((r) => (
-                <ExpertCard key={r.listing.user.id} listing={r.listing} reason={r.reason} />
+                <ExpertCard
+                  key={r.listing.user.id}
+                  listing={r.listing}
+                  reason={r.reason}
+                  saved={isSaved(r.listing.user.id)}
+                  onToggleSaved={(next) => toggleSaved(r.listing, next)}
+                />
               ))}
             </div>
           </div>
@@ -94,8 +144,9 @@ export default function ExpertsPage() {
               </Button>
             }
           />
-        )
-      ) : (
+        ))}
+
+      {tab === "all" && (
         <>
           <div className="mb-6 flex gap-2">
             <div className="relative flex-1">
@@ -127,12 +178,50 @@ export default function ExpertsPage() {
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {listings.map((l) => (
-                <ExpertCard key={l.user.id} listing={l} />
+                <ExpertCard
+                  key={l.user.id}
+                  listing={l}
+                  saved={isSaved(l.user.id)}
+                  onToggleSaved={(next) => toggleSaved(l, next)}
+                />
               ))}
             </div>
           )}
         </>
       )}
+
+      {tab === "saved" &&
+        (saved === null ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+        ) : saved.length === 0 ? (
+          <EmptyState
+            icon={Bookmark}
+            title="No saved experts yet."
+            description="Save an expert from their card or profile and they'll be waiting here next time."
+            action={
+              <Button size="sm" variant="outline" onClick={() => setTab("all")}>
+                Browse all experts
+              </Button>
+            }
+          />
+        ) : (
+          <div>
+            <p className="mb-3 text-xs text-gray-400">Experts you&apos;ve saved to come back to.</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {saved.map((l) => (
+                <ExpertCard
+                  key={l.user.id}
+                  listing={l}
+                  saved={isSaved(l.user.id)}
+                  onToggleSaved={(next) => toggleSaved(l, next)}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
     </div>
   );
 }

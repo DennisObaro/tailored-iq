@@ -46,7 +46,7 @@ export function PreviewStep({
       nextLabel="Submit for review"
     >
       <Card className="flex items-start gap-2.5 border-primary-500/30 bg-primary-500/5 p-4">
-        <Eye className="mt-0.5 size-4 shrink-0 text-primary-400" aria-hidden />
+        <Eye className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden />
         <p className="text-sm text-gray-200">
           Nothing here is public yet. Once you submit, a reviewer checks your background against the evidence you gave us.
         </p>

@@ -15,8 +15,13 @@ export interface ExpertListing {
  * Client-facing listing. Filters to approved experts on the way out —
  * a pending, restricted or rejected profile is not something a client
  * should be able to see, search or book (spec §30).
+ *
+ * Exported for the other lib/api modules that build client-facing expert
+ * lists (saved-experts.ts), so that guard is written once: an expert who
+ * loses approval silently drops out of every list that goes through here,
+ * including one a client had already saved.
  */
-function joinExperts(database: ReturnType<typeof db.get>): ExpertListing[] {
+export function joinExperts(database: ReturnType<typeof db.get>): ExpertListing[] {
   return database.expertProfiles
     .filter((profile) => profile.verificationStatus === "approved")
     .map((profile) => {
@@ -78,8 +83,16 @@ export async function getExpertsByIds(userIds: string[]): Promise<ExpertListing[
  * Unlike matchExpertsForProject, this never mutates the project (no status
  * change, no activity entry, no notification) — it's recomputed every turn
  * so the panel tracks the conversation as it develops.
+ *
+ * Deliberately wide: until the brief is confirmed nothing has been decided,
+ * so this answers "who could you talk to" in relevance order rather than
+ * committing to a shortlist. The real narrowing to three is
+ * matchExpertsForProject, which only runs once the client confirms.
  */
-export async function suggestExpertsForConversation(projectId: string): Promise<ExpertListing[]> {
+export async function suggestExpertsForConversation(
+  projectId: string,
+  limit = 12,
+): Promise<ExpertListing[]> {
   return simulateNetwork(
     () => {
       const database = db.get();
@@ -109,11 +122,23 @@ export async function suggestExpertsForConversation(projectId: string): Promise<
         const [profileTop] = scoreCategories(profileText).filter((s) => s.score > 0);
         category = profileTop?.category ?? FUNCTION_TO_CATEGORY[client.function] ?? null;
       }
-      if (!category) return [];
+      /** A dual-role user shouldn't be offered a call with themselves. */
+      const pool = database.expertProfiles.filter((e) => e.userId !== project.clientId);
 
-      const matched = matchExperts(database.expertProfiles, category, client ? [client.industry] : []);
+      /**
+       * Still no category even after the profile fallback (turn one on a
+       * brand-new account). The wide list is "who you could talk to", so an
+       * unranked top-rated pool beats an empty rail — the same last-resort
+       * getRecommendedExperts falls back to.
+       */
+      const suggested = category
+        ? matchExperts(pool, category, client ? [client.industry] : [], limit)
+        : pool
+            .filter((e) => e.verificationStatus === "approved")
+            .sort((a, b) => b.rating - a.rating)
+            .slice(0, limit);
 
-      return matched
+      return suggested
         .map((profile) => {
           const user = database.users.find((u) => u.id === profile.userId);
           return user ? { user, profile } : null;
@@ -146,7 +171,15 @@ export async function matchExpertsForProject(projectId: string): Promise<ExpertL
       const matched = scored.map((m) => m.expert);
 
       const now = new Date().toISOString();
-      project.matchedExpertIds = matched.map((e) => e.userId);
+      /**
+       * Merged, not replaced: experts who jumped on this brief while it was
+       * live are already engaged on it, and overwriting the list would drop
+       * them out of their own Active Projects and revoke the access they
+       * were granted when they accepted.
+       */
+      for (const expert of matched) {
+        if (!project.matchedExpertIds.includes(expert.userId)) project.matchedExpertIds.push(expert.userId);
+      }
       project.status = "expert_matching";
       project.updatedAt = now;
       project.activity.push({ id: id("act"), label: "Experts matched", timestamp: now });
@@ -167,13 +200,24 @@ export async function matchExpertsForProject(projectId: string): Promise<ExpertL
           id: opportunityId,
           projectId: project.id,
           expertId: match.expert.userId,
+          kind: "standard_brief",
           title: project.title,
           summary: project.challenge,
           relevanceReason: match.reason,
           category,
-          requestedContributions: match.expert.willingness.includes("advisory_call")
-            ? ["advisory_call", "playbook_contribution"]
-            : ["review", "contribute_insight"],
+          /**
+           * What the client is asking this particular expert for, drawn from
+           * the three engagement modes an opportunity can offer. A playbook
+           * contribution is always wanted; the call and hands-on support are
+           * only requested from experts who said they're open to them.
+           */
+          requestedContributions: [
+            "playbook_contribution" as const,
+            ...(match.expert.willingness.includes("advisory_call") ? (["advisory_call"] as const) : []),
+            ...(match.expert.willingness.includes("consulting_engagement")
+              ? (["consulting_engagement"] as const)
+              : []),
+          ],
           response: null,
           offeredContributions: [],
           createdAt: now,
@@ -360,6 +404,59 @@ export async function getRecommendedExperts(clientId: string, limit = 3): Promis
   }
 
   return { hasChats: projects.length > 0, recommendations };
+}
+
+export interface RelevantExpertsInput {
+  clientId: string;
+  /** The project the document came out of. Absent for a playbook unlocked from the Explore catalog. */
+  projectId?: string;
+  /** The document's own words (summary, insights), scored only when there's no project match to lean on. */
+  text?: string;
+  limit?: number;
+}
+
+/**
+ * The rail that sits beside a piece of generated output — an executive
+ * summary, a playbook. Prefers the experts already matched to the project,
+ * because those are the people this client has actually been introduced to.
+ * Falls back to a live category match so output whose project never reached
+ * matching — and a catalog playbook, which has no project at all — still
+ * gets a real rail rather than an empty one.
+ */
+export async function getRelevantExperts({
+  clientId,
+  projectId,
+  text = "",
+  limit = 3,
+}: RelevantExpertsInput): Promise<ExpertListing[]> {
+  return simulateNetwork(
+    () => {
+      const database = db.get();
+      const byUserId = new Map(joinExperts(database).map((l) => [l.user.id, l]));
+
+      const project = projectId ? database.projects.find((p) => p.id === projectId) : undefined;
+      if (project) {
+        const matched = project.matchedExpertIds
+          .map((expertId) => byUserId.get(expertId))
+          .filter((l): l is ExpertListing => l !== undefined);
+        if (matched.length > 0) return matched.slice(0, limit);
+      }
+
+      const client = database.clientProfiles.find((c) => c.userId === clientId);
+
+      const category =
+        (project ? resolveProjectCategory(project, database) : null) ??
+        scoreCategories(text).find((s) => s.score > 0)?.category ??
+        (client ? FUNCTION_TO_CATEGORY[client.function] : undefined) ??
+        null;
+      if (!category) return [];
+
+      return matchExperts(database.expertProfiles, category, client ? [client.industry] : [], limit)
+        .map((profile) => byUserId.get(profile.userId))
+        .filter((l): l is ExpertListing => l !== undefined);
+    },
+    { latency: [250, 500] },
+  );
 }
 
 export interface PeerExpertListing {

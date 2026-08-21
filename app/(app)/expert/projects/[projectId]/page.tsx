@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, Lock, Lightbulb, FileText } from "@/components/icons";
+import { ChevronRight, Lock, Lightbulb, FileText, Check } from "@/components/icons";
 import type { Brief, Consultation, ExpertContribution, ExpertProfile, Project, Report } from "@/lib/types";
 import * as projectsApi from "@/lib/api/projects";
 import * as briefsApi from "@/lib/api/briefs";
@@ -11,6 +11,7 @@ import * as reportsApi from "@/lib/api/reports";
 import * as consultationsApi from "@/lib/api/consultations";
 import * as contributionsApi from "@/lib/api/contributions";
 import * as opportunitiesApi from "@/lib/api/opportunities";
+import * as liveBriefsApi from "@/lib/api/live-briefs";
 import * as expertApi from "@/lib/api/expert-onboarding";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import { getExpertAccess } from "@/lib/utils/expert-access";
@@ -36,6 +37,9 @@ export default function ExpertProjectViewPage() {
   const [consultation, setConsultation] = useState<Consultation | null>(null);
   const [contributions, setContributions] = useState<ExpertContribution[]>([]);
   const [listing, setListing] = useState<opportunitiesApi.OpportunityListing | null>(null);
+  const [finalState, setFinalState] = useState<liveBriefsApi.FinalPlaybookState | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -53,6 +57,9 @@ export default function ExpertProjectViewPage() {
       setProfile(expertProfile);
       setListing(opps.find((l) => l.opportunity.projectId === projectId) ?? null);
       setContributions(myContributions.filter((c) => c.projectId === projectId));
+      liveBriefsApi.getFinalPlaybookState(projectId, user.id).then((state) => {
+        if (!cancelled) setFinalState(state);
+      });
 
       /**
        * Client detail is fetched only when this expert is actually engaged
@@ -119,7 +126,7 @@ export default function ExpertProjectViewPage() {
           <Lock className="size-5 text-gray-500" aria-hidden />
           <p className="text-sm font-semibold text-gray-50">You aren&apos;t engaged on this project.</p>
           <p className="max-w-sm text-sm text-gray-400">
-            Client briefs, reports and transcripts are only available to experts working on the project.
+            Client briefs, executive summaries and transcripts are only available to experts working on the project.
           </p>
           <Button asChild size="sm" variant="outline">
             <Link href="/expert/opportunities">Back to opportunities</Link>
@@ -222,6 +229,76 @@ export default function ExpertProjectViewPage() {
               </Button>
             </CardContent>
           </Card>
+
+          {/*
+            Several experts can be drafting the same brief at once, so this is
+            where it's said out loud who the one final submission belongs to.
+            Everyone else's work stays attached as supporting material rather
+            than being thrown away.
+          */}
+          {finalState && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Final playbook</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
+                {finalState.submittedBy ? (
+                  <p className="flex items-start gap-2 text-sm text-gray-300">
+                    <Check className="mt-0.5 size-4 shrink-0 text-success" aria-hidden />
+                    <span>
+                      Final playbook submitted by{" "}
+                      <span className="font-medium text-gray-100">{finalState.submittedBy.name}</span>.{" "}
+                      {finalState.reason}
+                    </span>
+                  </p>
+                ) : (
+                  <>
+                    {finalState.contenders.length > 0 && (
+                      <div className="flex flex-col gap-1.5">
+                        <p className="text-xs font-medium text-gray-500">
+                          Experts contributing to this brief
+                        </p>
+                        {finalState.contenders.map((contender, i) => (
+                          <p key={contender.expertId} className="text-sm text-gray-300">
+                            <span className="text-gray-500">{i + 1}.</span> {contender.name}
+                            <span className="text-gray-500"> · {contender.points} points</span>
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                    {finalState.canSubmit ? (
+                      <>
+                        <p className="text-sm text-gray-300">
+                          You lead on standing for this brief, so the final submission is yours to make.
+                        </p>
+                        <Button
+                          size="sm"
+                          className="self-start"
+                          loading={submitting}
+                          onClick={async () => {
+                            setSubmitting(true);
+                            setSubmitError(null);
+                            try {
+                              setFinalState(await liveBriefsApi.submitFinalPlaybook(project.id, user.id));
+                            } catch (e) {
+                              setSubmitError(e instanceof Error ? e.message : "That didn't work. Try again.");
+                            } finally {
+                              setSubmitting(false);
+                            }
+                          }}
+                        >
+                          Submit final playbook
+                        </Button>
+                      </>
+                    ) : (
+                      <p className="text-sm text-gray-400">{finalState.reason}</p>
+                    )}
+                    {submitError && <p className="text-xs text-destructive">{submitError}</p>}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </ExpertGate>
       )}
     </div>

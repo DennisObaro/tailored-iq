@@ -47,13 +47,13 @@ export async function generateReportForProject(projectId: string): Promise<Repor
       project.reportId = report.id;
       project.status = "report_ready";
       project.updatedAt = now;
-      project.activity.push({ id: id("act"), label: "Report generated", timestamp: now });
+      project.activity.push({ id: id("act"), label: "Executive summary generated", timestamp: now });
       d.notifications.unshift({
         id: id("notif"),
         userId: project.clientId,
         type: "report_ready",
-        title: "Your report is ready",
-        body: `The report for "${project.title}" is ready to view.`,
+        title: "Your executive summary is ready",
+        body: `The executive summary for "${project.title}" is ready to view.`,
         linkHref: `/reports/${report.id}`,
         read: false,
         createdAt: now,

@@ -1,29 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowRight,
-  ArrowUp,
   Calendar,
   ClipboardList,
   FileText,
   MessageSquare,
   type IconComponent,
 } from "@/components/icons";
-import {
-  Store01Icon,
-  UserGroupIcon,
-  UserCheck01Icon,
-  UserAdd01Icon,
-  ChartUpIcon,
-  AiBrain01Icon,
-  Wallet01Icon,
-  HierarchyIcon,
-  Compass01Icon,
-} from "@hugeicons-pro/core-stroke-rounded";
-import { hugeiconsAdapter } from "@/components/icons/hugeicon";
 import type { Consultation, NotificationType, Project } from "@/lib/types";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import * as projectsApi from "@/lib/api/projects";
@@ -38,7 +25,8 @@ import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Avatar } from "@/components/ui/avatar";
 import { ProjectCard } from "@/components/project/project-card";
-import { SuggestionCarousel, type Suggestion } from "@/components/chat/suggestion-carousel";
+import { ChallengeComposer } from "@/components/chat/challenge-composer";
+import { ExpertsReadyRow } from "@/components/expert/experts-ready-row";
 import { ExpertCard } from "@/components/expert/expert-card";
 import { formatCallWhen, isCallImminent } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
@@ -58,7 +46,7 @@ interface UpcomingCall {
 }
 
 const ACTION_ITEM_META: Partial<Record<NotificationType, { icon: IconComponent; ctaLabel: string }>> = {
-  report_ready: { icon: FileText, ctaLabel: "View report" },
+  report_ready: { icon: FileText, ctaLabel: "View executive summary" },
   playbook_ready: { icon: ClipboardList, ctaLabel: "View action plan" },
   playbook_updated: { icon: ClipboardList, ctaLabel: "View update" },
   call_reminder: { icon: Calendar, ctaLabel: "View call" },
@@ -66,33 +54,10 @@ const ACTION_ITEM_META: Partial<Record<NotificationType, { icon: IconComponent; 
   contribution_added: { icon: MessageSquare, ctaLabel: "Review response" },
 };
 
-/**
- * Questions rather than topics: the composer is asking what decision you
- * are facing, and a decision is easier to recognise than a category.
- * Grouped in threes because the carousel rotates a whole set at a time.
- */
-const SUGGESTED_QUESTION_SETS: Suggestion[][] = [
-  [
-    { text: "Should we enter a new market now?", icon: hugeiconsAdapter(Store01Icon) },
-    { text: "How do I build a stronger leadership team?", icon: hugeiconsAdapter(UserGroupIcon) },
-    { text: "How can we retain our best people?", icon: hugeiconsAdapter(UserCheck01Icon) },
-  ],
-  [
-    { text: "Should we hire a COO at this stage?", icon: hugeiconsAdapter(UserAdd01Icon) },
-    { text: "How do I scale without losing efficiency?", icon: hugeiconsAdapter(ChartUpIcon) },
-    { text: "Where should we start with AI adoption?", icon: hugeiconsAdapter(AiBrain01Icon) },
-  ],
-  [
-    { text: "Raise more capital, or focus on profitability?", icon: hugeiconsAdapter(Wallet01Icon) },
-    { text: "How do we restructure a growing team?", icon: hugeiconsAdapter(HierarchyIcon) },
-    { text: "How do I prepare for a major decision?", icon: hugeiconsAdapter(Compass01Icon) },
-  ],
-];
-
 const HOW_IT_WORKS = [
   { number: "01", title: "We'll understand your challenge" },
   { number: "02", title: "We'll help you find a way forward" },
-  { number: "03", title: "We'll connect you with the right experience" },
+  { number: "03", title: "We'll connect you with an expert who's been there" },
 ];
 
 function greeting() {
@@ -106,10 +71,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const user = useSessionStore((s) => s.user);
   const [projects, setProjects] = useState<Project[] | null>(null);
-  const [value, setValue] = useState("");
-  const [inputActive, setInputActive] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [actionItems, setActionItems] = useState<ActionItem[] | null>(null);
   const [upcomingCalls, setUpcomingCalls] = useState<UpcomingCall[] | null>(null);
   const [upcomingCallsCount, setUpcomingCallsCount] = useState<number | null>(null);
@@ -195,54 +157,9 @@ export default function DashboardPage() {
           options, and decide what to do next.
         </p>
 
-        <div className="mt-10 w-full max-w-3xl">
-          {/* One frame, two layers: the message surface, and a strip of
-              example questions under it. The examples belong to the
-              composer rather than floating beneath it as navigation. */}
-          <div className="w-full rounded-[28px] bg-gray-950 p-2">
-            <div className="relative min-h-28 w-full rounded-[22px] bg-gray-900 px-5 pt-5 pb-14 focus-within:ring-2 focus-within:ring-primary-500">
-              <textarea
-                ref={inputRef}
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                onFocus={() => setInputActive(true)}
-                onBlur={() => setInputActive(false)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    start(value);
-                  }
-                }}
-                placeholder="What are you trying to figure out?"
-                rows={1}
-                disabled={submitting}
-                className="w-full resize-none bg-transparent text-left text-sm italic text-gray-50 placeholder:italic placeholder:text-gray-400 focus-visible:outline-none disabled:opacity-50"
-              />
-              <Button
-                size="icon"
-                className="absolute bottom-3 right-3 h-8 w-8 rounded-full"
-                loading={submitting}
-                disabled={!value.trim()}
-                onClick={() => start(value)}
-                aria-label="Start a challenge"
-              >
-                <ArrowUp className="size-4" aria-hidden />
-              </Button>
-            </div>
+        <ChallengeComposer className="mt-10 max-w-3xl" submitting={submitting} onStart={start} />
 
-            <SuggestionCarousel
-              /* Left padding matches the input surface, so the chips line up with the message text above them. */
-              className="px-5 py-3"
-              sets={SUGGESTED_QUESTION_SETS}
-              disabled={submitting}
-              paused={inputActive || value.trim().length > 0}
-              onSelect={(suggestion) => {
-                setValue(suggestion);
-                inputRef.current?.focus();
-              }}
-            />
-          </div>
-        </div>
+        <ExpertsReadyRow className="mt-6" />
 
         <div className="mt-6 grid w-full max-w-3xl grid-cols-1 gap-6 rounded-[28px] border border-gray-800 p-5 text-left sm:grid-cols-3 sm:divide-x sm:divide-gray-800">
           {HOW_IT_WORKS.map((step) => (
@@ -335,7 +252,7 @@ export default function DashboardPage() {
                 <h2 className="text-sm font-medium text-gray-300">Your challenges</h2>
                 <p className="mt-1 text-xs text-gray-500">Continue working through the challenges you&apos;re solving.</p>
               </div>
-              <Link href="/projects" className="inline-flex shrink-0 items-center gap-1 text-xs text-primary-400 hover:text-primary-300">
+              <Link href="/projects" className="inline-flex shrink-0 items-center gap-1 text-xs text-gold hover:text-gold-soft">
                 View all <ArrowRight className="size-3" />
               </Link>
             </div>
@@ -429,7 +346,7 @@ export default function DashboardPage() {
                   </p>
                   <Link
                     href="/experts"
-                    className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary-400 hover:text-primary-300"
+                    className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-gold hover:text-gold-soft"
                   >
                     Explore experts <ArrowRight className="size-3" />
                   </Link>
@@ -448,7 +365,7 @@ export default function DashboardPage() {
                   {recommended.hasChats ? "Based on what you've been working on." : "Based on your profile."}
                 </p>
               </div>
-              <Link href="/experts" className="inline-flex shrink-0 items-center gap-1 text-xs text-primary-400 hover:text-primary-300">
+              <Link href="/experts" className="inline-flex shrink-0 items-center gap-1 text-xs text-gold hover:text-gold-soft">
                 Explore all experts <ArrowRight className="size-3" />
               </Link>
             </div>

@@ -161,7 +161,7 @@ export default function ContributionDetailPage() {
           <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
             {LIFECYCLE.map((stage, index) => (
               <li key={stage.status} className="flex items-center gap-2">
-                <span className={index <= currentIndex ? "text-primary-400" : "text-gray-600"}>{stage.label}</span>
+                <span className={index <= currentIndex ? "text-gold" : "text-gray-600"}>{stage.label}</span>
                 {index < LIFECYCLE.length - 1 && <ChevronRight className="size-3 text-gray-700" aria-hidden />}
               </li>
             ))}

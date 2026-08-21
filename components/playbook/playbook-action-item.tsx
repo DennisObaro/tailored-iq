@@ -30,9 +30,9 @@ export function PlaybookActionItemRow({
         className={cn(
           "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors",
           done
-            ? "border-primary-500 bg-primary-500 text-gray-975"
+            ? "border-primary-500 bg-primary-500 text-primary-foreground"
             : item.status === "in_progress"
-              ? "border-primary-500 text-primary-400"
+              ? "border-primary-500 text-gold"
               : "border-gray-700 text-transparent hover:border-gray-600",
         )}
       >

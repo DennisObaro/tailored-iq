@@ -34,7 +34,7 @@ export function Toaster() {
                 "mt-0.5 size-4 shrink-0",
                 t.variant === "success" && "text-success-400",
                 t.variant === "danger" && "text-danger-400",
-                (!t.variant || t.variant === "default") && "text-primary-400",
+                (!t.variant || t.variant === "default") && "text-gold",
               )}
               aria-hidden
             />

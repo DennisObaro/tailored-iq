@@ -73,7 +73,7 @@ export function ExpertAccessBanner({ profile }: { profile: ExpertProfile | null 
   return (
     <Card className="flex flex-col gap-3 border-primary-500/30 bg-primary-500/5 p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-start gap-2.5">
-        <Lock className="mt-0.5 size-4 shrink-0 text-primary-400" aria-hidden />
+        <Lock className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden />
         <p className="text-sm text-gray-200">{access.reason}</p>
       </div>
       {access.actionHref && (

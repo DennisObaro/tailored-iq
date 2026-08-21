@@ -61,7 +61,7 @@ export default function ExpertCallsPage() {
           </div>
           <p className="mt-1.5 truncate text-sm text-gray-100">{titleFor(call)}</p>
           {call.expertFollowUp && (
-            <p className="mt-0.5 text-xs text-primary-400">You offered further support after this call.</p>
+            <p className="mt-0.5 text-xs text-gold">You offered further support after this call.</p>
           )}
         </div>
         <Button asChild size="sm" variant="outline" className="shrink-0">

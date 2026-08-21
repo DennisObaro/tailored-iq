@@ -11,11 +11,13 @@ import * as consultationsApi from "@/lib/api/consultations";
 import * as contributionsApi from "@/lib/api/contributions";
 import * as pointsApi from "@/lib/api/expert-points";
 import { useSessionStore } from "@/lib/store/use-session-store";
+import { useLiveBriefs } from "@/hooks/use-live-briefs";
 import { getExpertAccess, missingSteps } from "@/lib/utils/expert-access";
 import { ONBOARDING_STEPS, levelLabel } from "@/lib/constants/expert";
 import { OnboardingProgress } from "@/components/expert/onboarding-progress";
 import { ExpertAccessBanner } from "@/components/expert/expert-gate";
 import { OpportunityCard } from "@/components/opportunity/opportunity-card";
+import { LiveBriefStack } from "@/components/expert/live-brief-banner";
 import { ContributionCard } from "@/components/expert/contribution-card";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,7 +44,7 @@ function SectionHeader({
         {title}
       </h2>
       {href && (
-        <Link href={href} className="text-xs text-primary-400 hover:text-primary-300">
+        <Link href={href} className="text-xs text-gold hover:text-gold-soft">
           {linkLabel}
         </Link>
       )}
@@ -58,6 +60,7 @@ export default function ExpertDashboardPage() {
   const [calls, setCalls] = useState<Consultation[]>([]);
   const [contributions, setContributions] = useState<ExpertContribution[]>([]);
   const [standing, setStanding] = useState<pointsApi.ExpertStanding | null>(null);
+  const { briefs: liveBriefs } = useLiveBriefs(user?.id);
 
   useEffect(() => {
     if (!user) return;
@@ -156,6 +159,15 @@ export default function ExpertDashboardPage() {
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-8 p-6">
+      {/* Above the greeting because it's time-boxed: everything below it will
+          still be here in five minutes, and this won't. */}
+      <LiveBriefStack
+        briefs={liveBriefs}
+        expertId={user.id}
+        onAccepted={() => projectsApi.listProjectsForExpert(user.id).then(setProjects)}
+        className="-mb-2"
+      />
+
       <div>
         <h1 className="text-xl font-semibold text-gray-50">Welcome back, {user.firstName}</h1>
         <p className="mt-1 text-sm text-gray-400">
@@ -274,7 +286,7 @@ export default function ExpertDashboardPage() {
             <p className="text-xs text-gray-500">Client feedback</p>
             {profile.reviewCount > 0 ? (
               <p className="mt-1 flex items-center gap-1.5 text-lg font-semibold text-gray-50">
-                <StarFilled className="size-4 text-primary-400" aria-hidden />
+                <StarFilled className="size-4 text-gold" aria-hidden />
                 {profile.rating.toFixed(1)}
                 <span className="text-sm font-normal text-gray-500">({profile.reviewCount})</span>
               </p>

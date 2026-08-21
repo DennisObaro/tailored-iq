@@ -10,7 +10,7 @@ const NEXT_ACTION_LABEL: Record<ProjectStatus, string> = {
   brief_in_progress: "Continue conversation",
   brief_submitted: "Continue",
   analysing: "Continue",
-  report_ready: "Read report",
+  report_ready: "Read executive summary",
   expert_matching: "View matched experts",
   consultation_scheduled: "View call details",
   consultation_completed: "Get a playbook",

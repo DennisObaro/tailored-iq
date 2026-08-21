@@ -20,7 +20,7 @@ export function OpportunityCard({ listing }: { listing: OpportunityListing }) {
           </div>
         </div>
         <p className="line-clamp-2 text-xs text-gray-400">{opportunity.summary}</p>
-        <p className="text-xs text-primary-400">{opportunity.relevanceReason}</p>
+        <p className="text-xs text-gold">{opportunity.relevanceReason}</p>
         <div className="flex flex-wrap items-center gap-1.5">
           {opportunity.requestedContributions.map((c) => (
             <Badge key={c}>{WILLINGNESS_LABELS[c] ?? c}</Badge>

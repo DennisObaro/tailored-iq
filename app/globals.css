@@ -9,10 +9,14 @@
   --gray-500: #606060;
   --gray-600: #474747;
   --gray-700: #313131;
-  /* Border/divider token: a translucent white overlay rather than a solid
-     shade, so hairline borders stay subtle against any surface lightness
-     (see body/sidebar/card tokens below) instead of a hard-edged gray. */
-  --gray-800: rgba(255, 255, 255, 0.08);
+  /* Border/divider token: a translucent overlay rather than a solid shade, so
+     hairline borders stay subtle against any surface lightness (see
+     body/sidebar/card tokens below) instead of a hard-edged gray. The tint is
+     a variable so the light theme can flip it to black without changing the
+     mechanism — a solid per-theme colour would have to be re-picked for every
+     surface it sits on, since alpha-over-surface varies by surface. */
+  --hairline-tint: 255, 255, 255;
+  --gray-800: rgba(var(--hairline-tint), 0.08);
   --gray-850: #2c2c2c;
   --gray-900: #262626;
   --gray-925: #212121;
@@ -37,6 +41,209 @@
   --success-500: #22c55e;
 
   --font-sans: var(--font-dm-sans);
+
+  /* ---------------------------------------------------------------
+     Semantic aliases (merged from the landing-page project's
+     styles.css). The numbered gray/primary scales above are already
+     byte-identical between the two projects, so nothing here redefines
+     a colour — every token below is a *name* resolving to a step that
+     already existed. The landing components address colours by role
+     ("surface", "muted-foreground", "gold") rather than by step, so
+     these are what let that markup render unmodified.
+     --------------------------------------------------------------- */
+  --background: var(--gray-975);
+  --foreground: var(--gray-50);
+
+  --surface: var(--gray-900);
+  --surface-elevated: var(--gray-850);
+
+  --gold: var(--primary-500);
+  --gold-soft: var(--primary-400);
+  --gold-deep: var(--primary-600);
+
+  --card: var(--gray-900);
+  --card-foreground: var(--gray-50);
+  --popover: var(--gray-900);
+  --popover-foreground: var(--gray-50);
+
+  --primary: var(--primary-500);
+  /* Ink that sits ON the gold accent. Pinned to a literal in BOTH themes
+     rather than resolving through the gray ramp: gold buttons keep a dark
+     label whichever theme is active, and `text-gray-975` (which flips to
+     near-white in light) would have made them unreadable. */
+  --primary-foreground: #1a1503;
+
+  --secondary: var(--gray-850);
+  --secondary-foreground: var(--gray-50);
+
+  --muted: var(--gray-700);
+  --muted-foreground: var(--gray-300);
+
+  --accent: var(--primary-500);
+  --accent-foreground: var(--gray-975);
+
+  /* --destructive / --success are "the readable accent for this theme", not a
+     fixed swatch — the 400/500 steps that read well on near-black are far too
+     light on off-white, so the light block below deepens them. */
+  --destructive: var(--danger-500);
+  --destructive-foreground: #faf9f7;
+
+  --success: var(--success-400);
+  --success-foreground: #0b1a10;
+
+  --warning: var(--primary-400);
+  --warning-foreground: var(--gray-975);
+
+  --border: var(--gray-800);
+  --input: var(--gray-800);
+  --ring: var(--primary-500);
+
+  /* --- Marketing surfaces -------------------------------------------
+     The landing pages were built to a Figma spec with its own near-black
+     ramp, distinct from the app's gray scale. These carry those exact
+     values so the dark theme is unchanged to the pixel, while giving the
+     light theme somewhere to redefine them. */
+  --mkt-page: #0d0d0d;
+  --mkt-panel: #111111;
+  --mkt-panel-alt: #161616;
+  --mkt-sand: #1c1b18;
+  --mkt-sand-deep: #2b2a25;
+  --mkt-card: #2b2a25;
+  --mkt-input: #1b1b1b;
+  --mkt-hairline: #232323;
+  --mkt-text: #dadada;
+  --mkt-text-soft: #b8b8b8;
+  --mkt-text-mute: #868686;
+  --mkt-chip-a: #1c1b18;
+  --mkt-chip-b: #302d24;
+  /* The high-contrast CTA pill. Its job is to be the brightest thing on the
+     page, so it inverts with the theme rather than staying white — a white
+     pill on the light theme's off-white ground would lose all its weight. */
+  --mkt-cta: #ffffff;
+  --mkt-cta-ink: #0d0d0d;
+  /* Shadow ink for the hero portrait grid. Pure black at the dark theme's
+     alphas is far too heavy on off-white — light mode uses a warm brown-black
+     at lower strength so the cards still read as lifted, not smeared. */
+  --portrait-shadow-rgb: 0, 0, 0;
+  --portrait-shadow-scale: 1;
+
+  /* Card elevation. The dark theme lifts surfaces by making them *brighter*
+     than the page, so it needs no shadow at all. Light mode has no brightness
+     headroom above white, so it separates with a hairline plus this shadow
+     instead — see the light block for the real value. */
+  --elevation-card: none;
+
+  /* Fallback until the marketing nav's ResizeObserver writes the real
+     measured height; matches the nav's own resting height so anchored
+     scroll targets don't jump on first load. */
+  --nav-height: 5rem;
+
+  /* The landing markup asks for `font-display` on headings; both projects
+     use DM Sans, already loaded by app/layout.tsx via next/font. */
+  --font-display: var(--font-dm-sans);
+  /* Great Vibes — the founder-note signature, and the one genuinely new
+     typeface the landing project brings in. */
+  --font-signature: var(--font-great-vibes);
+  /* Source Serif 4 — the headings of the long-form documents (executive
+     summaries, playbooks). Deliberately not the app's heading face: it marks
+     out the two surfaces that are meant to read as printed documents. */
+  --font-document: var(--font-source-serif);
+}
+
+/* ===================================================================
+   LIGHT THEME
+   Only the tokens whose *role* changes are redefined here; the numbered
+   ramp keeps its own names so no component has to know which theme is
+   active. The scale is not inverted — it is re-authored, because a
+   mechanical inversion gets two things wrong:
+
+   1. Elevation. Dark mode lifts a card by making it brighter than the page.
+      There is no headroom above white, so light mode instead sits a white
+      card on a warm off-white page and separates it with a hairline plus
+      --elevation-card. Note gray-950 (cards) stays *lighter* than gray-975
+      (page) in both themes — that relationship is preserved, not flipped.
+   2. The accent. Inverting would have left gold at #eabd1d, which is ~1.8:1
+      on white. The light theme drops --gold to the primary-700 step, deep
+      enough to read as text (~4.6:1) while staying the same brand hue.
+
+   The palette is warm-neutral rather than pure grayscale: the greys carry a
+   little of the gold's warmth, so the accent sits in the same family as its
+   surroundings instead of looking dropped onto a cold sheet.
+   =================================================================== */
+[data-theme="light"] {
+  /* Hairlines flip to a black tint at the same low alpha, so every border in
+     the app keeps its mechanism and just changes side. */
+  --hairline-tint: 23, 21, 17;
+  --gray-800: rgba(var(--hairline-tint), 0.11);
+
+  /* Text, dark -> light. Warm near-black at the top, never pure #000. */
+  --gray-50: #1a1815;
+  --gray-100: #2a2823;
+  --gray-200: #3d3a33;
+  --gray-300: #55524a;
+  --gray-400: #6e6a61;
+  --gray-500: #7d7a70;
+  --gray-600: #a5a199;
+  --gray-700: #c9c5bc;
+
+  /* Surfaces. gray-850 is the hover/secondary fill, 900 the input and popover
+     ground, 925 the nav pill, 950 the card, 975 the page. */
+  --gray-850: #edebe5;
+  --gray-900: #efece5;
+  --gray-925: #f8f7f3;
+  --gray-950: #ffffff;
+  --gray-975: #f4f2ed;
+
+  /* Semantic aliases that need more than the ramp swap. */
+  --surface: #f8f7f3;
+  --surface-elevated: #ffffff;
+
+  /* Deep enough to read as text on off-white while staying the brand gold.
+     The badge/pill fills stay on --primary-500 so they keep the familiar
+     warm tint; only the ink deepens. */
+  --gold: var(--primary-700);
+  /* --gold-soft is the hover step. In dark that means *brighter* (400); on a
+     light ground brighter is a contrast loss, so it deepens instead. */
+  --gold-soft: var(--primary-800);
+  --gold-deep: var(--primary-900);
+  --primary: var(--primary-700);
+  --accent: var(--primary-700);
+  --ring: var(--primary-600);
+
+  --muted: var(--gray-700);
+  --muted-foreground: var(--gray-400);
+
+  /* Deepened so they carry on a light ground, same hues. */
+  --destructive: #b3261e;
+  --success: #15803d;
+  --warning: var(--primary-700);
+  --warning-foreground: #ffffff;
+
+  /* Marketing surfaces, re-authored for light. The sand tints stay warm so
+     the gold accent keeps its family, and the panels alternate by a hair
+     rather than by brightness jumps that would read as banding on white. */
+  --mkt-page: #f4f2ed;
+  --mkt-panel: #faf9f6;
+  --mkt-panel-alt: #f1efe8;
+  --mkt-sand: #f2efe6;
+  --mkt-sand-deep: #e8e4d8;
+  --mkt-card: #ffffff;
+  --mkt-input: #ffffff;
+  --mkt-hairline: rgba(23, 21, 17, 0.1);
+  --mkt-text: #1a1815;
+  --mkt-text-soft: #55524a;
+  --mkt-text-mute: #6e6a61;
+  --mkt-chip-a: #f2efe6;
+  --mkt-chip-b: #eae5d6;
+  --mkt-cta: #1a1815;
+  --mkt-cta-ink: #f7f6f3;
+  --portrait-shadow-rgb: 42, 36, 26;
+  --portrait-shadow-scale: 0.55;
+
+  /* Light mode's only elevation lever. Two layers for the same reason the
+     portrait grid uses two: a tight contact shadow plus a wider ambient one
+     reads as a real object above a surface, one flat blur reads as a glow. */
+  --elevation-card: 0 1px 2px -1px rgba(23, 21, 17, 0.06), 0 4px 12px -4px rgba(23, 21, 17, 0.08);
 }
 
 @theme inline {
@@ -72,11 +279,71 @@
   --color-success-400: var(--success-400);
   --color-success-500: var(--success-500);
 
+  /* Semantic colour utilities (bg-surface, text-muted-foreground,
+     text-gold, border-border, ...) used throughout the ported landing
+     components. Tailwind v4 only generates a *named* utility for a
+     custom property registered here under --color-*; the :root vars
+     alone are not enough. Purely additive — none of these names existed
+     before, so no dashboard utility changes meaning. */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-gold-deep: var(--gold-deep);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-display: var(--font-display);
+  --font-signature: var(--font-signature);
+  --font-document: var(--font-document);
+
+  --color-mkt-page: var(--mkt-page);
+  --color-mkt-panel: var(--mkt-panel);
+  --color-mkt-panel-alt: var(--mkt-panel-alt);
+  --color-mkt-sand: var(--mkt-sand);
+  --color-mkt-sand-deep: var(--mkt-sand-deep);
+  --color-mkt-card: var(--mkt-card);
+  --color-mkt-input: var(--mkt-input);
+  --color-mkt-hairline: var(--mkt-hairline);
+  --color-mkt-text: var(--mkt-text);
+  --color-mkt-text-soft: var(--mkt-text-soft);
+  --color-mkt-text-mute: var(--mkt-text-mute);
+  --color-mkt-cta: var(--mkt-cta);
+  --color-mkt-cta-ink: var(--mkt-cta-ink);
+
+  --shadow-card: var(--elevation-card);
+
   --font-sans: var(--font-sans);
 }
 
+/* Drives native form controls, scrollbars and the canvas colour. Keyed off
+   the attribute next-themes sets, so it can never disagree with the tokens. */
 html {
   color-scheme: dark;
+}
+html[data-theme="light"] {
+  color-scheme: light;
 }
 
 body {
@@ -87,7 +354,8 @@ body {
 
 ::selection {
   background: var(--color-primary-500);
-  color: var(--color-gray-975);
+  /* Pinned ink, same reason as --primary-foreground: this sits on gold. */
+  color: var(--primary-foreground);
 }
 
 @layer base {
@@ -137,4 +405,835 @@ body {
 }
 .thin-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: var(--color-gray-600);
+}
+
+/* ===================================================================
+   MARKETING / LANDING PAGES
+   Ported from the landing-page project's styles.css.
+
+   Everything below is either namespaced to a class the dashboard never
+   uses, or scoped under `.marketing-shell` — the wrapper each ported
+   marketing page puts on its root element. That scoping is deliberate:
+   the source project applied its heading font, `opsz` axis pinning,
+   font-smoothing and pointer-cursor rules globally in `@layer base`,
+   which here would restyle every dashboard screen too. Confining them
+   to the marketing tree keeps the port visually faithful without
+   touching the authenticated app.
+   =================================================================== */
+
+@layer base {
+  /* Smooth anchor jumps ("How it works" / "Testimonials" in the nav) only
+     while a marketing page is mounted. `scroll-behavior` has to sit on the
+     scrolling element itself, hence :has() rather than a descendant rule —
+     the dashboard's own scrollIntoView calls stay instant. */
+  html:has(.marketing-shell) {
+    scroll-behavior: smooth;
+  }
+
+  /* DM Sans is a true variable font, and the design pins its optical-size
+     axis to 14 at every size. Without this, browsers scale opsz with
+     font-size, which reads visibly heavier than the design at display
+     sizes. The smoothing pair is the matching fix for light-on-very-dark
+     text, which macOS renders with extra stroke weight by default. */
+  .marketing-shell {
+    background-color: var(--mkt-page);
+    color: var(--mkt-text);
+    font-variation-settings: "opsz" 14;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Tailwind Preflight resets heading weight to `inherit`, so this needs an
+     explicit weight rather than leaving it to each component's classes. */
+  .marketing-shell :is(h1, h2, h3, h4) {
+    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+  }
+
+  .marketing-shell :is(button:not(:disabled), a[href], select, summary),
+  .marketing-shell [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  .container-tight {
+    max-width: 1200px;
+    margin-inline: auto;
+    /* Scales from 24px on mobile up to a 64px cap: a flat 24px left content
+       reading edge-to-edge in the ~1024–1600px range, where max-width hasn't
+       yet started creating margin through centering. */
+    padding-inline: clamp(1.5rem, 5vw, 4rem);
+  }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(
+        to right,
+        color-mix(in oklch, var(--gold) 6%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in oklch, var(--gold) 6%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 60px 60px;
+  }
+
+  /* The dot is painted with currentColor rather than a baked-in `white` so the
+     one asset serves both themes — the rule below just sets the colour. A
+     white dot is simply invisible on the light theme's off-white ground. */
+  .dot-grid-bg {
+    color: rgba(255, 255, 255, 0.07);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Crect x='7' y='7' width='2' height='2' fill='%23fff' fill-opacity='0.07'/%3E%3C/svg%3E");
+    background-size: 16px 16px;
+  }
+  [data-theme="light"] .dot-grid-bg {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Crect x='7' y='7' width='2' height='2' fill='%23171511' fill-opacity='0.10'/%3E%3C/svg%3E");
+  }
+
+  .text-gold {
+    color: var(--gold);
+  }
+
+  .gradient-text-gold {
+    background: linear-gradient(135deg, var(--gold-soft), var(--gold), var(--gold-deep));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: var(--gold);
+    color: var(--primary-foreground);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: background-color 0.15s ease;
+    border: none;
+  }
+  .btn-primary:hover {
+    background: var(--gold-soft);
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: transparent;
+    color: var(--foreground);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    font-size: 0.9rem;
+    border: 1px solid var(--border);
+    transition: background-color 0.15s ease;
+  }
+  .btn-ghost:hover {
+    background: var(--surface-elevated);
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--gold);
+    font-family: var(--font-sans);
+    padding: 0.6rem 1.1rem;
+    border: 1px solid color-mix(in oklch, var(--gold) 45%, transparent);
+    border-radius: 9999px;
+    background: color-mix(in oklch, var(--gold) 6%, transparent);
+  }
+
+  .card-panel {
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--surface-elevated) 80%, transparent),
+      var(--surface)
+    );
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+    background: color-mix(in oklch, var(--surface-elevated) 60%, transparent);
+    font-size: 0.9rem;
+    color: var(--foreground);
+  }
+
+  /* --- Client logo marquee ------------------------------------------- */
+
+  .logo-marquee {
+    width: 100%;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  }
+  .logo-marquee-track {
+    display: flex;
+    align-items: center;
+    width: max-content;
+    animation: logo-marquee-scroll 40s linear infinite;
+    /* The parent's mask can stop the browser promoting this to its own
+       compositor layer, forcing a repaint through the mask every frame —
+       over a 40s loop each dropped frame reads as a stutter. will-change
+       promotes it proactively; the keyframes use translate3d for the same
+       reason on engines that ignore will-change. */
+    will-change: transform;
+  }
+  .logo-marquee:hover .logo-marquee-track {
+    animation-play-state: paused;
+  }
+  .logo-marquee-item {
+    /* Trailing margin, not `gap` on the track — see the note on
+       .challenge-marquee-track: with a track gap, -50% stops half a gap
+       short of one full copy and the marquee jumps once per cycle. */
+    margin-right: 3rem;
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 3rem;
+    padding: 0 0.5rem;
+    transition: transform 0.2s ease;
+  }
+  .logo-marquee-item img {
+    display: block;
+    height: 100%;
+    width: auto;
+    max-width: 8rem;
+    object-fit: contain;
+    background: transparent;
+  }
+  /* Monochrome always — hovering the row only pauses it, the logos never
+     reveal colour. Only the mono asset is ever in the DOM. */
+  .logo-marquee-mono {
+    opacity: 0.7;
+  }
+  .logo-marquee-item:hover {
+    transform: translateY(-2px);
+  }
+  @keyframes logo-marquee-scroll {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  /* --- Testimonial filmstrip photos ---------------------------------- */
+
+  /* Per-photo framing correction. The desktop filmstrip's panels are far
+     narrower than any of the source photos, so `object-fit: cover` fits
+     them by height and crops the sides — which means the full height of
+     every source is always on screen, and object-position's Y value does
+     nothing at all here. A source that happens to be framed wide (subject
+     small in frame) therefore reads much further away than its tightly
+     cropped neighbours, and no object-position value can pull it in.
+     Scaling the element is the only lever; the panel's own overflow-hidden
+     does the cropping.
+
+     --photo-shift then re-centres on the subject, since scale alone zooms
+     about the element's centre and most portraits put the face above that.
+     It is listed first so it applies in the untransformed coordinate space
+     and stays a plain percentage of the panel height, independent of zoom.
+
+     Hover multiplies the per-photo zoom rather than replacing it — a flat
+     `scale: 1.05` would snap a zoomed photo back to nearly its original
+     size on hover. */
+  .testimonial-photo {
+    transform: translateY(var(--photo-shift, 0%)) scale(var(--photo-zoom, 1));
+    transition: transform 300ms ease-out;
+  }
+  @media (hover: hover) {
+    .testimonial-photo-btn:hover .testimonial-photo {
+      transform: translateY(var(--photo-shift, 0%)) scale(calc(var(--photo-zoom, 1) * 1.05));
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .testimonial-photo {
+      transition: none;
+    }
+    .testimonial-photo-btn:hover .testimonial-photo {
+      transform: translateY(var(--photo-shift, 0%)) scale(var(--photo-zoom, 1));
+    }
+  }
+
+  /* --- "Challenges we help solve" marquee ----------------------------- */
+
+  /* Two rows of pills drifting continuously in opposite directions. Same
+     duplicate-the-content-and-translate--50% trick as .logo-marquee above:
+     the track holds the row twice, so the moment it has travelled exactly
+     half its own width the second copy sits precisely where the first
+     started and the loop restarts invisibly. Row speed comes from
+     --marquee-duration set per row, since the two rows hold different
+     total widths and a shared duration would make the wider one visibly
+     faster. */
+  .challenge-marquee {
+    width: 100%;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  }
+  .challenge-marquee-track {
+    display: flex;
+    align-items: center;
+    width: max-content;
+    animation: challenge-marquee-scroll var(--marquee-duration, 45s) linear infinite;
+    /* Same reasoning as .logo-marquee-track: the ancestor mask can stop the
+       browser promoting this to its own compositor layer, so it repaints
+       through the mask every frame instead of just re-compositing. */
+    will-change: transform;
+  }
+  /* Spacing is a trailing margin on every pill rather than `gap` on the
+     track, and that is load-bearing for the loop. With `gap: g` and 2N
+     children the track measures 2W + (2N-1)g, so translating -50% travels
+     W + Ng - g/2 — but one full copy is W + Ng wide. The row lands half a
+     gap short every cycle and visibly jumps. Giving each pill its own
+     trailing margin makes every child (w + g) wide, the track exactly twice
+     one copy, and -50% exactly one copy. */
+  .challenge-marquee-track > * {
+    margin-right: 1.25rem;
+  }
+  /* The second row runs the identical keyframes backwards rather than
+     needing its own set — the two rows sliding against each other is what
+     keeps them reading as two independent bands instead of one block. */
+  .challenge-marquee-track[data-direction="reverse"] {
+    animation-direction: reverse;
+  }
+  .challenge-marquee:hover .challenge-marquee-track {
+    animation-play-state: paused;
+  }
+  @keyframes challenge-marquee-scroll {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* Autonomous horizontal drift is exactly the kind of motion this
+       setting asks to remove, but the pills past the fold still have to be
+       reachable — so the row becomes an ordinary scroller the user drives,
+       and the duplicated half (which only exists to make the loop seamless)
+       is dropped so they aren't scrolling through the same pills twice. */
+    .challenge-marquee {
+      overflow-x: auto;
+      mask-image: none;
+      -webkit-mask-image: none;
+    }
+    .challenge-marquee-track {
+      animation: none;
+      width: auto;
+    }
+    .challenge-marquee-track > [data-marquee-clone="true"] {
+      display: none;
+    }
+  }
+
+  /* --- Hero page-load choreography ----------------------------------- */
+
+  /* `--hero-delay` is set per element inline (its place in the sequence);
+     `both` holds the pre-animation state through the delay so nothing
+     flashes visible before its turn. */
+  @keyframes hero-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes hero-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(var(--hero-rise, 12px));
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .hero-anim-fade {
+    animation: hero-fade-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--hero-delay, 0ms);
+  }
+  .hero-anim-up {
+    animation: hero-fade-up 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--hero-delay, 0ms);
+  }
+
+  .hero-ambient-glow {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    width: 60rem;
+    height: 60rem;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(
+      circle,
+      color-mix(in oklch, var(--gold) 12%, transparent) 0%,
+      transparent 70%
+    );
+    filter: blur(60px);
+    pointer-events: none;
+    animation: hero-glow-drift 18s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+  [data-theme="light"] .hero-ambient-glow {
+    /* On a light ground a blurred gold disc reads as a stain rather than as
+       light. Dropped to a fraction of its dark-mode strength — present enough
+       to keep the headline sitting in something, faint enough not to smudge. */
+    background: radial-gradient(
+      circle,
+      color-mix(in oklch, var(--gold) 5%, transparent) 0%,
+      transparent 70%
+    );
+    filter: blur(80px);
+  }
+  @keyframes hero-glow-drift {
+    0%,
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      transform: translate(-47%, -53%) scale(1.08);
+    }
+  }
+
+  /* Ambient live-indicator blink on the "trusted by leaders" dot — runs
+     indefinitely rather than settling, unlike the entrance sequence. */
+  .hero-badge-dot-blink {
+    animation: hero-badge-blink 1.8s ease-in-out infinite;
+  }
+  @keyframes hero-badge-blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.25;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-anim-fade,
+    .hero-anim-up {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+    .hero-ambient-glow {
+      animation: none;
+    }
+    .hero-badge-dot-blink {
+      animation: none;
+    }
+  }
+
+  /* --- Founder note -------------------------------------------------- */
+
+  /* Two nested wrappers so translateY/opacity (a transition) and rotate (a
+     keyframe animation) don't fight over one element's `transform`: the
+     outer drops the paper in, the inner — origin pinned near the pushpin
+     rather than the card's centre, so it reads as hanging from it —
+     carries the tilt settle and the nudge timed to the pin landing. */
+  .founder-note-drop-wrapper {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  .founder-note-drop-wrapper.founder-note-in {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity 450ms ease-out,
+      transform 450ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .founder-note-rotate-wrapper {
+    transform: rotate(-3deg);
+  }
+  .founder-note-rotate-wrapper.founder-note-in {
+    animation: founder-note-rotate 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  @keyframes founder-note-rotate {
+    0% {
+      transform: rotate(-3deg);
+    }
+    70% {
+      transform: rotate(-1deg);
+      animation-timing-function: ease-in-out;
+    }
+    84% {
+      transform: rotate(-1.8deg);
+    }
+    100% {
+      transform: rotate(-1deg);
+    }
+  }
+
+  /* Horizontal centring stays baked into every pin state below rather than
+     relying on a separate translate utility — the entrance motion already
+     owns this element's `transform`. */
+  .founder-note-pin {
+    opacity: 0;
+    transform: translate(-50%, -20px) scale(1.15);
+  }
+  .founder-note-pin.founder-note-in {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+    transition:
+      opacity 200ms ease-out,
+      transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition-delay: 150ms;
+  }
+
+  .founder-note-text {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .founder-note-text.founder-note-in {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity 300ms ease-out,
+      transform 300ms ease-out;
+    transition-delay: calc(450ms + var(--text-stagger, 0ms));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .founder-note-drop-wrapper {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+    .founder-note-rotate-wrapper {
+      transform: rotate(-1deg);
+      animation: none;
+    }
+    .founder-note-pin {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+      transition: none;
+    }
+    .founder-note-text {
+      transform: none;
+      transition: opacity 200ms ease-out;
+      transition-delay: 0ms;
+    }
+  }
+
+  /* --- Closing CTA mosaic -------------------------------------------- */
+
+  .mosaic-tile {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  .mosaic-tile.mosaic-in {
+    opacity: 1;
+    transform: scale(1);
+    transition:
+      opacity 350ms ease-out var(--tile-delay, 0ms),
+      transform 350ms ease-out var(--tile-delay, 0ms);
+  }
+
+  /* background-color lives here rather than on a `bg-[#151515]` class:
+     Tailwind v4's utilities layer always beats @layer components
+     regardless of specificity, which would silently defeat the :hover
+     override below. */
+  .mosaic-tile-empty {
+    background-color: var(--mosaic-tile, #151515);
+  }
+  [data-theme="light"] .mosaic-tile-empty {
+    --mosaic-tile: #e7e4dc;
+    --mosaic-tile-lit: #efedE6;
+    --mosaic-tile-hover: #dcd8ce;
+  }
+
+  .mosaic-text {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  .mosaic-text.mosaic-in {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity 400ms ease-out 200ms,
+      transform 400ms ease-out 200ms;
+  }
+
+  .mosaic-tile-shimmer {
+    animation: mosaic-shimmer 9s ease-in-out infinite;
+  }
+  @keyframes mosaic-shimmer {
+    0%,
+    85%,
+    100% {
+      background-color: var(--mosaic-tile, #151515);
+    }
+    15% {
+      background-color: var(--mosaic-tile-lit, #1e1e1e);
+    }
+  }
+
+  /* `hover: hover` keeps this off touch devices, where a tap can otherwise
+     leave a tile stuck in its hover state. Selectors combine both classes
+     so they outrank `.mosaic-tile.mosaic-in` regardless of source order —
+     otherwise the entrance transition-delay bleeds into the hover response
+     and makes it feel laggy. */
+  @media (hover: hover) {
+    .mosaic-tile.mosaic-tile-empty:hover {
+      background-color: var(--mosaic-tile-hover, #232323);
+      border-radius: 16px;
+      transform: scale(1.03);
+      transition:
+        background-color 250ms ease-out,
+        transform 200ms ease-out;
+      will-change: background-color, transform;
+    }
+    .mosaic-tile.mosaic-tile-photo:hover {
+      transform: scale(1.03);
+      box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.55);
+      transition:
+        transform 200ms ease-out,
+        box-shadow 200ms ease-out;
+      will-change: transform, box-shadow;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mosaic-tile,
+    .mosaic-text {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+    .mosaic-tile-shimmer {
+      animation: none;
+    }
+    .mosaic-tile.mosaic-tile-photo:hover {
+      transform: none;
+      box-shadow: none;
+    }
+    .mosaic-tile.mosaic-tile-empty:hover {
+      transform: none;
+    }
+  }
+
+  /* --- Meet the experts ---------------------------------------------- */
+
+  .experts-header,
+  .experts-cta,
+  .expert-photo-wrap,
+  .expert-text {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  .expert-photo-wrap,
+  .expert-text {
+    transform: translateY(24px);
+  }
+  .experts-header.experts-in {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity 400ms ease-out,
+      transform 400ms ease-out;
+  }
+  .experts-cta.experts-in {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity 400ms ease-out 100ms,
+      transform 400ms ease-out 100ms;
+  }
+  .expert-photo-wrap.experts-in {
+    opacity: 1;
+    transform: translateY(0);
+    /* box-shadow's transition lives here too, not in a separate hover rule:
+       a second `transition` declaration would replace this one wholesale
+       rather than merge — the cascade picks one shorthand value per
+       element, not a per-property union across rules. */
+    transition:
+      opacity 450ms ease-out var(--card-delay, 0ms),
+      transform 450ms ease-out var(--card-delay, 0ms),
+      box-shadow 250ms ease-out;
+  }
+  .expert-text.experts-in {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+      opacity 450ms ease-out calc(var(--card-delay, 0ms) + 40ms),
+      transform 450ms ease-out calc(var(--card-delay, 0ms) + 40ms);
+  }
+
+  .expert-photo-img {
+    transform-origin: center;
+    transition: transform 250ms ease-out;
+  }
+
+  /* Rest colours live here rather than on `border-[#7f7f7f]` classes for the
+     same utilities-layer reason as .mosaic-tile-empty above. */
+  .expert-tag {
+    border-color: var(--color-gray-600);
+    color: var(--color-gray-500);
+    background-color: transparent;
+    transition:
+      border-color 200ms ease-out,
+      color 200ms ease-out,
+      background-color 200ms ease-out;
+  }
+
+  @media (hover: hover) {
+    .expert-card:hover .expert-photo-wrap.experts-in,
+    .expert-card:focus-within .expert-photo-wrap.experts-in {
+      box-shadow: 0 20px 40px -14px rgba(0, 0, 0, 0.5);
+    }
+    .expert-card:hover .expert-photo-img,
+    .expert-card:focus-within .expert-photo-img {
+      transform: scale(1.04);
+    }
+
+    .expert-card:hover .expert-tag,
+    .expert-card:focus-within .expert-tag {
+      border-color: var(--gold);
+      color: var(--gold);
+      background-color: color-mix(in oklch, var(--gold) 9%, transparent);
+      transition-delay: var(--tag-delay, 0ms);
+    }
+    /* The tag under the pointer reacts immediately rather than waiting its
+       turn in the stagger. Same specificity as the rule above — placed
+       after it so source order resolves this one property in its favour. */
+    .expert-card .expert-tag:hover {
+      transition-delay: 0ms;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* `transform: none` has to hit both the pre-trigger base state and the
+       `.experts-in` combo, which the rules above target at the same
+       specificity — a lower-specificity override would lose once
+       `.experts-in` lands. */
+    .experts-header,
+    .experts-cta,
+    .expert-photo-wrap,
+    .expert-text,
+    .experts-header.experts-in,
+    .experts-cta.experts-in,
+    .expert-photo-wrap.experts-in,
+    .expert-text.experts-in {
+      transform: none;
+    }
+    .experts-header.experts-in,
+    .experts-cta.experts-in,
+    .expert-photo-wrap.experts-in,
+    .expert-text.experts-in {
+      transition: opacity 200ms ease-out;
+    }
+    .expert-photo-img {
+      transition: none;
+    }
+    .expert-card:hover .expert-photo-wrap.experts-in,
+    .expert-card:focus-within .expert-photo-wrap.experts-in {
+      box-shadow: none;
+    }
+    .expert-card:hover .expert-photo-img,
+    .expert-card:focus-within .expert-photo-img {
+      transform: none;
+    }
+  }
+}
+
+/* Nav dropdown "content aware" shadow — deliberately outside any @layer:
+   Tailwind v4's utilities layer always wins over @layer components
+   regardless of specificity, so overriding the dropdown's own shadow needs
+   a rule with higher cascade priority than that layer, not a competing
+   class. Two blended shadows rather than flat black: a tight contact
+   shadow tinted from the page background, plus a soft ambient glow tinted
+   from the brand gold. Applied per call site, not in ui/dropdown-menu.tsx —
+   this look belongs to the marketing nav, not every dropdown in the app. */
+.nav-popover-shadow {
+  box-shadow:
+    0 4px 16px -4px color-mix(in oklch, var(--background) 75%, transparent),
+    0 20px 48px -12px color-mix(in oklch, var(--gold) 22%, transparent);
+}
+
+/* Nav pill scroll-triggered frosted glass. Transparent, blur(0px), at rest
+   so the pill is just logo/links/CTAs floating over the hero at scrollY 0;
+   .nav-scrolled (toggled in JS past 10px) fades the frosted look in. The
+   low background alpha is what makes it read as frosted *glass* — raising
+   it masks the blurred backdrop and kills the effect. Outside @layer for
+   the same reason as .nav-popover-shadow above.
+
+   CRITICAL: backdrop-filter starts at blur(0px), never `none` — it must be
+   present (even at zero) in the base rule so the browser establishes the
+   backdrop compositing surface on first paint. Toggling the property's
+   *presence* (none -> blur(Npx)) is a known cross-browser failure mode: the
+   computed value reads correctly while nothing actually composites. Only
+   the radius changes on scroll, and backdrop-filter is deliberately left
+   out of the transition — background-color still fades, the blur snaps, and
+   together they read as one transition. NOTE: Lightning CSS treats
+   `backdrop-filter` and `-webkit-backdrop-filter` as a duplicate pair and
+   keeps only the last declared, so the -webkit- one MUST come first or the
+   standard property is stripped from the build. */
+.nav-pill {
+  /* The pill reads as a distinct lighter surface floating on the hero from the
+     start, rather than being invisible until the first scroll. --gray-925
+     (#212121) is the step that separates cleanly from the hero's own #0d0d0d
+     without becoming a bright bar; the next step up (--gray-900) starts
+     competing with the portrait grid behind it.
+
+     Held just under full opacity so the backdrop-filter below still has
+     something to act on once it ramps up — a fully opaque pill would make the
+     blur invisible and the scrolled state indistinguishable from this one. */
+  background-color: color-mix(in oklch, var(--gray-925) 92%, transparent);
+  -webkit-backdrop-filter: blur(0px);
+  backdrop-filter: blur(0px);
+  transition: background-color 0.3s ease;
+}
+[data-theme="light"] .nav-pill {
+  /* Light mode has no brightness headroom to lift the pill above an off-white
+     page, so it separates the way every other light surface does: white plus
+     a hairline plus the card shadow. */
+  background-color: color-mix(in oklch, var(--gray-950) 94%, transparent);
+  box-shadow:
+    0 0 0 1px var(--gray-800),
+    var(--elevation-card);
+}
+.nav-pill.nav-scrolled {
+  /* Once page content is passing underneath, the pill lightens a step and the
+     blur comes up, so it still separates from whatever is scrolling behind it
+     rather than sitting flat against it. */
+  background-color: color-mix(in oklch, var(--gray-900) 82%, transparent);
+  -webkit-backdrop-filter: blur(120px);
+  backdrop-filter: blur(120px);
+}
+
+/* Quote/name fade used by the testimonial filmstrip. Lives here rather than
+   in an inline <style> inside the component (where it re-emitted on every
+   render); the component's own inline `animation` shorthand references it. */
+@keyframes testimonial-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

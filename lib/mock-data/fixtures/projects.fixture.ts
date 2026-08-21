@@ -22,7 +22,7 @@ export const seedProjects: Project[] = [
     activity: [
       { id: "act_1a", label: "Challenge submitted", timestamp: d(1) },
       { id: "act_1b", label: "Brief confirmed", timestamp: d(1) },
-      { id: "act_1c", label: "Report generated", timestamp: d(2) },
+      { id: "act_1c", label: "Executive summary generated", timestamp: d(2) },
       { id: "act_1d", label: "Experts matched", timestamp: d(2) },
       { id: "act_1e", label: "Consultation completed", timestamp: d(5) },
       { id: "act_1f", label: "Playbook generated", timestamp: d(6) },
@@ -45,7 +45,7 @@ export const seedProjects: Project[] = [
     activity: [
       { id: "act_2a", label: "Challenge submitted", timestamp: d(8) },
       { id: "act_2b", label: "Brief confirmed", timestamp: d(8) },
-      { id: "act_2c", label: "Report generated", timestamp: d(9) },
+      { id: "act_2c", label: "Executive summary generated", timestamp: d(9) },
       { id: "act_2d", label: "Experts matched", timestamp: d(9) },
       { id: "act_2e", label: "Consultation scheduled", timestamp: d(10) },
     ],
@@ -66,7 +66,7 @@ export const seedProjects: Project[] = [
     activity: [
       { id: "act_3a", label: "Challenge submitted", timestamp: d(12) },
       { id: "act_3b", label: "Brief confirmed", timestamp: d(12) },
-      { id: "act_3c", label: "Report generated", timestamp: d(13) },
+      { id: "act_3c", label: "Executive summary generated", timestamp: d(13) },
       { id: "act_3d", label: "Experts matched", timestamp: d(13) },
     ],
     createdAt: d(12),
@@ -117,7 +117,7 @@ export const seedProjects: Project[] = [
     activity: [
       { id: "act_6a", label: "Challenge submitted", timestamp: d(3) },
       { id: "act_6b", label: "Brief confirmed", timestamp: d(3) },
-      { id: "act_6c", label: "Report generated", timestamp: d(4) },
+      { id: "act_6c", label: "Executive summary generated", timestamp: d(4) },
       { id: "act_6d", label: "Experts matched", timestamp: d(4) },
       { id: "act_6e", label: "Consultation completed", timestamp: d(6) },
       { id: "act_6f", label: "Playbook generated", timestamp: d(7) },
@@ -140,7 +140,7 @@ export const seedProjects: Project[] = [
     activity: [
       { id: "act_7a", label: "Challenge submitted", timestamp: d(18) },
       { id: "act_7b", label: "Brief confirmed", timestamp: d(18) },
-      { id: "act_7c", label: "Report generated", timestamp: d(19) },
+      { id: "act_7c", label: "Executive summary generated", timestamp: d(19) },
       { id: "act_7d", label: "Experts matched", timestamp: d(19) },
       { id: "act_7e", label: "Playbook generation started", timestamp: d(20) },
     ],
@@ -161,7 +161,7 @@ export const seedProjects: Project[] = [
     activity: [
       { id: "act_8a", label: "Challenge submitted", timestamp: d(19) },
       { id: "act_8b", label: "Brief confirmed", timestamp: d(19) },
-      { id: "act_8c", label: "Report generated", timestamp: d(20) },
+      { id: "act_8c", label: "Executive summary generated", timestamp: d(20) },
       { id: "act_8d", label: "Experts matched", timestamp: d(20) },
     ],
     createdAt: d(19),

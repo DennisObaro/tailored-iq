@@ -8,6 +8,8 @@ export type NotificationType =
   | "playbook_updated"
   | "expert_onboarding_action"
   | "opportunity_new"
+  /** A client has just submitted a challenge and every approved expert is being told. */
+  | "live_brief"
   | "contribution_added"
   | "expert_status_changed"
   | "contribution_reviewed"

@@ -260,7 +260,7 @@ function SignUpForm() {
 
           <p className="mt-6 text-center text-sm text-gray-400">
             Already a member?{" "}
-            <Link href="/sign-in" className="font-medium text-primary-400 hover:text-primary-300">
+            <Link href="/sign-in" className="font-medium text-gold hover:text-gold-soft">
               Sign in
             </Link>
           </p>
@@ -268,7 +268,7 @@ function SignUpForm() {
           {!isExpertSignUp && (
             <p className="mt-3 text-center text-sm text-gray-400">
               Invited to join as an expert?{" "}
-              <Link href="/become-an-expert" className="font-medium text-primary-400 hover:text-primary-300">
+              <Link href="/become-an-expert" className="font-medium text-gold hover:text-gold-soft">
                 Enter your referral code
               </Link>
             </p>

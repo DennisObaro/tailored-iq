@@ -33,7 +33,7 @@ export function ContributionCard({
           </span>
         )}
         <span>{formatRelative(contribution.updatedAt)}</span>
-        {contribution.pointsAwarded > 0 && <span className="text-primary-400">+{contribution.pointsAwarded} pts</span>}
+        {contribution.pointsAwarded > 0 && <span className="text-gold">+{contribution.pointsAwarded} pts</span>}
       </div>
     </Card>
   );

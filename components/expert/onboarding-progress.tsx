@@ -37,7 +37,7 @@ export function OnboardingProgress({
                 isDone
                   ? "border-success-500 bg-success-500/15 text-success-400"
                   : isCurrent
-                    ? "border-primary-500 bg-primary-500/15 text-primary-400"
+                    ? "border-primary-500 bg-primary-500/15 text-gold"
                     : "border-gray-800 text-gray-600",
               )}
             >

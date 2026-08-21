@@ -18,6 +18,9 @@ import type {
   ExpertPointsTransaction,
   ExpertPeerReview,
   CallForInsight,
+  ExpertBriefParticipation,
+  ExpertConversation,
+  ConversationMessage,
 } from "@/lib/types";
 import { seedDatabase } from "@/lib/mock-data/fixtures/seed";
 
@@ -28,6 +31,18 @@ export interface PlaybookUnlock {
   templateId: string;
   playbookId: string;
   unlockedAt: string;
+}
+
+/**
+ * A client has saved an expert to come back to. A join record rather than an
+ * array on the client profile, so the same shape survives a real backend
+ * (one row per save, with the timestamp that orders the list).
+ */
+export interface SavedExpert {
+  id: string;
+  clientId: string;
+  expertId: string;
+  savedAt: string;
 }
 
 /**
@@ -51,6 +66,7 @@ export interface Database {
   notifications: Notification[];
   opportunities: Opportunity[];
   playbookUnlocks: PlaybookUnlock[];
+  savedExperts: SavedExpert[];
   /**
    * Expert-network tables. Evidence, expertise and availability are
    * deliberately NOT separate tables — they only ever exist as part of one
@@ -63,9 +79,23 @@ export interface Database {
   expertPointsTransactions: ExpertPointsTransaction[];
   expertPeerReviews: ExpertPeerReview[];
   callsForInsight: CallForInsight[];
+  /**
+   * One row per (brief, expert) live-brief notification. Separate from
+   * `opportunities`, which are the curated matches an expert is offered
+   * after a brief is confirmed — these are the raw "a client just asked
+   * something" pings that go out to everyone.
+   */
+  expertBriefParticipations: ExpertBriefParticipation[];
+  /**
+   * Private client↔expert threads. Only ever created when a client actually
+   * engages an expert — a broadcast brief reaching ten experts creates ten
+   * participations and zero conversations.
+   */
+  expertConversations: ExpertConversation[];
+  conversationMessages: ConversationMessage[];
 }
 
-const STORAGE_KEY = "tiq_db_v3";
+const STORAGE_KEY = "tiq_db_v6";
 const SESSION_KEY = "tiq_session_v1";
 
 let cache: Database | null = null;
@@ -77,6 +107,42 @@ function seed(): Database {
 function persist() {
   if (typeof window === "undefined" || !cache) return;
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
+  emitChange();
+}
+
+/* ------------------------------------------------------------- change feed */
+
+/**
+ * There is no server, so "real-time" is the storage layer announcing that it
+ * changed. Writes in this tab notify subscribers directly; writes in another
+ * tab arrive through the browser's own `storage` event. Together that's
+ * enough for an expert's dashboard to light up the instant a client submits
+ * a challenge in a different tab — with no polling, no sockets and no new
+ * infrastructure to run.
+ */
+const listeners = new Set<() => void>();
+
+function emitChange() {
+  for (const listener of listeners) listener();
+}
+
+export function subscribeToDatabase(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (event) => {
+    if (event.key !== STORAGE_KEY) return;
+    /**
+     * Another tab wrote. Our in-memory clone is now stale, so drop it and
+     * let the next read pull the new blob back out of localStorage.
+     */
+    cache = null;
+    emitChange();
+  });
 }
 
 function load(): Database {

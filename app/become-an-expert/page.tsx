@@ -175,7 +175,7 @@ export default function BecomeAnExpertPage() {
 
               <p className="mt-6 text-center text-sm text-gray-400">
                 Already an expert?{" "}
-                <Link href="/sign-in" className="font-medium text-primary-400 hover:text-primary-300">
+                <Link href="/sign-in" className="font-medium text-gold hover:text-gold-soft">
                   Sign in
                 </Link>
               </p>

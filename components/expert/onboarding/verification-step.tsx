@@ -84,7 +84,7 @@ export function VerificationStep({ profile, onSaved, onBack }: StepProps) {
 
       <Card className="border-primary-500/30 bg-primary-500/5 p-4">
         <p className="flex items-start gap-2.5 text-sm text-gray-200">
-          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary-400" aria-hidden />
+          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden />
           Verification is what makes an expert recommendation worth acting on. Until it&apos;s complete you won&apos;t appear
           to clients, and you won&apos;t be able to join client calls.
         </p>

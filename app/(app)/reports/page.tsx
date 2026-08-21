@@ -23,12 +23,16 @@ export default function ReportsPage() {
 
   return (
     <div className="mx-auto max-w-3xl p-6">
-      <h1 className="mb-6 text-xl font-semibold text-gray-50">Reports</h1>
+      <h1 className="mb-6 text-xl font-semibold text-gray-50">Executive summaries</h1>
 
       {!reports ? (
         <Skeleton className="h-32 w-full" />
       ) : reports.length === 0 ? (
-        <EmptyState icon={FileText} title="No reports yet." description="Reports appear here once a challenge has been diagnosed." />
+        <EmptyState
+          icon={FileText}
+          title="No executive summaries yet."
+          description="An executive summary appears here once a challenge has been diagnosed."
+        />
       ) : (
         <div className="flex flex-col gap-3">
           {reports.map((r) => (

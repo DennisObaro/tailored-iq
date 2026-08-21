@@ -88,7 +88,7 @@ export function ChipToggle({
         "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-975",
         selected
-          ? "border-primary-500 bg-primary-500/15 text-primary-400"
+          ? "border-primary-500 bg-primary-500/15 text-gold"
           : "border-gray-800 text-gray-400 hover:border-gray-700 hover:text-gray-200",
         className,
       )}

@@ -99,7 +99,7 @@ export default function PlaybookExplorePage() {
         <CardContent className="flex flex-col gap-2">
           {template.whatsIncluded.map((item) => (
             <p key={item} className="flex items-center gap-2 text-sm text-gray-300">
-              <CheckCircle2 className="size-4 shrink-0 text-primary-400" aria-hidden />
+              <CheckCircle2 className="size-4 shrink-0 text-gold" aria-hidden />
               {item}
             </p>
           ))}

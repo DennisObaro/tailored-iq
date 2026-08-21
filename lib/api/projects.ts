@@ -1,7 +1,8 @@
 import type { Project, Conversation } from "@/lib/types";
 import { simulateNetwork, ApiError } from "./client";
-import { db } from "./_db";
+import { db, type Database } from "./_db";
 import { canViewProject } from "./_access";
+import { notifyExpertsOfNewBriefWithin } from "./live-briefs";
 import { id } from "@/lib/utils/id";
 
 export async function listProjects(clientId: string): Promise<Project[]> {
@@ -48,41 +49,68 @@ function titleFromChallenge(challenge: string) {
   return trimmed.length > 70 ? `${trimmed.slice(0, 67)}...` : trimmed;
 }
 
+/**
+ * The body of createProject, callable from inside another module's
+ * db.update — a direct booking has to mint the project, the consultation and
+ * the expert's opportunity in one atomic write, so it can't await the async
+ * wrapper below. Internal to lib/api, same convention as
+ * createPlaybookWithin and notifyExpertsOfNewBriefWithin.
+ */
+export function createProjectWithin(
+  d: Database,
+  clientId: string,
+  challenge: string,
+  /**
+   * `broadcast: false` for a challenge that already has an expert attached —
+   * a direct booking picked one person, so pinging every approved expert
+   * would be inviting a crowd to work nobody asked them to do.
+   */
+  options: { broadcast?: boolean } = {},
+): { project: Project; conversation: Conversation } {
+  const { broadcast = true } = options;
+  const now = new Date().toISOString();
+  const conversation: Conversation = {
+    id: id("conversation"),
+    projectId: "",
+    type: "diagnosis",
+    participantIds: [clientId],
+    messages: [{ id: id("msg"), role: "user", content: challenge, createdAt: now }],
+    turnCount: 0,
+    status: "in_progress",
+    startedAt: now,
+  };
+  const project: Project = {
+    id: id("project"),
+    clientId,
+    title: titleFromChallenge(challenge),
+    challenge,
+    status: "brief_in_progress",
+    conversationId: conversation.id,
+    matchedExpertIds: [],
+    activity: [{ id: id("act"), label: "Challenge submitted", timestamp: now }],
+    createdAt: now,
+    updatedAt: now,
+  };
+  conversation.projectId = project.id;
+  d.projects.unshift(project);
+  d.conversations.push(conversation);
+
+  /**
+   * The client has just pressed send on their first message. This is the
+   * only place a challenge comes into existence, which is exactly why the
+   * live-brief ping hangs off it: typing can't reach here, and later
+   * messages in the same conversation go through postMessage instead.
+   */
+  if (broadcast) notifyExpertsOfNewBriefWithin(d, project);
+
+  return { project, conversation };
+}
+
 export async function createProject(
   clientId: string,
   challenge: string,
 ): Promise<{ project: Project; conversation: Conversation }> {
-  return simulateNetwork(() =>
-    db.update((d) => {
-      const now = new Date().toISOString();
-      const conversation: Conversation = {
-        id: id("conversation"),
-        projectId: "",
-        type: "diagnosis",
-        participantIds: [clientId],
-        messages: [{ id: id("msg"), role: "user", content: challenge, createdAt: now }],
-        turnCount: 0,
-        status: "in_progress",
-        startedAt: now,
-      };
-      const project: Project = {
-        id: id("project"),
-        clientId,
-        title: titleFromChallenge(challenge),
-        challenge,
-        status: "brief_in_progress",
-        conversationId: conversation.id,
-        matchedExpertIds: [],
-        activity: [{ id: id("act"), label: "Challenge submitted", timestamp: now }],
-        createdAt: now,
-        updatedAt: now,
-      };
-      conversation.projectId = project.id;
-      d.projects.unshift(project);
-      d.conversations.push(conversation);
-      return { project, conversation };
-    }),
-  );
+  return simulateNetwork(() => db.update((d) => createProjectWithin(d, clientId, challenge)));
 }
 
 export async function addActivity(projectId: string, label: string): Promise<Project> {

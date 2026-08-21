@@ -18,7 +18,7 @@ export function ProjectTimeline({ status }: { status: ProjectStatus }) {
                 className={cn(
                   "flex size-5 shrink-0 items-center justify-center rounded-full border text-[10px]",
                   done
-                    ? "border-primary-500 bg-primary-500 text-gray-975"
+                    ? "border-primary-500 bg-primary-500 text-primary-foreground"
                     : "border-gray-700 bg-gray-900 text-gray-600",
                 )}
               >

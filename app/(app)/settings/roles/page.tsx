@@ -52,7 +52,7 @@ export default function RolesSettingsPage() {
 
       <Card className="flex items-center justify-between gap-3 p-4">
         <div className="flex items-center gap-3">
-          <Compass className="size-4 text-primary-400" aria-hidden />
+          <Compass className="size-4 text-gold" aria-hidden />
           <div>
             <p className="text-sm font-medium text-gray-100">Get help with challenges</p>
             <p className="text-xs text-gray-500">{user.roles.includes("client") ? "Active" : "Not active"}</p>
@@ -67,7 +67,7 @@ export default function RolesSettingsPage() {
 
       <Card className="flex items-center justify-between gap-3 p-4">
         <div className="flex items-center gap-3">
-          <Briefcase className="size-4 text-primary-400" aria-hidden />
+          <Briefcase className="size-4 text-gold" aria-hidden />
           <div>
             <p className="text-sm font-medium text-gray-100">Contribute expertise</p>
             <p className="text-xs text-gray-500">

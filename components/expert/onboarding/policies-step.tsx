@@ -49,7 +49,7 @@ export function PoliciesStep({ profile, onSaved, onBack }: StepProps) {
     >
       <Card className="border-primary-500/30 bg-primary-500/5 p-4">
         <p className="flex items-start gap-2.5 text-sm text-gray-200">
-          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary-400" aria-hidden />
+          <ShieldCheck className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden />
           A knowledge check follows — it asks how these apply in situations you&apos;ll actually meet, not whether you read
           them.
         </p>

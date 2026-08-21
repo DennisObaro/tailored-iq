@@ -56,7 +56,7 @@ export const PROJECT_STATUS_ORDER: ProjectStatus[] = [
 export const PROJECT_TIMELINE_STEPS: { status: ProjectStatus; label: string }[] = [
   { status: "brief_submitted", label: "Challenge submitted" },
   { status: "analysing", label: "Brief confirmed" },
-  { status: "report_ready", label: "Report generated" },
+  { status: "report_ready", label: "Executive summary generated" },
   { status: "expert_matching", label: "Expert matched" },
   { status: "consultation_completed", label: "Consultation" },
   { status: "playbook_ready", label: "Playbook" },

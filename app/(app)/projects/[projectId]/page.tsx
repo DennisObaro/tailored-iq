@@ -10,7 +10,8 @@ import * as reportsApi from "@/lib/api/reports";
 import * as expertsApi from "@/lib/api/experts";
 import type { ExpertListing } from "@/lib/api/experts";
 import * as playbooksApi from "@/lib/api/playbooks";
-import { BookOpen, ChevronRight } from "@/components/icons";
+import { PLAYBOOK_TURNAROUND } from "@/lib/api/playbooks";
+import { BookOpen, ChevronRight, Clock } from "@/components/icons";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,7 +97,7 @@ export default function ProjectDetailPage() {
     setError(false);
     setStage("playbook");
     try {
-      await playbooksApi.generatePlaybookForProject(project.id);
+      await playbooksApi.requestPlaybookForProject(project.id);
       await load();
     } catch {
       setError(true);
@@ -189,9 +190,9 @@ export default function ProjectDetailPage() {
         {project.reportId && (
           <Card className="p-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-300">Your report is ready.</p>
+              <p className="text-sm text-gray-300">Your executive summary is ready.</p>
               <Button asChild size="sm" variant="outline">
-                <Link href={`/reports/${project.reportId}`}>Read report</Link>
+                <Link href={`/reports/${project.reportId}`}>Read executive summary</Link>
               </Button>
             </div>
           </Card>
@@ -208,7 +209,7 @@ export default function ProjectDetailPage() {
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-medium text-gray-300">Relevant to your challenge</h2>
               {!project.consultationId && (
-                <p className="text-xs text-primary-400">
+                <p className="text-xs text-gold">
                   Talk to an expert first — their input can strengthen your playbook.
                 </p>
               )}
@@ -227,21 +228,41 @@ export default function ProjectDetailPage() {
           </Card>
         )}
 
-        {project.reportId && !project.playbookId && stage !== "playbook" && (
-          <Card className="p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-sm text-gray-300">Turn this report into a practical action plan.</p>
-                {!project.consultationId && (
-                  <p className="mt-0.5 text-xs text-gray-500">
-                    You don&apos;t need to talk to an expert first, but their input can strengthen it.
+        {project.reportId &&
+          !project.playbookId &&
+          project.status !== "playbook_in_progress" &&
+          stage !== "playbook" && (
+            <Card className="p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm text-gray-300">
+                    Have an expert turn this executive summary into a practical action plan.
                   </p>
-                )}
+                  {!project.consultationId && (
+                    <p className="mt-0.5 text-xs text-gray-500">
+                      You don&apos;t need to talk to an expert first, but their input can strengthen it.
+                    </p>
+                  )}
+                </div>
+                <Button size="sm" className="shrink-0 gap-1.5" onClick={getPlaybook}>
+                  <BookOpen className="size-4" aria-hidden />
+                  Get a playbook
+                </Button>
               </div>
-              <Button size="sm" className="shrink-0 gap-1.5" onClick={getPlaybook}>
-                <BookOpen className="size-4" aria-hidden />
-                Get a playbook
-              </Button>
+            </Card>
+          )}
+
+        {/* A playbook is written by a person, so the wait is the honest thing
+            to lead with rather than a spinner that implies seconds. */}
+        {project.status === "playbook_in_progress" && !project.playbookId && (
+          <Card className="flex items-start gap-3 p-4">
+            <Clock className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden />
+            <div>
+              <p className="text-sm font-medium text-gray-100">Your request has been sent to an expert.</p>
+              <p className="mt-1 text-sm text-gray-400">
+                Playbooks usually take {PLAYBOOK_TURNAROUND} — an expert works through your challenge and
+                vets the plan before it reaches you. We&apos;ll notify you the moment it lands.
+              </p>
             </div>
           </Card>
         )}

@@ -77,7 +77,7 @@ export function ContributionsStep({ profile, onSaved, onBack }: StepProps) {
             <ul className="flex flex-col gap-1 text-sm text-gray-300">
               {derivedWillingness.map((w) => (
                 <li key={w} className="flex gap-2">
-                  <span className="text-primary-400" aria-hidden>
+                  <span className="text-gold" aria-hidden>
                     &middot;
                   </span>
                   {WILLINGNESS_LABELS[w]}

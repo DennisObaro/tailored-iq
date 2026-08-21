@@ -177,7 +177,7 @@ export function EvidenceStep({ profile, onSaved, onBack }: StepProps) {
 
           {extracted && (
             <div className="rounded-lg border border-primary-500/30 bg-primary-500/5 p-3">
-              <p className="flex items-center gap-1.5 text-sm font-medium text-primary-400">
+              <p className="flex items-center gap-1.5 text-sm font-medium text-gold">
                 <Sparkles className="size-4" aria-hidden />
                 We read this from your CV
               </p>

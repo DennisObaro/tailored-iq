@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Raw drop of the landing-page project, kept for reference only. It is
+    // TanStack Start source (server functions, lucide imports, ~50 unported
+    // shadcn primitives) that this app neither builds nor resolves.
+    "incoming-landing:/**",
   ]),
 ]);
 

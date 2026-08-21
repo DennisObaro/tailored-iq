@@ -9,6 +9,7 @@ import { useSessionStore } from "@/lib/store/use-session-store";
 import { useUiStore } from "@/lib/store/use-ui-store";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { Avatar } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { NavIcon } from "@/components/ui/nav-icon";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Logo } from "./logo";
@@ -99,7 +100,7 @@ export function Sidebar({ className, forceExpanded }: { className?: string; forc
                   collapsed ? "p-2" : "gap-[8px] pl-3",
                   active
                     ? "bg-gray-900 text-gray-50"
-                    : "text-[#949494] hover:bg-gray-900 hover:text-gray-100 focus-visible:bg-gray-900 focus-visible:text-gray-100",
+                    : "text-gray-400 hover:bg-gray-900 hover:text-gray-100 focus-visible:bg-gray-900 focus-visible:text-gray-100",
                 )}
                 aria-current={active ? "page" : undefined}
               >
@@ -128,9 +129,10 @@ export function Sidebar({ className, forceExpanded }: { className?: string; forc
 
       <div className="flex flex-col gap-2 border-t border-gray-800 px-5 py-4">
         <RoleSwitcher collapsed={collapsed} />
+        <div className="flex items-center gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-[6px] rounded-[10px] py-1 text-left hover:bg-gray-900">
+            <button className="flex min-w-0 flex-1 items-center gap-[6px] rounded-[10px] py-1 text-left hover:bg-gray-900">
               <Avatar firstName={user.firstName} lastName={user.lastName} size="lg" />
               {showLabels && (
                 <>
@@ -159,6 +161,13 @@ export function Sidebar({ className, forceExpanded }: { className?: string; forc
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        {/* Sits beside the profile block rather than in its menu: the theme is
+            a display preference, not an account action, and one click beats
+            two for something people flip by time of day. Hidden when the
+            sidebar is collapsed, where the rail has no room for a second
+            control next to the avatar. */}
+        {showLabels && <ThemeToggle />}
+        </div>
       </div>
     </nav>
   );

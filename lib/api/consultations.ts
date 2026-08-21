@@ -1,7 +1,10 @@
-import type { Consultation, ExpertWillingness, Review, User } from "@/lib/types";
+import type { Consultation, ExpertWillingness, Project, Review, User } from "@/lib/types";
 import { simulateNetwork, simulateGeneration, ApiError } from "./client";
-import { db } from "./_db";
+import { db, type Database } from "./_db";
+import { createProjectWithin } from "./projects";
 import { id } from "@/lib/utils/id";
+import { formatCallWhen } from "@/lib/utils/format";
+import { getOrCreateConversationWithin, postSystemMessageWithin } from "./expert-conversations";
 import { generateTranscript } from "@/lib/ai-sim/transcript-generator";
 import { getExpertAccess } from "@/lib/utils/expert-access";
 import { awardPointsWithin } from "./expert-points";
@@ -44,21 +47,90 @@ export async function listConsultationsForExpert(expertId: string): Promise<Cons
   );
 }
 
+/**
+ * The expert's side of a cold booking. Unlike a broadcast opportunity there
+ * is nothing here to opt into — the client chose this expert by name — so it
+ * lands already `interested`, with no requested contributions to pick from.
+ */
+function createIntakeOpportunityWithin(d: Database, project: Project, expertId: string, now: string) {
+  const alreadyOffered = d.opportunities.some(
+    (o) => o.projectId === project.id && o.expertId === expertId,
+  );
+  if (alreadyOffered) return;
+
+  const opportunityId = id("opportunity");
+  d.opportunities.unshift({
+    id: opportunityId,
+    projectId: project.id,
+    expertId,
+    kind: "direct_intake",
+    title: project.title,
+    summary: project.challenge,
+    relevanceReason: "This client came to you directly and booked a call with you.",
+    category: project.category ?? "Strategy",
+    requestedContributions: [],
+    response: "interested",
+    offeredContributions: [],
+    respondedAt: now,
+    createdAt: now,
+  });
+  d.notifications.unshift({
+    id: id("notif"),
+    userId: expertId,
+    type: "opportunity_new",
+    title: "A client booked you directly",
+    body: "They haven't defined their challenge yet — you'll build the brief together on the call.",
+    linkHref: `/expert/opportunities/${opportunityId}`,
+    read: false,
+    createdAt: now,
+  });
+}
+
+/**
+ * Booking a call. Either against a challenge the client has already
+ * diagnosed (`projectId`), or cold (`newChallenge`) — a client who went
+ * straight to an expert rather than through the chat.
+ *
+ * The cold path is what creates a direct intake: it mints the project the
+ * consultation needs, keeps it off the live-brief broadcast because an
+ * expert has already been chosen, and gives that expert an opportunity whose
+ * work is running the conversation and completing the brief.
+ */
 export async function bookConsultation(input: {
-  projectId: string;
+  projectId?: string;
+  /** A one-line description of the challenge, when there's no project yet. */
+  newChallenge?: string;
   clientId: string;
   expertId: string;
   scheduledFor: string;
-}): Promise<Consultation> {
+}): Promise<{ consultation: Consultation; conversationId: string }> {
   return simulateNetwork(() =>
     db.update((d) => {
-      const project = d.projects.find((p) => p.id === input.projectId);
+      const now = new Date().toISOString();
+
+      const project = input.projectId
+        ? d.projects.find((p) => p.id === input.projectId)
+        : input.newChallenge?.trim()
+          ? createProjectWithin(d, input.clientId, input.newChallenge.trim(), { broadcast: false }).project
+          : undefined;
       if (!project) throw new ApiError("Project not found.", "NOT_FOUND");
 
-      const now = new Date().toISOString();
+      /**
+       * The booked expert is engaged on this project from the moment it's
+       * booked — canViewProject keys off matchedExpertIds, so without this
+       * they could join the call without being able to read the brief they
+       * are supposed to be discussing.
+       */
+      if (!project.matchedExpertIds.includes(input.expertId)) {
+        project.matchedExpertIds.push(input.expertId);
+      }
+
+      if (input.newChallenge) {
+        createIntakeOpportunityWithin(d, project, input.expertId, now);
+      }
       const consultation: Consultation = {
         id: id("consultation"),
-        projectId: input.projectId,
+        projectId: project.id,
         clientId: input.clientId,
         expertId: input.expertId,
         scheduledFor: input.scheduledFor,
@@ -72,18 +144,54 @@ export async function bookConsultation(input: {
       project.status = "consultation_scheduled";
       project.updatedAt = now;
       project.activity.push({ id: id("act"), label: "Consultation scheduled", timestamp: now });
+      /**
+       * Booking is the moment a client actually engages this expert, so it's
+       * where their private thread begins — created here rather than left to
+       * the client to start, because the two of them now have a call to
+       * prepare for and somewhere to do it.
+       */
+      const conversation = getOrCreateConversationWithin(d, {
+        clientId: input.clientId,
+        expertId: input.expertId,
+        projectId: project.id,
+      });
+      conversation.consultationId = consultation.id;
+      conversation.updatedAt = now;
+      postSystemMessageWithin(
+        d,
+        conversation.id,
+        `Consultation scheduled — ${formatCallWhen(consultation.scheduledFor)}`,
+      );
+
       d.notifications.unshift({
         id: id("notif"),
         userId: project.clientId,
         type: "booking_confirmed",
         title: "Consultation confirmed",
         body: `Your consultation for "${project.title}" is scheduled.`,
-        linkHref: `/consultations/${consultation.id}`,
+        linkHref: `/conversations/${conversation.id}`,
         read: false,
         createdAt: now,
       });
 
-      return consultation;
+      /**
+       * The expert was never told a booking had happened — they only found
+       * out by checking Calls. Same notification system, pointed at the
+       * conversation so they land where the context is.
+       */
+      const client = d.users.find((u) => u.id === input.clientId);
+      d.notifications.unshift({
+        id: id("notif"),
+        userId: input.expertId,
+        type: "booking_confirmed",
+        title: "Consultation booked",
+        body: `${client ? client.firstName : "A client"} booked a consultation about "${project.title}".`,
+        linkHref: `/conversations/${conversation.id}`,
+        read: false,
+        createdAt: now,
+      });
+
+      return { consultation, conversationId: conversation.id };
     }),
   );
 }

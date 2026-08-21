@@ -1,6 +1,6 @@
-import type { Playbook } from "@/lib/types";
-import { simulateGeneration, ApiError } from "./client";
-import { db } from "./_db";
+import type { Playbook, Project } from "@/lib/types";
+import { simulateGeneration, simulateNetwork, ApiError } from "./client";
+import { db, type Database } from "./_db";
 import { canViewProject } from "./_access";
 import { id } from "@/lib/utils/id";
 import { generatePlaybook } from "@/lib/ai-sim/playbook-generator";
@@ -41,49 +41,77 @@ export async function listPlaybooks(clientId: string): Promise<Playbook[]> {
   );
 }
 
-export async function generatePlaybookForProject(projectId: string): Promise<Playbook> {
-  return simulateGeneration(() =>
+/** How long the client is told to expect the expert's playbook to take. */
+export const PLAYBOOK_TURNAROUND = "24-48 hours";
+
+/**
+ * The client asking for a playbook. It deliberately doesn't produce one:
+ * a playbook is an expert's work, so this only records the request and puts
+ * the project into the state the expert side reads as "somebody is waiting
+ * on this". What lands 24-48 hours later is whatever the expert submits.
+ */
+export async function requestPlaybookForProject(projectId: string): Promise<Project> {
+  return simulateNetwork(() =>
     db.update((d) => {
       const project = d.projects.find((p) => p.id === projectId);
       if (!project) throw new ApiError("Project not found.", "NOT_FOUND");
       const brief = d.briefs.find((b) => b.id === project.briefId);
       const report = d.reports.find((r) => r.id === project.reportId);
       if (!brief || !report) throw new ApiError("This project isn't ready for a playbook yet.", "NOT_READY");
-      const consultation = project.consultationId
-        ? (d.consultations.find((c) => c.id === project.consultationId) ?? null)
-        : null;
-      const contributions = d.contributions.filter((c) => c.projectId === projectId);
+      if (project.playbookId) return project;
 
       const now = new Date().toISOString();
-      const generated = generatePlaybook(brief, report, consultation, contributions);
-      const playbook: Playbook = {
-        ...generated,
-        id: id("playbook"),
-        projectId,
-        expertContributionIds: contributions.map((c) => c.id),
-        createdAt: now,
-        updatedAt: now,
-      };
-      d.playbooks.push(playbook);
-
-      project.playbookId = playbook.id;
-      project.status = "playbook_ready";
+      project.status = "playbook_in_progress";
       project.updatedAt = now;
-      project.activity.push({ id: id("act"), label: "Playbook generated", timestamp: now });
-      d.notifications.unshift({
-        id: id("notif"),
-        userId: project.clientId,
-        type: "playbook_ready",
-        title: "Your playbook is ready",
-        body: `The ${playbook.title} for "${project.title}" is ready to view.`,
-        linkHref: `/playbooks/${playbook.id}`,
-        read: false,
-        createdAt: now,
-      });
-
-      return playbook;
+      project.activity.push({ id: id("act"), label: "Playbook requested", timestamp: now });
+      return project;
     }),
   );
+}
+
+/**
+ * Builds the playbook out of everything the project has collected. Internal
+ * to lib/api: the only route in is an expert submitting the final playbook,
+ * so one can never appear on a client's project without an expert behind it.
+ */
+export function createPlaybookWithin(d: Database, projectId: string): Playbook {
+  const project = d.projects.find((p) => p.id === projectId);
+  if (!project) throw new ApiError("Project not found.", "NOT_FOUND");
+  const brief = d.briefs.find((b) => b.id === project.briefId);
+  const report = d.reports.find((r) => r.id === project.reportId);
+  if (!brief || !report) throw new ApiError("This project isn't ready for a playbook yet.", "NOT_READY");
+  const consultation = project.consultationId
+    ? (d.consultations.find((c) => c.id === project.consultationId) ?? null)
+    : null;
+  const contributions = d.contributions.filter((c) => c.projectId === projectId);
+
+  const now = new Date().toISOString();
+  const generated = generatePlaybook(brief, report, consultation, contributions);
+  const playbook: Playbook = {
+    ...generated,
+    id: id("playbook"),
+    projectId,
+    expertContributionIds: contributions.map((c) => c.id),
+    createdAt: now,
+    updatedAt: now,
+  };
+  d.playbooks.push(playbook);
+
+  project.playbookId = playbook.id;
+  project.status = "playbook_ready";
+  project.updatedAt = now;
+  d.notifications.unshift({
+    id: id("notif"),
+    userId: project.clientId,
+    type: "playbook_ready",
+    title: "Your playbook is ready",
+    body: `The ${playbook.title} for "${project.title}" is ready to view.`,
+    linkHref: `/playbooks/${playbook.id}`,
+    read: false,
+    createdAt: now,
+  });
+
+  return playbook;
 }
 
 export async function updateActionItemStatus(

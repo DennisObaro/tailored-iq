@@ -3,6 +3,7 @@ import type {
   ExpertContributionType,
   ExpertOnboardingStep,
   ExpertPointsSource,
+  ExpertWillingness,
 } from "@/lib/types";
 import type { ExpertLevel } from "@/lib/types";
 
@@ -153,14 +154,53 @@ export const CONTRIBUTION_TYPE_LABELS: Record<ExpertContributionType, string> = 
   expert_conversation: "Expert conversation",
 };
 
+/** The short noun form, for badges and for summarising back what was picked. */
 export const WILLINGNESS_LABELS: Record<string, string> = {
   review: "Review the recommendations",
   contribute_insight: "Contribute an insight",
   advisory_call: "Advisory call",
   playbook_contribution: "Playbook contribution",
-  consulting_engagement: "Longer consulting engagement",
-  longer_engagement: "Longer consulting engagement",
+  consulting_engagement: "Project support",
 };
+
+/**
+ * The three ways an expert can engage with a client's challenge, in the
+ * order they're offered.
+ *
+ * Deliberately not every ExpertWillingness value: `review` and
+ * `contribute_insight` are knowledge-base work that reaches an expert
+ * through the contributions hub, not through somebody's live challenge.
+ * Mixing them in here made the choice read as a menu of chores rather than
+ * a decision about how to help.
+ *
+ * Titles are phrased as actions because this is a choice the expert is
+ * making. WILLINGNESS_LABELS keeps the noun forms for everywhere the same
+ * modes are only being named.
+ */
+export const ENGAGEMENT_MODES: {
+  key: ExpertWillingness;
+  title: string;
+  description: string;
+}[] = [
+  {
+    key: "playbook_contribution",
+    title: "Contribute to the playbook",
+    description:
+      "Review the AI-generated draft and strengthen it with your experience, examples and practical advice.",
+  },
+  {
+    key: "advisory_call",
+    title: "Take an advisory call",
+    description:
+      "Speak directly with the client to help them work through the challenge and decide what to do next.",
+  },
+  {
+    key: "consulting_engagement",
+    title: "Support the project",
+    description:
+      "Help the client put the strategy into practice through hands-on consulting and delivery support.",
+  },
+];
 
 /* -------------------------------------------------------------------- policies */
 
@@ -170,7 +210,7 @@ export const EXPERT_POLICIES: { id: string; title: string; body: string }[] = [
   {
     id: "confidentiality",
     title: "Confidentiality",
-    body: "Anything you see about a client — their brief, report, transcript or playbook — stays inside TailoredIQ. You will not repeat it outside the engagement, including in your own writing or thought leadership.",
+    body: "Anything you see about a client — their brief, executive summary, transcript or playbook — stays inside TailoredIQ. You will not repeat it outside the engagement, including in your own writing or thought leadership.",
   },
   {
     id: "client_privacy",

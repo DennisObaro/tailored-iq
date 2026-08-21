@@ -6,5 +6,7 @@ export * from "./report";
 export * from "./consultation";
 export * from "./playbook";
 export * from "./opportunity";
+export * from "./live-brief";
+export * from "./expert-conversation";
 export * from "./notification";
 export * from "./expert";
