@@ -59,7 +59,7 @@ export default function ConversationsPage() {
     conversationsApi.listConversationsForUser(user.id).then(setListings);
   }, [user]);
 
-  const isExpertView = listings?.some((l) => l.conversation.expertId === user?.id) ?? false;
+  const isExpertView = user?.activeRole === "expert";
 
   return (
     <div className="mx-auto max-w-3xl p-6">
