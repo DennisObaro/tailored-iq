@@ -23,6 +23,7 @@ export interface ConversationListing {
   stage: ExpertConversationStage;
   lastMessage?: ConversationMessage;
   unreadCount: number;
+  consultation?: Pick<Consultation, "id" | "status" | "scheduledFor">;
 }
 
 /** Everything the thread screen needs, in one authorised read. */
@@ -38,11 +39,17 @@ export interface ConversationThread {
   viewerRole: "client" | "expert";
 }
 
-function stageFor(d: Database, conversation: ExpertConversation): ExpertConversationStage {
-  if (conversation.status === "archived") return "archived";
-  const consultation = conversation.consultationId
+function consultationFor(d: Database, conversation: ExpertConversation): Consultation | undefined {
+  return conversation.consultationId
     ? d.consultations.find((c) => c.id === conversation.consultationId)
     : undefined;
+}
+
+function stageFor(
+  conversation: ExpertConversation,
+  consultation: Consultation | undefined,
+): ExpertConversationStage {
+  if (conversation.status === "archived") return "archived";
   if (!consultation) return "active";
   if (consultation.status === "completed") return "consultation_completed";
   if (consultation.status === "cancelled") return "active";
@@ -145,19 +152,26 @@ export async function listConversationsForUser(userId: string): Promise<Conversa
           if (!counterpart || !project) return null;
 
           const messages = messagesIn(database, conversation.id);
+          const consultation = consultationFor(database, conversation);
           return {
             conversation,
             counterpart,
             counterpartProfile: database.expertProfiles.find((p) => p.userId === counterpartId),
             projectTitle: project.title,
-            stage: stageFor(database, conversation),
+            stage: stageFor(conversation, consultation),
             lastMessage: messages[messages.length - 1],
             unreadCount: messages.filter((m) => m.senderId !== userId && m.senderRole !== "system" && !m.readAt)
               .length,
+            consultation: consultation
+              ? { id: consultation.id, status: consultation.status, scheduledFor: consultation.scheduledFor }
+              : undefined,
           };
         })
         .filter((x): x is ConversationListing => x !== null)
         .sort((a, b) => {
+          const aLive = a.consultation?.status === "in_call";
+          const bLive = b.consultation?.status === "in_call";
+          if (aLive !== bLive) return aLive ? -1 : 1;
           const at = a.lastMessage?.createdAt ?? a.conversation.updatedAt;
           const bt = b.lastMessage?.createdAt ?? b.conversation.updatedAt;
           return at < bt ? 1 : -1;
@@ -191,12 +205,13 @@ export async function getConversationThread(
       const counterpart = database.users.find((u) => u.id === counterpartId);
       if (!counterpart) return null;
 
+      const consultation = consultationFor(database, conversation);
       return {
         conversation,
         counterpart,
         counterpartProfile: database.expertProfiles.find((p) => p.userId === counterpartId),
         messages: messagesIn(database, conversationId),
-        stage: stageFor(database, conversation),
+        stage: stageFor(conversation, consultation),
         project: {
           id: project.id,
           title: project.title,
@@ -204,9 +219,7 @@ export async function getConversationThread(
           category: project.category,
           status: project.status,
         },
-        consultation: conversation.consultationId
-          ? database.consultations.find((c) => c.id === conversation.consultationId)
-          : undefined,
+        consultation,
         viewerRole,
       };
     },
