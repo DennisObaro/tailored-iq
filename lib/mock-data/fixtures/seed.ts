@@ -3,7 +3,7 @@ import { seedUsers, seedClientProfiles, seedExpertProfiles } from "./users.fixtu
 import { seedProjects, seedBriefs, seedConversations } from "./projects.fixture";
 import { seedReports } from "./reports.fixture";
 import { seedPlaybooks, seedContributions } from "./playbooks.fixture";
-import { seedConsultations, seedReviews } from "./consultations.fixture";
+import { seedConsultations, seedExpertConversations, seedReviews } from "./consultations.fixture";
 import { seedOpportunities } from "./opportunities.fixture";
 import { seedNotifications } from "./notifications.fixture";
 import {
@@ -63,8 +63,12 @@ export function seedDatabase(): Database {
     callsForInsight: structuredClone(seedCallsForInsight),
     /** Live-brief pings are created as clients submit; there's nothing meaningful to pre-seed. */
     expertBriefParticipations: [],
-    /** A thread only exists once a client reaches out, so there's nothing to pre-seed. */
-    expertConversations: [],
+    /**
+     * The four demo consultations get a matching thread so they're
+     * reachable from the merged inbox; nothing else is pre-seeded since a
+     * thread otherwise only exists once someone reaches out.
+     */
+    expertConversations: structuredClone(seedExpertConversations),
     conversationMessages: [],
   };
 }

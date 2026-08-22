@@ -1,4 +1,4 @@
-import type { Consultation, Review } from "@/lib/types";
+import type { Consultation, ExpertConversation, Review } from "@/lib/types";
 import { DEMO_CLIENT_ID, DEMO_DUAL_ID, DEMO_EXPERT_ID } from "./users.fixture";
 import { historicalConsultations, historicalReviews } from "./expert-review-history.fixture";
 
@@ -73,6 +73,56 @@ export const seedConsultations: Consultation[] = [
     createdAt: d(21),
   },
   ...historicalConsultations,
+];
+
+/**
+ * A matching thread for each demo-usable seeded consultation, so it's
+ * reachable from the merged Conversations inbox. The historical
+ * consultations (synthetic past-client IDs, no real login session) are
+ * deliberately excluded — those exist purely for expert points/review-history
+ * stats, not for interactive browsing.
+ */
+export const seedExpertConversations: ExpertConversation[] = [
+  {
+    id: "conversation_seed_1",
+    clientId: DEMO_CLIENT_ID,
+    expertId: DEMO_EXPERT_ID,
+    projectId: "project_1",
+    consultationId: "consultation_1",
+    status: "active",
+    createdAt: d(4),
+    updatedAt: d(5),
+  },
+  {
+    id: "conversation_seed_2",
+    clientId: DEMO_CLIENT_ID,
+    expertId: DEMO_DUAL_ID,
+    projectId: "project_2",
+    consultationId: "consultation_2",
+    status: "active",
+    createdAt: "2026-07-10T10:00:00.000Z",
+    updatedAt: "2026-08-14T13:00:00.000Z",
+  },
+  {
+    id: "conversation_seed_6",
+    clientId: DEMO_DUAL_ID,
+    expertId: "user_expert_6",
+    projectId: "project_6",
+    consultationId: "consultation_6",
+    status: "active",
+    createdAt: d(5),
+    updatedAt: d(6),
+  },
+  {
+    id: "conversation_seed_9",
+    clientId: DEMO_DUAL_ID,
+    expertId: DEMO_EXPERT_ID,
+    projectId: "project_9",
+    consultationId: "consultation_9",
+    status: "active",
+    createdAt: d(21),
+    updatedAt: d(22),
+  },
 ];
 
 export const seedReviews: Review[] = [

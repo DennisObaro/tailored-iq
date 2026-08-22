@@ -216,7 +216,7 @@ export default function ExpertDashboardPage() {
       </section>
 
       <section>
-        <SectionHeader icon={Video} title="Upcoming calls" href="/expert/calls" />
+        <SectionHeader icon={Video} title="Upcoming calls" href="/conversations" />
         {upcomingCalls.length === 0 ? (
           <Card className="p-4">
             <p className="text-sm text-gray-400">No calls scheduled.</p>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MessagesSquare } from "@/components/icons";
+import type { ConsultationStatus } from "@/lib/types";
 import type { ConversationListing } from "@/lib/api/expert-conversations";
 import * as conversationsApi from "@/lib/api/expert-conversations";
 import { useSessionStore } from "@/lib/store/use-session-store";
@@ -37,10 +38,10 @@ function previewFor(listing: ConversationListing, viewerId: string | undefined) 
   }
 }
 
-function callActionFor(status: string): { label: string; variant: "primary" | "outline" } | null {
+function callActionFor(status: ConsultationStatus): { label: string; variant: "primary" | "outline" } | null {
   switch (status) {
     case "scheduled":
-      return { label: "Join call", variant: "primary" };
+      return { label: "View details", variant: "outline" };
     case "in_call":
       return { label: "Rejoin call", variant: "primary" };
     case "completed":
@@ -133,7 +134,7 @@ export default function ConversationsPage() {
                       {previewFor(listing, user?.id)}
                     </p>
                     <div className="mt-2 flex items-center gap-2">
-                      <StatusBadge status={listing.stage} />
+                      <StatusBadge status={isLive ? "in_call" : listing.stage} />
                       {unread && (
                         <span className="rounded-full bg-primary-500 px-1.5 py-0.5 text-[11px] font-medium text-primary-foreground">
                           {listing.unreadCount}
