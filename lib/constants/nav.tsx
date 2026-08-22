@@ -69,7 +69,6 @@ export const EXPERT_NAV: NavItem[] = [
   { label: "Home", href: "/expert/dashboard", icon: Home },
   { label: "Opportunities", href: "/expert/opportunities", icon: Briefcase01 },
   { label: "Projects", href: "/expert/projects", icon: DashboardSquare01 },
-  { label: "Calls", href: "/expert/calls", icon: Conversations },
   { label: "Contributions", href: "/expert/contributions", icon: Clipboard },
   { label: "Insights", href: "/expert/insights", icon: Reports },
   { label: "Conversations", href: "/conversations", icon: Conversations },
