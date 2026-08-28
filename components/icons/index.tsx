@@ -14,6 +14,7 @@ import {
   CheckIcon as CheckStroke,
   CheckmarkCircle02Icon as CheckCircle2Stroke,
   ChevronDownIcon as ChevronDownStroke,
+  ChevronLeftIcon as ChevronLeftStroke,
   ChevronRightIcon as ChevronRightStroke,
   CircleIcon as CircleStroke,
   ClipboardCheckIcon as ClipboardCheckStroke,
@@ -107,6 +108,7 @@ export const Calendar = hugeiconsAdapter(CalendarStroke);
 export const Check = hugeiconsAdapter(CheckStroke);
 export const CheckCircle2 = hugeiconsAdapter(CheckCircle2Stroke);
 export const ChevronDown = hugeiconsAdapter(ChevronDownStroke);
+export const ChevronLeft = hugeiconsAdapter(ChevronLeftStroke);
 export const ChevronRight = hugeiconsAdapter(ChevronRightStroke);
 export const Circle = hugeiconsAdapter(CircleStroke);
 export const ClipboardCheck = hugeiconsAdapter(ClipboardCheckStroke);
