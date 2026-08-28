@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "@/components/icons";
@@ -13,7 +13,10 @@ import { DotGridBackground } from "@/components/auth/dot-grid-background";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import * as referralsApi from "@/lib/api/expert-referrals";
 import * as expertOnboardingApi from "@/lib/api/expert-onboarding";
+import * as clientReferralsApi from "@/lib/api/client-referrals";
 import { clearPendingReferralCode, getPendingReferralCode } from "@/lib/utils/referral-session";
+import { formatPoints } from "@/lib/utils/format";
+import { REFERRAL_CREDIT_AMOUNT } from "@/lib/constants/credits";
 import { cn } from "@/lib/utils/cn";
 
 interface FormErrors {
@@ -56,6 +59,16 @@ function SignUpForm() {
   const referralCode = searchParams.get("referral") ?? getPendingReferralCode();
   const isExpertSignUp = !!referralCode;
 
+  /**
+   * A client invite, which is a different thing entirely from `referral`
+   * above: it opens no gate and grants no role, it only records who
+   * introduced this client so their credit can be paid later. Kept on its
+   * own parameter so an invite can never be mistaken for a verified expert
+   * code and quietly create an expert account.
+   */
+  const inviteCode = searchParams.get("invite");
+  const [inviterName, setInviterName] = useState<string | null>(null);
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -65,6 +78,17 @@ function SignUpForm() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
+
+  useEffect(() => {
+    if (!inviteCode || isExpertSignUp) return;
+    let cancelled = false;
+    clientReferralsApi.validateClientReferralCode(inviteCode).then((result) => {
+      if (!cancelled && result.valid) setInviterName(result.referrerName ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [inviteCode, isExpertSignUp]);
 
   const isComplete =
     firstName.trim() !== "" &&
@@ -123,6 +147,19 @@ function SignUpForm() {
         return;
       }
 
+      /**
+       * Recorded after the account exists, and never allowed to fail the
+       * sign-up: someone who typed a bad code should still end up with the
+       * account they just created, minus a credit nobody promised them.
+       */
+      if (inviteCode) {
+        try {
+          await clientReferralsApi.claimClientReferralCode(inviteCode, user.id, user.email);
+        } catch {
+          /* An unrecognised or already-used invite simply doesn't attach. */
+        }
+      }
+
       router.push("/onboarding/profile");
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Something went wrong.");
@@ -147,6 +184,13 @@ function SignUpForm() {
               ? "Your referral code is verified. This takes a minute — the rest of your profile comes next."
               : "Get strategic guidance grounded in real-world experience."}
           </p>
+
+          {!isExpertSignUp && inviterName && (
+            <p className="mt-3 w-full rounded-lg border border-gray-800 bg-gray-900 px-3 py-2.5 text-sm text-gray-300">
+              <span className="font-medium text-gray-100">{inviterName}</span> invited you. They earn{" "}
+              {formatPoints(REFERRAL_CREDIT_AMOUNT)} once you start your first challenge.
+            </p>
+          )}
 
           <form onSubmit={onSubmit} noValidate className="mt-8 flex w-full flex-col gap-4">
             <div className="grid grid-cols-2 gap-4">

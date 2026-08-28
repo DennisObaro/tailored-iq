@@ -13,7 +13,11 @@ export type NotificationType =
   | "contribution_added"
   | "expert_status_changed"
   | "contribution_reviewed"
-  | "peer_review_requested";
+  | "peer_review_requested"
+  /** Collaborative playbook: seated, ruled on, crowned, or finalised. */
+  | "playbook_collaboration"
+  /** A referred client confirmed their first brief, so credit landed. */
+  | "credit_earned";
 
 export interface Notification {
   id: string;

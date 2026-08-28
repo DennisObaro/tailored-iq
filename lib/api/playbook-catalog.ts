@@ -2,6 +2,7 @@ import type { Playbook, PlaybookTemplate } from "@/lib/types";
 import { simulateNetwork, simulateGeneration, ApiError } from "./client";
 import { db } from "./_db";
 import { id } from "@/lib/utils/id";
+import { spendCreditsWithin } from "./credits";
 import { listProjects } from "./projects";
 import { PLAYBOOK_TEMPLATES, PLAYBOOK_TEMPLATE_CONTENT } from "@/lib/mock-data/fixtures/playbook-catalog.fixture";
 
@@ -59,7 +60,26 @@ export async function unlockTemplate(userId: string, templateId: string): Promis
         updatedAt: now,
       };
       d.playbooks.push(playbook);
-      d.playbookUnlocks.push({ id: id("unlock"), userId, templateId, playbookId: playbook.id, unlockedAt: now });
+      /**
+       * Referral credit comes off the price here rather than at some later
+       * checkout, because this *is* the checkout — the mock purchase is the
+       * only place a client-facing price is ever settled. A partial balance
+       * is applied and the rest would be payable; an empty one spends
+       * nothing and the unlock proceeds exactly as it always has.
+       */
+      const creditApplied = spendCreditsWithin(d, {
+        userId,
+        amount: template.price,
+        note: `Unlocked "${template.title}"`,
+      });
+      d.playbookUnlocks.push({
+        id: id("unlock"),
+        userId,
+        templateId,
+        playbookId: playbook.id,
+        creditApplied,
+        unlockedAt: now,
+      });
 
       return playbook;
     }),

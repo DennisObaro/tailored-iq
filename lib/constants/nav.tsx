@@ -4,6 +4,7 @@ import {
   ClipboardIcon as ClipboardStroke,
   UserCircle02Icon as UserCircle02Stroke,
   Award01Icon as Award01Stroke,
+  FolderKanbanIcon as FolderKanbanStroke,
 } from "@hugeicons-pro/core-stroke-rounded";
 import {
   DashboardSquare01Icon as DashboardSquare01Solid,
@@ -11,6 +12,7 @@ import {
   ClipboardIcon as ClipboardSolid,
   UserCircle02Icon as UserCircle02Solid,
   Award01Icon as Award01Solid,
+  FolderKanbanIcon as FolderKanbanSolid,
 } from "@hugeicons-pro/core-solid-rounded";
 import {
   HomeIconStroke,
@@ -47,6 +49,7 @@ const Briefcase01: IconPair = { Stroke: hugeiconsAdapter(Briefcase01Stroke), Sol
 const Clipboard: IconPair = { Stroke: hugeiconsAdapter(ClipboardStroke), Solid: hugeiconsAdapter(ClipboardSolid) };
 const UserCircle02: IconPair = { Stroke: hugeiconsAdapter(UserCircle02Stroke), Solid: hugeiconsAdapter(UserCircle02Solid) };
 const Award01: IconPair = { Stroke: hugeiconsAdapter(Award01Stroke), Solid: hugeiconsAdapter(Award01Solid) };
+const FolderKanban: IconPair = { Stroke: hugeiconsAdapter(FolderKanbanStroke), Solid: hugeiconsAdapter(FolderKanbanSolid) };
 
 // Figma-sourced (file QmKaB3nn1udOAZvu5JAgOE, frame 747:518).
 const Home: IconPair = { Stroke: HomeIconStroke, Solid: HomeIconSolid };
@@ -59,10 +62,12 @@ const Reports: IconPair = { Stroke: ReportsIconStroke, Solid: ReportsIconSolid }
 export const CLIENT_NAV: NavItem[] = [
   { label: "Home", href: "/dashboard", icon: Home },
   { label: "Ask TailoredIQ", href: "/chat", icon: Chat },
+  { label: "Challenges", href: "/projects", icon: FolderKanban },
   { label: "Executive summaries", href: "/reports", icon: Reports },
   { label: "Playbooks", href: "/playbooks", icon: Playbooks },
   { label: "Experts", href: "/experts", icon: Experts },
   { label: "Conversations", href: "/conversations", icon: Conversations },
+  { label: "Rewards", href: "/rewards", icon: Award01 },
 ];
 
 export const EXPERT_NAV: NavItem[] = [
@@ -71,6 +76,7 @@ export const EXPERT_NAV: NavItem[] = [
   { label: "Projects", href: "/expert/projects", icon: DashboardSquare01 },
   { label: "Contributions", href: "/expert/contributions", icon: Clipboard },
   { label: "Insights", href: "/expert/insights", icon: Reports },
+  { label: "Playbooks", href: "/expert/playbooks", icon: Playbooks },
   { label: "Conversations", href: "/conversations", icon: Conversations },
   { label: "Rewards", href: "/expert/rewards", icon: Award01 },
   { label: "Profile", href: "/expert/profile", icon: UserCircle02 },

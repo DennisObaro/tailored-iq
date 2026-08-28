@@ -21,6 +21,13 @@ import type {
   ExpertBriefParticipation,
   ExpertConversation,
   ConversationMessage,
+  PlaybookDocument,
+  PlaybookDocumentSection,
+  PlaybookCollaborator,
+  PlaybookComment,
+  PlaybookActivity,
+  ClientReferral,
+  CreditTransaction,
 } from "@/lib/types";
 import { seedDatabase } from "@/lib/mock-data/fixtures/seed";
 
@@ -30,6 +37,8 @@ export interface PlaybookUnlock {
   userId: string;
   templateId: string;
   playbookId: string;
+  /** Points of referral credit applied at unlock; 0 when the client had none. */
+  creditApplied: number;
   unlockedAt: string;
 }
 
@@ -68,6 +77,13 @@ export interface Database {
   playbookUnlocks: PlaybookUnlock[];
   savedExperts: SavedExpert[];
   /**
+   * Client-side referral credits. Kept apart from the expert referral and
+   * points tables above: different code space, different reward, and the
+   * only thing they share is the word "referral".
+   */
+  clientReferrals: ClientReferral[];
+  creditTransactions: CreditTransaction[];
+  /**
    * Expert-network tables. Evidence, expertise and availability are
    * deliberately NOT separate tables — they only ever exist as part of one
    * ExpertProfile and are stored on it, so there's no second source of
@@ -93,9 +109,19 @@ export interface Database {
    */
   expertConversations: ExpertConversation[];
   conversationMessages: ConversationMessage[];
+  /**
+   * The expert-side collaborative playbook. Separate from `playbooks`, which
+   * holds the finished client-facing artifact — one of these produces one of
+   * those, at finalisation.
+   */
+  playbookDocuments: PlaybookDocument[];
+  playbookSections: PlaybookDocumentSection[];
+  playbookCollaborators: PlaybookCollaborator[];
+  playbookComments: PlaybookComment[];
+  playbookActivity: PlaybookActivity[];
 }
 
-const STORAGE_KEY = "tiq_db_v6";
+const STORAGE_KEY = "tiq_db_v11";
 const SESSION_KEY = "tiq_session_v1";
 
 let cache: Database | null = null;
@@ -153,7 +179,14 @@ function load(): Database {
   const raw = window.localStorage.getItem(STORAGE_KEY);
   if (raw) {
     try {
-      cache = JSON.parse(raw) as Database;
+      /**
+       * Seed defaults sit underneath the stored blob, so a table added since
+       * that blob was written arrives empty rather than undefined. Bumping
+       * STORAGE_KEY is still the right move when the shape changes — this
+       * only stops a half-stale blob taking the whole app down with a
+       * `.find of undefined` on the new table.
+       */
+      cache = { ...seed(), ...(JSON.parse(raw) as Database) };
       return cache;
     } catch {
       // corrupt cache, fall through to reseed
