@@ -14,6 +14,7 @@ import {
   CheckIcon as CheckStroke,
   CheckmarkCircle02Icon as CheckCircle2Stroke,
   ChevronDownIcon as ChevronDownStroke,
+  ChevronLeftIcon as ChevronLeftStroke,
   ChevronRightIcon as ChevronRightStroke,
   CircleIcon as CircleStroke,
   ClipboardCheckIcon as ClipboardCheckStroke,
@@ -21,8 +22,10 @@ import {
   ClockIcon as ClockStroke,
   CompassIcon as CompassStroke,
   CopyIcon as CopyStroke,
+  Download04Icon as DownloadStroke,
   ExternalLinkIcon as ExternalLinkStroke,
   EyeIcon as EyeStroke,
+  FastForwardIcon as FastForwardStroke,
   EyeOffIcon as EyeOffStroke,
   File01Icon as FileTextStroke,
   FolderKanbanIcon as FolderKanbanStroke,
@@ -39,6 +42,7 @@ import {
   MegaphoneIcon as MegaphoneStroke,
   Moon02Icon as MoonStroke,
   MenuIcon as MenuStroke,
+  MoreVerticalIcon as MoreVerticalStroke,
   Message01Icon as MessageSquareStroke,
   MessageNotification01Icon as MessageSquareWarningStroke,
   Comment01Icon as MessagesSquareStroke,
@@ -107,6 +111,7 @@ export const Calendar = hugeiconsAdapter(CalendarStroke);
 export const Check = hugeiconsAdapter(CheckStroke);
 export const CheckCircle2 = hugeiconsAdapter(CheckCircle2Stroke);
 export const ChevronDown = hugeiconsAdapter(ChevronDownStroke);
+export const ChevronLeft = hugeiconsAdapter(ChevronLeftStroke);
 export const ChevronRight = hugeiconsAdapter(ChevronRightStroke);
 export const Circle = hugeiconsAdapter(CircleStroke);
 export const ClipboardCheck = hugeiconsAdapter(ClipboardCheckStroke);
@@ -114,7 +119,9 @@ export const ClipboardList = hugeiconsAdapter(ClipboardListStroke);
 export const Clock = hugeiconsAdapter(ClockStroke);
 export const Compass = hugeiconsAdapter(CompassStroke);
 export const Copy = hugeiconsAdapter(CopyStroke);
+export const Download = hugeiconsAdapter(DownloadStroke);
 export const ExternalLink = hugeiconsAdapter(ExternalLinkStroke);
+export const FastForward = hugeiconsAdapter(FastForwardStroke);
 export const Eye = hugeiconsAdapter(EyeStroke);
 export const EyeOff = hugeiconsAdapter(EyeOffStroke);
 export const FileText = hugeiconsAdapter(FileTextStroke);
@@ -141,6 +148,7 @@ export const PenLine = hugeiconsAdapter(PenLineStroke);
 export const Pencil = hugeiconsAdapter(PencilStroke);
 export const Phone = hugeiconsAdapter(PhoneStroke);
 export const PhoneOff = hugeiconsAdapter(PhoneOffStroke);
+export const MoreVertical = hugeiconsAdapter(MoreVerticalStroke);
 export const Plus = hugeiconsAdapter(PlusStroke);
 export const RotateCcw = hugeiconsAdapter(RotateCcwStroke);
 export const Save = hugeiconsAdapter(SaveStroke);

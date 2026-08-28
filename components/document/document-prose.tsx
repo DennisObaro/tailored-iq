@@ -44,7 +44,9 @@ export function DocumentNumberedList({ items, className }: { items: string[]; cl
     <ol className={cn("space-y-5", className)}>
       {items.map((item, i) => (
         <li key={i} className="flex gap-4">
-          <span aria-hidden className="font-document text-lg leading-7 tabular-nums text-gray-500">
+          {/* A marker, not a heading — it keeps the regular weight the serif
+              numerals had, so it counts the list without competing with it. */}
+          <span aria-hidden className="text-lg leading-7 tabular-nums text-gray-500">
             {i + 1}.
           </span>
           <span className="text-[0.9375rem] leading-7 text-gray-300">{item}</span>

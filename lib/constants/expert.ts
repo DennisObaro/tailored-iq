@@ -196,7 +196,7 @@ export const ENGAGEMENT_MODES: {
   },
   {
     key: "consulting_engagement",
-    title: "Support the project",
+    title: "Support with implementation",
     description:
       "Help the client put the strategy into practice through hands-on consulting and delivery support.",
   },

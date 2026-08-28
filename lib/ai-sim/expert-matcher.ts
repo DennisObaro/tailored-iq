@@ -75,3 +75,21 @@ export function matchExperts(
     .slice(0, limit)
     .map((m) => m.expert);
 }
+
+/**
+ * The most any single expert can score: full help-area evidence (4 + 3
+ * matching areas), the category tag (3), a shared industry (2), seniority
+ * (0.5) and a perfect rating (1).
+ */
+const MAX_MATCH_SCORE = 13.5;
+
+/**
+ * Reads a raw score as a percentage. The scorer is a rubric, not a
+ * probability, so this is presentation rather than new maths — it preserves
+ * the existing ranking exactly and only changes the units. Clamped at 99
+ * because an expert with more than three matching help areas can otherwise
+ * exceed the ceiling, and nothing here deserves to claim a perfect fit.
+ */
+export function matchPercent(score: number): number {
+  return Math.max(1, Math.min(99, Math.round((score / MAX_MATCH_SCORE) * 100)));
+}

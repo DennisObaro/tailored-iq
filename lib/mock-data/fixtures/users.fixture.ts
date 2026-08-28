@@ -8,6 +8,16 @@ export const DEMO_EXPERT_ID = "user_demo_expert";
 export const DEMO_DUAL_ID = "user_demo_dual";
 
 /**
+ * The second expert demo account. Priya already exists as a fully seeded,
+ * approved expert who is seated on the demo playbook as a contributor and has
+ * comments in it — so the comment-only side of the workspace is demonstrated
+ * by an expert with a real history rather than an empty account created for
+ * the purpose. Aliased rather than renamed because her id is referenced
+ * across the contribution, review and workspace fixtures.
+ */
+export const DEMO_CONTRIBUTOR_ID = "user_expert_2";
+
+/**
  * Past clients that exist only to back historical consultations/reviews
  * (see expert-review-history.fixture.ts) so every expert has real review
  * data. Not in DEMO_PERSONAS (lib/api/auth.ts), so they never appear as a
@@ -78,7 +88,7 @@ export const seedUsers: User[] = [
     id: "user_expert_2",
     firstName: "Priya",
     lastName: "Raman",
-    email: "priya.raman@example.com",
+    email: "demo.contributor@tailorediq.com",
     avatarUrl: "/experts/priya-raman.jpg",
     roles: ["expert"],
     activeRole: "expert",
@@ -261,11 +271,10 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 63,
     points: 1525,
     consultationRate: 525000,
-    availabilitySlots: [
-      "2026-08-13T14:00:00.000Z",
-      "2026-08-13T18:00:00.000Z",
-      "2026-08-14T15:30:00.000Z",
-      "2026-08-15T16:00:00.000Z",
+    weeklyAvailability: [
+      { weekday: 2, times: ["14:00", "16:00"] },
+      { weekday: 4, times: ["15:00", "19:00"] },
+      { weekday: 5, times: ["16:30"] },
     ],
     availabilityPreferences: { timezone: "Africa/Lagos", hoursPerMonth: 8, callLengthMinutes: 45, noticeDays: 2 },
     isOnline: true,
@@ -300,7 +309,10 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 22,
     points: 570,
     consultationRate: 410000,
-    availabilitySlots: ["2026-08-14T13:00:00.000Z", "2026-08-16T17:00:00.000Z"],
+    weeklyAvailability: [
+      { weekday: 1, times: ["13:00"] },
+      { weekday: 3, times: ["17:00"] },
+    ],
     availabilityPreferences: { timezone: "Africa/Lagos", hoursPerMonth: 4, callLengthMinutes: 30, noticeDays: 3 },
     isOnline: false,
     willingness: ["advisory_call", "review"],
@@ -329,7 +341,10 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 47,
     points: 1535,
     consultationRate: 480000,
-    availabilitySlots: ["2026-08-13T12:00:00.000Z", "2026-08-15T14:00:00.000Z"],
+    weeklyAvailability: [
+      { weekday: 2, times: ["12:00", "14:00"] },
+      { weekday: 4, times: ["12:00"] },
+    ],
     availabilityPreferences: { timezone: "Asia/Kolkata", hoursPerMonth: 6, callLengthMinutes: 45, noticeDays: 2 },
     isOnline: true,
     willingness: ["advisory_call", "playbook_contribution", "consulting_engagement"],
@@ -358,7 +373,7 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 35,
     points: 650,
     consultationRate: 450000,
-    availabilitySlots: ["2026-08-14T11:00:00.000Z"],
+    weeklyAvailability: [{ weekday: 3, times: ["11:00", "15:00"] }],
     availabilityPreferences: { timezone: "Africa/Lagos", hoursPerMonth: 5, callLengthMinutes: 30, noticeDays: 1 },
     isOnline: true,
     willingness: ["advisory_call", "contribute_insight"],
@@ -387,7 +402,10 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 29,
     points: 650,
     consultationRate: 435000,
-    availabilitySlots: ["2026-08-13T16:00:00.000Z", "2026-08-16T10:00:00.000Z"],
+    weeklyAvailability: [
+      { weekday: 1, times: ["16:00"] },
+      { weekday: 5, times: ["10:00", "12:00"] },
+    ],
     availabilityPreferences: { timezone: "Europe/Rome", hoursPerMonth: 6, callLengthMinutes: 45, noticeDays: 3 },
     isOnline: false,
     willingness: ["advisory_call", "playbook_contribution"],
@@ -416,7 +434,7 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 18,
     points: 445,
     consultationRate: 330000,
-    availabilitySlots: ["2026-08-15T09:00:00.000Z"],
+    weeklyAvailability: [{ weekday: 4, times: ["09:00", "17:00"] }],
     availabilityPreferences: { timezone: "Africa/Accra", hoursPerMonth: 4, callLengthMinutes: 30, noticeDays: 2 },
     isOnline: true,
     willingness: ["advisory_call", "review"],
@@ -445,7 +463,10 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 40,
     points: 1500,
     consultationRate: 510000,
-    availabilitySlots: ["2026-08-14T09:30:00.000Z"],
+    weeklyAvailability: [
+      { weekday: 2, times: ["09:30"] },
+      { weekday: 4, times: ["09:30", "11:00"] },
+    ],
     availabilityPreferences: { timezone: "Europe/Berlin", hoursPerMonth: 5, callLengthMinutes: 45, noticeDays: 4 },
     isOnline: true,
     willingness: ["advisory_call", "consulting_engagement"],
@@ -474,7 +495,7 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 26,
     points: 660,
     consultationRate: 390000,
-    availabilitySlots: ["2026-08-13T10:00:00.000Z"],
+    weeklyAvailability: [{ weekday: 1, times: ["10:00", "14:00"] }],
     availabilityPreferences: { timezone: "Europe/Warsaw", hoursPerMonth: 6, callLengthMinutes: 45, noticeDays: 2 },
     isOnline: false,
     willingness: ["advisory_call", "playbook_contribution", "contribute_insight"],
@@ -503,7 +524,10 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 52,
     points: 1570,
     consultationRate: 465000,
-    availabilitySlots: ["2026-08-15T13:00:00.000Z"],
+    weeklyAvailability: [
+      { weekday: 3, times: ["13:00"] },
+      { weekday: 5, times: ["13:00", "15:00"] },
+    ],
     availabilityPreferences: { timezone: "Africa/Lagos", hoursPerMonth: 8, callLengthMinutes: 60, noticeDays: 3 },
     isOnline: true,
     willingness: ["advisory_call", "consulting_engagement"],
@@ -548,7 +572,10 @@ export const seedExpertProfiles: ExpertProfile[] = [
     totalProjects: 0,
     points: 0,
     consultationRate: 300000,
-    availabilitySlots: ["2026-08-20T10:00:00.000Z", "2026-08-21T14:00:00.000Z"],
+    weeklyAvailability: [
+      { weekday: 2, times: ["10:00"] },
+      { weekday: 3, times: ["14:00"] },
+    ],
     availabilityPreferences: { timezone: "Africa/Lagos", hoursPerMonth: 4, callLengthMinutes: 45, noticeDays: 3 },
     isOnline: false,
     willingness: ["advisory_call", "contribute_insight"],

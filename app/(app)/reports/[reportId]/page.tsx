@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { RelevantExpertsPanel } from "@/components/expert/relevant-experts-panel";
 import { DocumentShell } from "@/components/document/document-shell";
+import { DownloadDocumentButton } from "@/components/document/download-document-button";
 import { DocumentSection, type DocumentSectionSpec } from "@/components/document/document-section";
 import {
   DocumentLead,
@@ -144,16 +145,40 @@ export default function ReportDetailPage() {
 
   const header = (
     <header>
-      <div className="mb-5 flex items-center gap-1.5 text-xs text-gray-500">
+      <div className="mb-5 flex items-center gap-1.5 text-xs text-gray-500 print:hidden">
         <Link href="/reports" className="hover:text-gray-300">
           Executive summaries
         </Link>
         <ChevronRight className="size-3" aria-hidden />
         <span className="text-gray-300">{report.category}</span>
       </div>
-      <h1 className="font-document text-[2rem] font-normal leading-tight text-gray-50">
-        Executive summary
-      </h1>
+      <div className="flex items-start justify-between gap-4">
+        <h1 className="text-[2rem] font-semibold leading-tight text-gray-50">Executive summary</h1>
+        {/* The forward action leads; downloading is a utility beside it. Both
+            are actions rather than document content, so neither prints. */}
+        <div className="mt-1 flex shrink-0 gap-2">
+          {project && (
+            <Button asChild size="sm" variant="outline" className="gap-1.5 print:hidden">
+              {project.playbookId ? (
+                <Link href={`/playbooks/${project.playbookId}`}>
+                  <BookOpen className="size-3.5" aria-hidden />
+                  View playbook
+                </Link>
+              ) : (
+                <Link href={`/projects/${project.id}`}>
+                  <BookOpen className="size-3.5" aria-hidden />
+                  Get a playbook
+                </Link>
+              )}
+            </Button>
+          )}
+          {/* Every executive summary shares the same h1, so the project's own
+              name is what makes the saved file identifiable among the rest. */}
+          <DownloadDocumentButton
+            documentTitle={project ? `Executive summary — ${project.title}` : "Executive summary"}
+          />
+        </div>
+      </div>
       {/* A byline rather than a pill — a document says what it is in words. */}
       <p className="mt-2 text-sm text-gray-400">
         {report.category} · Generated {formatDate(report.createdAt)}
@@ -168,7 +193,7 @@ export default function ReportDetailPage() {
       aside={
         <RelevantExpertsPanel
           {...expertsPanel}
-          className="hidden w-80 shrink-0 overflow-y-auto border-l border-gray-800 p-5 lg:flex"
+          className="hidden w-80 shrink-0 overflow-y-auto border-l border-gray-800 p-5 lg:flex print:hidden"
         />
       }
     >
@@ -183,22 +208,19 @@ export default function ReportDetailPage() {
         heading but stays out of the contents — nobody navigates to it.
       */}
       {project && (
-        <div className="border-t border-gray-800 pt-10">
-          <p className="font-document text-lg font-normal text-gray-50">What&apos;s next?</p>
+        <div className="border-t border-gray-800 pt-10 print:hidden">
+          <p className="text-lg font-semibold text-gray-50">What&apos;s next?</p>
+          {/* The playbook CTA now lives in the header, so this points at what
+              this block still offers rather than setting up a button that
+              isn't here any more. */}
           <p className="mt-1.5 text-[0.9375rem] leading-7 text-gold">
-            Talk to an expert first — their input can strengthen your playbook.
+            Talk to an expert — their input can sharpen how you act on this.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Button asChild size="sm" variant="outline" className="gap-1.5">
               <Link href={`/projects/${project.id}`}>
                 <Users className="size-4" aria-hidden />
                 View matched experts
-              </Link>
-            </Button>
-            <Button asChild size="sm" variant="outline" className="gap-1.5">
-              <Link href={`/projects/${project.id}`}>
-                <BookOpen className="size-4" aria-hidden />
-                Get a playbook
               </Link>
             </Button>
             <Button asChild size="sm" variant="ghost" className="gap-1.5">
@@ -216,7 +238,7 @@ export default function ReportDetailPage() {
         the end of the document instead of disappearing — on a phone the
         experts are the next thing to do after reading.
       */}
-      <RelevantExpertsPanel {...expertsPanel} className="lg:hidden" />
+      <RelevantExpertsPanel {...expertsPanel} className="lg:hidden print:hidden" />
     </DocumentShell>
   );
 }

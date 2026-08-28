@@ -2,10 +2,12 @@ import type { Database } from "@/lib/api/_db";
 import { seedUsers, seedClientProfiles, seedExpertProfiles } from "./users.fixture";
 import { seedProjects, seedBriefs, seedConversations } from "./projects.fixture";
 import { seedReports } from "./reports.fixture";
+import { seedPlaybookWorkspace } from "./playbook-workspace.fixture";
 import { seedPlaybooks, seedContributions } from "./playbooks.fixture";
 import { seedConsultations, seedExpertConversations, seedReviews } from "./consultations.fixture";
 import { seedOpportunities } from "./opportunities.fixture";
 import { seedNotifications } from "./notifications.fixture";
+import { seedClientReferrals, seedCreditTransactions } from "./credits.fixture";
 import {
   seedCallsForInsight,
   seedExpertContributions,
@@ -55,6 +57,8 @@ export function seedDatabase(): Database {
     playbookUnlocks: [],
     /** Nothing pre-saved: a saved list the client didn't choose isn't a saved list. */
     savedExperts: [],
+    clientReferrals: structuredClone(seedClientReferrals),
+    creditTransactions: structuredClone(seedCreditTransactions),
     expertReferrals: structuredClone(seedExpertReferrals),
     expertPolicyAcceptances: structuredClone(seedExpertPolicyAcceptances),
     expertQuizAttempts: structuredClone(seedExpertQuizAttempts),
@@ -70,5 +74,9 @@ export function seedDatabase(): Database {
      */
     expertConversations: structuredClone(seedExpertConversations),
     conversationMessages: [],
+    ...seedPlaybookWorkspace(),
+    /** Nothing pre-seeded: an engagement only exists once a client books implementation support. */
+    engagements: [],
+    engagementReviews: [],
   };
 }

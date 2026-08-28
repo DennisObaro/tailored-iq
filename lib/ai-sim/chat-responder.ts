@@ -33,12 +33,73 @@ const QUESTIONS = DIAGNOSTIC_QUESTIONS.map((q, i) => {
 const WRAP_UP =
   "Thanks, that's helpful. I think I have enough to put together a structured brief for you.";
 
+/**
+ * What the AI says when a client ends the diagnosis early via the escape
+ * hatch, rather than answering all five questions. Deliberately not WRAP_UP:
+ * "I think I have enough" is a claim the script hasn't earned after one or
+ * two answers, where this happens most — this owns the gap instead of
+ * papering over it.
+ */
+const EARLY_EXIT = "Got it — let's work with what you've shared so far and put together your report.";
+
 export const CONVERSATION_TURN_LIMIT = QUESTIONS.length;
 
+/**
+ * Four short canned answers per question, offered as one-tap replies for
+ * users in a hurry. Same positional indexing as QUESTIONS/DIAGNOSTIC_QUESTIONS.
+ */
+const SUGGESTED_REPLIES: string[][] = [
+  [
+    "It's a recurring pattern, not a one-off.",
+    "It happened again just last month.",
+    "It shows up almost every week in some form.",
+    "It's more of a slow build-up than a single incident.",
+  ],
+  [
+    "We haven't tried anything formal yet.",
+    "We made some internal changes, but they didn't stick.",
+    "We brought in outside help before, without much luck.",
+    "We've mostly just worked around it.",
+  ],
+  [
+    "I can change process and workflow, not budget or headcount.",
+    "I have full authority to act on this.",
+    "I can recommend changes, but sign-off sits above me.",
+    "I can move small things, but structural change needs leadership buy-in.",
+  ],
+  [
+    "Budget is tight right now.",
+    "We're short on team capacity more than budget.",
+    "Time is the real constraint — we need this resolved soon.",
+    "No major constraints — we have room to act.",
+  ],
+  [
+    "The problem stops recurring.",
+    "We have a clear process in place that the team trusts.",
+    "We see it reflected in the numbers.",
+    "Leadership stops having to think about this at all.",
+  ],
+];
+
+/**
+ * A question is never itself the end of the conversation — the diagnosis
+ * completes once the last question has been *answered*, which is the
+ * turnCount >= length branch above. Ending on the last question instead
+ * left the fifth one unanswerable (the composer disables on "complete"),
+ * made WRAP_UP unreachable, and starved generateBrief of the sixth user
+ * message it destructures, so desiredOutcome always fell back.
+ */
 export function getNextAiMessage(turnCount: number): { content: string; isComplete: boolean } {
   if (turnCount >= QUESTIONS.length) {
     return { content: WRAP_UP, isComplete: true };
   }
-  const isLastQuestion = turnCount === QUESTIONS.length - 1;
-  return { content: QUESTIONS[turnCount], isComplete: isLastQuestion };
+  return { content: QUESTIONS[turnCount], isComplete: false };
+}
+
+export function getSuggestedReplies(turnCount: number): string[] {
+  return SUGGESTED_REPLIES[turnCount] ?? [];
+}
+
+export function getEarlyExitMessage(): string {
+  return EARLY_EXIT;
 }

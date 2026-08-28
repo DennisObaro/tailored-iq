@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Great_Vibes, Source_Serif_4 } from "next/font/google";
+import { DM_Sans, Great_Vibes } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -19,17 +19,6 @@ const greatVibes = Great_Vibes({
   display: "swap",
 });
 
-// The document serif — the headings of an executive summary or a playbook, and
-// nothing else. Like Great Vibes it ships as its own `--font-source-serif`
-// variable rather than joining the sans stack, so the rest of the app stays
-// DM Sans and can never pick this up by accident.
-const sourceSerif = Source_Serif_4({
-  variable: "--font-source-serif",
-  subsets: ["latin"],
-  weight: ["400", "600"],
-  display: "swap",
-});
-
 export const metadata: Metadata = {
   title: "TailoredIQ",
   description: "Bring us the challenge. We'll help you find relevant experience and turn it into a practical path forward.",
@@ -43,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${dmSans.variable} ${greatVibes.variable} ${sourceSerif.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${greatVibes.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-gray-975 text-gray-50">
         <Providers>{children}</Providers>

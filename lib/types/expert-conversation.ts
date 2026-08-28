@@ -59,6 +59,7 @@ export interface ExpertConversation {
   projectId: string;
   consultationId?: string;
   playbookId?: string;
+  engagementId?: string;
   status: ExpertConversationStatus;
   createdAt: string;
   updatedAt: string;

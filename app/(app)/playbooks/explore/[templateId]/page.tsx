@@ -6,13 +6,14 @@ import Link from "next/link";
 import { CheckCircle2, ChevronRight, Lock } from "@/components/icons";
 import type { PlaybookTemplate } from "@/lib/types";
 import * as catalogApi from "@/lib/api/playbook-catalog";
+import * as creditsApi from "@/lib/api/credits";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, formatPoints } from "@/lib/utils/format";
 
 export default function PlaybookExplorePage() {
   const { templateId } = useParams<{ templateId: string }>();
@@ -23,6 +24,7 @@ export default function PlaybookExplorePage() {
   const [ownedPlaybookId, setOwnedPlaybookId] = useState<string | null>(null);
   const [unlocking, setUnlocking] = useState(false);
   const [error, setError] = useState(false);
+  const [balance, setBalance] = useState(0);
 
   useEffect(() => {
     catalogApi.getCatalogEntry(templateId).then(setTemplate);
@@ -35,6 +37,11 @@ export default function PlaybookExplorePage() {
       if (match) setOwnedPlaybookId(match.playbookId);
     });
   }, [user, templateId]);
+
+  useEffect(() => {
+    if (!user) return;
+    creditsApi.getCreditBalance(user.id).then(setBalance);
+  }, [user]);
 
   useEffect(() => {
     if (ownedPlaybookId) router.replace(`/playbooks/${ownedPlaybookId}`);
@@ -70,6 +77,9 @@ export default function PlaybookExplorePage() {
       </div>
     );
   }
+
+  const creditApplied = Math.min(balance, template.price);
+  const payable = template.price - creditApplied;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-6">
@@ -114,8 +124,23 @@ export default function PlaybookExplorePage() {
         />
       )}
 
-      <div className="flex items-center justify-between gap-4 rounded-2xl border border-gray-800 bg-gray-900 p-5">
-        <p className="text-2xl font-semibold text-gray-50">{formatCurrency(template.price)}</p>
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-gray-800 bg-gray-900 p-5">
+        <div>
+          {/* Credit is applied at unlock, so the price shown is what it will
+              actually cost — a struck-through full price beside a real one,
+              rather than a discount discovered after the fact. */}
+          {creditApplied > 0 ? (
+            <>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-semibold text-gray-50">{formatCurrency(payable)}</p>
+                <p className="text-sm text-gray-500 line-through">{formatCurrency(template.price)}</p>
+              </div>
+              <p className="mt-1 text-xs text-gold">{formatPoints(creditApplied)} applied</p>
+            </>
+          ) : (
+            <p className="text-2xl font-semibold text-gray-50">{formatCurrency(template.price)}</p>
+          )}
+        </div>
         <Button size="lg" loading={unlocking} onClick={unlock} className="gap-1.5">
           Unlock playbook
         </Button>

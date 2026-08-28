@@ -55,7 +55,7 @@ export function DocumentContentsRail({
   if (items.length === 0) return null;
 
   return (
-    <nav aria-label="Contents" className={cn("hidden w-48 shrink-0 2xl:block", className)}>
+    <nav aria-label="Contents" className={cn("hidden w-48 shrink-0 2xl:block print:hidden", className)}>
       <div className="sticky top-0 self-start pt-1">
         <p className="mb-3 text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-gray-500">
           Contents
@@ -129,7 +129,7 @@ export function DocumentContentsBar({
     <nav
       aria-label="Contents"
       className={cn(
-        "sticky top-0 z-10 -mx-6 mt-8 border-b border-gray-800 bg-gray-975/90 px-6 backdrop-blur 2xl:hidden",
+        "sticky top-0 z-10 -mx-6 mt-8 border-b border-gray-800 bg-gray-975/90 px-6 backdrop-blur 2xl:hidden print:hidden",
         className,
       )}
     >

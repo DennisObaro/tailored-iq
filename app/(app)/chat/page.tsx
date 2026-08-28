@@ -24,7 +24,7 @@ export default function NewChatPage() {
       <h1 className="text-3xl font-semibold text-gray-50">What are you trying to solve?</h1>
       <p className="mt-3 max-w-md text-sm leading-[1.4] text-gray-400">
         TailoredIQ will ask the right questions, clarify your situation, and help you find relevant
-        experience.
+        experts to solve your challenges.
       </p>
 
       <ChallengeComposer

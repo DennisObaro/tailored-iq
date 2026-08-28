@@ -3,7 +3,8 @@ import type { ExpertProfile, User } from "@/lib/types";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, formatCallWhen } from "@/lib/utils/format";
+import { formatCurrency } from "@/lib/utils/format";
+import { formatTimeLabel, WEEKDAY_LABELS } from "@/lib/utils/availability";
 import { CONTRIBUTION_PREFERENCES, helpAreaLabel, levelLabel } from "@/lib/constants/expert";
 
 /**
@@ -151,15 +152,17 @@ export function ExpertProfilePreview({
                 {profile.availabilityPreferences.noticeDays} days&apos; notice
               </p>
             )}
-            {profile.availabilitySlots.length === 0 ? (
-              <p className="text-xs text-gray-500">No slots offered yet.</p>
+            {profile.weeklyAvailability.length === 0 ? (
+              <p className="text-xs text-gray-500">No availability offered yet.</p>
             ) : (
               <div className="flex flex-wrap gap-1.5">
-                {profile.availabilitySlots.slice(0, 4).map((slot) => (
-                  <Badge key={slot} variant="outline">
-                    {formatCallWhen(slot)}
-                  </Badge>
-                ))}
+                {[...profile.weeklyAvailability]
+                  .sort((a, b) => a.weekday - b.weekday)
+                  .map((day) => (
+                    <Badge key={day.weekday} variant="outline">
+                      {WEEKDAY_LABELS[day.weekday]} · {day.times.map(formatTimeLabel).join(", ")}
+                    </Badge>
+                  ))}
               </div>
             )}
           </CardContent>

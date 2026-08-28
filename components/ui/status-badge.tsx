@@ -43,6 +43,8 @@ const STATUS_LABELS: Record<string, { label: string; tone: Tone }> = {
   scheduled: { label: "Scheduled", tone: "progress" },
   in_call: { label: "In call", tone: "progress" },
   cancelled: { label: "Cancelled", tone: "danger" },
+  // Engagement status (lib/types/engagement.ts) — in_progress/completed reuse the entries above.
+  pending_completion: { label: "Pending completion", tone: "warning" },
   interested: { label: "Interested", tone: "success" },
   not_for_me: { label: "Not for me", tone: "neutral" },
   submitted: { label: "Submitted", tone: "progress" },
@@ -50,6 +52,14 @@ const STATUS_LABELS: Record<string, { label: string; tone: Tone }> = {
   published: { label: "Published", tone: "success" },
   owned: { label: "Owned", tone: "success" },
   locked: { label: "Locked", tone: "neutral" },
+  // Collaborative playbook document (lib/types/playbook-workspace.ts)
+  ready_for_review: { label: "Ready for expert review", tone: "progress" },
+  in_collaboration: { label: "Expert collaboration", tone: "progress" },
+  under_curation: { label: "Under curation", tone: "progress" },
+  finalized: { label: "Finalized", tone: "success" },
+  // Contribution states in the workspace
+  open: { label: "Open", tone: "warning" },
+  resolved: { label: "Resolved", tone: "neutral" },
   /** Conversation stage. The other two it can take (consultation_scheduled,
       consultation_completed) are already defined above as project statuses. */
   active: { label: "Active", tone: "progress" },
@@ -74,8 +84,31 @@ const STATUS_LABELS: Record<string, { label: string; tone: Tone }> = {
   revoked: { label: "Withdrawn", tone: "danger" },
 };
 
-export function StatusBadge({ status, className }: { status: string; className?: string }) {
+export function StatusBadge({
+  status,
+  variant = "pill",
+  className,
+}: {
+  status: string;
+  /**
+   * `bare` drops the pill, the dot and the tone colour, leaving the label as
+   * an uppercase caption. For places where the status is context rather than
+   * a signal to act on, and a row of coloured chips would compete with the
+   * content beside it.
+   */
+  variant?: "pill" | "bare";
+  className?: string;
+}) {
   const entry = STATUS_LABELS[status] ?? { label: status, tone: "neutral" as Tone };
+
+  if (variant === "bare") {
+    return (
+      <span className={cn("text-xs uppercase tracking-wider text-gray-500", className)}>
+        {entry.label}
+      </span>
+    );
+  }
+
   return (
     <span
       className={cn(

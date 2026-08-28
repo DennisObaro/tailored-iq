@@ -3,6 +3,8 @@ export interface ChatMessage {
   role: "user" | "ai";
   content: string;
   createdAt: string;
+  /** One-tap quick-reply options for this message, when the AI just asked a question. */
+  suggestedReplies?: string[];
 }
 
 export type ConversationType = "diagnosis" | "expert_thread";

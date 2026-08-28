@@ -45,6 +45,21 @@ export interface SuggestedExpertise {
   confidence: number; // 0-100
 }
 
+/**
+ * One day of the expert's working week.
+ *
+ * Times are "HH:mm" and read in the viewer's own clock — this prototype has
+ * no timezone conversion anywhere, and pretending otherwise here would be the
+ * only place in the app that claims to do it. `availabilityPreferences.timezone`
+ * is what the expert states they work in; a real backend would resolve the two.
+ */
+export interface ExpertWeeklyAvailability {
+  /** 0 = Sunday … 6 = Saturday, matching Date#getDay. */
+  weekday: number;
+  /** Start times, e.g. ["10:00", "14:00"]. Empty means the day isn't offered. */
+  times: string[];
+}
+
 /** Consultation preferences captured at the end of expert onboarding. */
 export interface ExpertAvailabilityPreferences {
   timezone: string;
@@ -99,7 +114,14 @@ export interface ExpertProfile {
   /** Running contribution points total; the ledger lives in expertPointsTransactions. */
   points: number;
   consultationRate: number;
-  availabilitySlots: string[]; // ISO strings
+  /**
+   * When this expert works, as a repeating week rather than a list of dates.
+   * A hand-picked list of datetimes silently runs out — the profile of an
+   * expert who last set their availability in June offers nothing in August,
+   * and nobody tells them. A weekly pattern keeps meaning something until
+   * they change it.
+   */
+  weeklyAvailability: ExpertWeeklyAvailability[];
   availabilityPreferences?: ExpertAvailabilityPreferences;
   isOnline: boolean;
   willingness: ExpertWillingness[];

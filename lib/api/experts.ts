@@ -1,4 +1,4 @@
-import type { User, ExpertProfile, Project } from "@/lib/types";
+import type { User, ExpertProfile, ExpertWillingness, Project } from "@/lib/types";
 import { simulateNetwork, simulateGeneration, ApiError } from "./client";
 import { db } from "./_db";
 import { matchExperts, scoreExperts } from "@/lib/ai-sim/expert-matcher";
@@ -413,6 +413,8 @@ export interface RelevantExpertsInput {
   /** The document's own words (summary, insights), scored only when there's no project match to lean on. */
   text?: string;
   limit?: number;
+  /** Narrow to experts who offered this specific engagement mode — used for the post-playbook implementation rail. */
+  requireWillingness?: ExpertWillingness;
 }
 
 /**
@@ -428,17 +430,21 @@ export async function getRelevantExperts({
   projectId,
   text = "",
   limit = 3,
+  requireWillingness,
 }: RelevantExpertsInput): Promise<ExpertListing[]> {
   return simulateNetwork(
     () => {
       const database = db.get();
       const byUserId = new Map(joinExperts(database).map((l) => [l.user.id, l]));
+      const offersWillingness = (l: ExpertListing) =>
+        !requireWillingness || l.profile.willingness.includes(requireWillingness);
 
       const project = projectId ? database.projects.find((p) => p.id === projectId) : undefined;
       if (project) {
         const matched = project.matchedExpertIds
           .map((expertId) => byUserId.get(expertId))
-          .filter((l): l is ExpertListing => l !== undefined);
+          .filter((l): l is ExpertListing => l !== undefined)
+          .filter(offersWillingness);
         if (matched.length > 0) return matched.slice(0, limit);
       }
 
@@ -451,9 +457,16 @@ export async function getRelevantExperts({
         null;
       if (!category) return [];
 
-      return matchExperts(database.expertProfiles, category, client ? [client.industry] : [], limit)
+      return matchExperts(
+        database.expertProfiles,
+        category,
+        client ? [client.industry] : [],
+        requireWillingness ? limit * 4 : limit,
+      )
         .map((profile) => byUserId.get(profile.userId))
-        .filter((l): l is ExpertListing => l !== undefined);
+        .filter((l): l is ExpertListing => l !== undefined)
+        .filter(offersWillingness)
+        .slice(0, limit);
     },
     { latency: [250, 500] },
   );

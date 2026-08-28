@@ -1,30 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { addDays, setHours, setMinutes, startOfDay } from "date-fns";
+import type { ExpertWeeklyAvailability } from "@/lib/types";
 import * as api from "@/lib/api/expert-onboarding";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label, Select } from "@/components/ui/input";
-import { formatCallWhen, formatCurrency } from "@/lib/utils/format";
+import { formatCurrency } from "@/lib/utils/format";
+import { formatTimeLabel, WEEKDAY_LABELS } from "@/lib/utils/availability";
 import { StepShell, ChipToggle, type StepProps } from "./step-shell";
 
 const TIMEZONES = ["Africa/Lagos", "Africa/Accra", "Africa/Nairobi", "Europe/London", "Europe/Berlin", "America/New_York", "Asia/Kolkata", "Asia/Singapore"];
 const CALL_LENGTHS = [30, 45, 60];
 
-/** Next two weeks of weekday slots, so an expert picks rather than types dates. */
-function candidateSlots(): string[] {
-  const slots: string[] = [];
-  const base = startOfDay(new Date());
-  for (let day = 1; day <= 14 && slots.length < 18; day++) {
-    const date = addDays(base, day);
-    const weekday = date.getDay();
-    if (weekday === 0 || weekday === 6) continue;
-    for (const hour of [10, 14, 16]) {
-      slots.push(setMinutes(setHours(date, hour), 0).toISOString());
-    }
-  }
-  return slots;
-}
+/** Weekdays first — an expert offering a weekend is the exception, not the default. */
+const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
+/**
+ * The times an expert can offer, on the hour and half-hour through a working
+ * day. A fixed menu rather than a free-text field: every time here expands
+ * cleanly into a slot, so the client's calendar can never be handed "half
+ * four-ish".
+ */
+const TIME_OPTIONS = [
+  "08:00", "09:00", "09:30", "10:00", "11:00", "12:00",
+  "13:00", "14:00", "15:00", "16:00", "16:30", "17:00", "18:00", "19:00",
+];
 
 export function AvailabilityStep({ profile, onSaved, onBack }: StepProps) {
   const [timezone, setTimezone] = useState(profile.availabilityPreferences?.timezone ?? TIMEZONES[0]);
@@ -32,14 +32,32 @@ export function AvailabilityStep({ profile, onSaved, onBack }: StepProps) {
   const [callLengthMinutes, setCallLength] = useState(profile.availabilityPreferences?.callLengthMinutes ?? 45);
   const [noticeDays, setNoticeDays] = useState(profile.availabilityPreferences?.noticeDays ?? 2);
   const [rate, setRate] = useState(profile.consultationRate || 300000);
-  const [slots, setSlots] = useState<string[]>(profile.availabilitySlots);
+  const [availability, setAvailability] = useState<ExpertWeeklyAvailability[]>(profile.weeklyAvailability);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [options] = useState(candidateSlots);
 
-  function toggleSlot(slot: string) {
-    setSlots((prev) => (prev.includes(slot) ? prev.filter((s) => s !== slot) : [...prev, slot]));
+  const timesFor = (weekday: number) =>
+    availability.find((a) => a.weekday === weekday)?.times ?? [];
+
+  /**
+   * Toggling the last time off removes the day entirely, so "Tuesday with no
+   * times" can't exist — a day in the list always means a day a client can
+   * book, which is what everything downstream assumes.
+   */
+  function toggleTime(weekday: number, time: string) {
+    setAvailability((prev) => {
+      const existing = prev.find((a) => a.weekday === weekday);
+      if (!existing) return [...prev, { weekday, times: [time] }];
+      const times = existing.times.includes(time)
+        ? existing.times.filter((t) => t !== time)
+        : [...existing.times, time].sort();
+      if (times.length === 0) return prev.filter((a) => a.weekday !== weekday);
+      return prev.map((a) => (a.weekday === weekday ? { ...a, times } : a));
+    });
   }
+
+  const offeredDays = availability.filter((a) => a.times.length > 0).length;
+  const offeredTimes = availability.reduce((sum, a) => sum + a.times.length, 0);
 
   async function save() {
     setSaving(true);
@@ -49,7 +67,7 @@ export function AvailabilityStep({ profile, onSaved, onBack }: StepProps) {
         await api.saveAvailability(profile.userId, {
           preferences: { timezone, hoursPerMonth, callLengthMinutes, noticeDays },
           consultationRate: rate,
-          availabilitySlots: slots,
+          weeklyAvailability: availability,
         }),
       );
     } catch (e) {
@@ -62,13 +80,17 @@ export function AvailabilityStep({ profile, onSaved, onBack }: StepProps) {
   return (
     <StepShell
       title="Availability and consultation preferences"
-      blurb="How much time you want to give, and when. Clients only ever see slots you've offered."
+      blurb="How much time you want to give, and when. Clients only ever see times you've offered."
       onNext={save}
       onBack={onBack}
       saving={saving}
       error={error}
-      nextDisabled={slots.length === 0}
-      footerNote={slots.length === 0 ? "Offer at least one slot." : `${slots.length} slot${slots.length === 1 ? "" : "s"} offered`}
+      nextDisabled={offeredDays === 0}
+      footerNote={
+        offeredDays === 0
+          ? "Offer at least one time."
+          : `${offeredTimes} time${offeredTimes === 1 ? "" : "s"} across ${offeredDays} day${offeredDays === 1 ? "" : "s"} each week`
+      }
     >
       <Card>
         <CardHeader>
@@ -113,15 +135,37 @@ export function AvailabilityStep({ profile, onSaved, onBack }: StepProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Slots you&apos;re offering</CardTitle>
-          <p className="text-xs text-gray-500">Pick the times you&apos;d take a call over the next two weeks.</p>
+          <CardTitle>Your working week</CardTitle>
+          <p className="text-xs text-gray-500">
+            Pick the times you&apos;d take a call on each day. This repeats every week until you change it —
+            clients only ever see these times, minus anything already booked.
+          </p>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-1.5">
-          {options.map((slot) => (
-            <ChipToggle key={slot} selected={slots.includes(slot)} onToggle={() => toggleSlot(slot)}>
-              {formatCallWhen(slot)}
-            </ChipToggle>
-          ))}
+        <CardContent className="flex flex-col gap-4">
+          {WEEKDAY_ORDER.map((weekday) => {
+            const times = timesFor(weekday);
+            return (
+              <div key={weekday} className="flex flex-col gap-2 border-b border-gray-850 pb-4 last:border-0 last:pb-0">
+                <div className="flex items-baseline gap-2">
+                  <p className="text-sm font-medium text-gray-100">{WEEKDAY_LABELS[weekday]}</p>
+                  <span className="text-xs text-gray-500">
+                    {times.length === 0 ? "Not available" : `${times.length} time${times.length === 1 ? "" : "s"}`}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {TIME_OPTIONS.map((time) => (
+                    <ChipToggle
+                      key={time}
+                      selected={times.includes(time)}
+                      onToggle={() => toggleTime(weekday, time)}
+                    >
+                      {formatTimeLabel(time)}
+                    </ChipToggle>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </CardContent>
       </Card>
     </StepShell>

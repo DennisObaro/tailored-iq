@@ -43,3 +43,6 @@ next-env.d.ts
 
 # superpowers scratch workspace
 /.superpowers/
+
+# git worktrees for isolated plan execution
+/.worktrees/

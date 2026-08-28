@@ -40,9 +40,14 @@ export function DocumentShell({
   );
 
   return (
-    <div className="flex h-full">
-      <div ref={scrollRef} className="thin-scrollbar min-w-0 flex-1 overflow-y-auto">
-        <div className="mx-auto flex w-full max-w-5xl gap-10 px-6 py-6">
+    <div className="flex h-full print:block print:h-auto">
+      <div
+        ref={scrollRef}
+        className="thin-scrollbar min-w-0 flex-1 overflow-y-auto print:h-auto print:overflow-visible"
+      >
+        {/* On paper the document is the only column, so it takes the full
+            measure rather than reserving room for a contents rail. */}
+        <div className="mx-auto flex w-full max-w-5xl gap-10 px-6 py-6 print:block print:max-w-none print:gap-0 print:p-0">
           <DocumentContentsRail items={contents} activeId={activeId} />
           <article className="min-w-0 flex-1">
             {header}

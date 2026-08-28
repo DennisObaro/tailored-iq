@@ -14,6 +14,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { PlaybookActionItemRow } from "@/components/playbook/playbook-action-item";
 import { RelevantExpertsPanel } from "@/components/expert/relevant-experts-panel";
 import { DocumentShell } from "@/components/document/document-shell";
+import { DownloadDocumentButton } from "@/components/document/download-document-button";
 import { DocumentSection, type DocumentSectionSpec } from "@/components/document/document-section";
 import {
   DocumentLead,
@@ -57,6 +58,7 @@ export default function PlaybookDetailPage() {
         clientId,
         projectId: matchProjectId,
         text: matchText,
+        requireWillingness: "consulting_engagement",
       });
       if (cancelled) return;
       setExperts(listings);
@@ -98,8 +100,13 @@ export default function PlaybookDetailPage() {
 
   const expertsPanel = {
     projectId: playbook.projectId,
+    playbookId: playbook.projectId ? playbook.id : undefined,
     experts,
     loading: expertsLoading,
+    // Set once and spread into both placements — the sidebar rail and the
+    // copy that falls to the end of the document on narrow screens — so the
+    // two can't end up making different offers.
+    variant: "implementation" as const,
     emptyMessage: "No expert experience matches this playbook yet — we'll surface people as soon as one does.",
   };
 
@@ -179,16 +186,19 @@ export default function PlaybookDetailPage() {
 
   const header = (
     <header>
-      <div className="mb-5 flex items-center gap-1.5 text-xs text-gray-500">
+      <div className="mb-5 flex items-center gap-1.5 text-xs text-gray-500 print:hidden">
         <Link href="/playbooks" className="hover:text-gray-300">
           Playbooks
         </Link>
         <ChevronRight className="size-3" aria-hidden />
         <span className="text-gray-300">{playbook.title}</span>
       </div>
-      <h1 className="font-document text-[2rem] font-normal leading-tight text-gray-50">
-        {playbook.title}
-      </h1>
+      <div className="flex items-start justify-between gap-4">
+        <h1 className="text-[2rem] font-semibold leading-tight text-gray-50">
+          {playbook.title}
+        </h1>
+        <DownloadDocumentButton documentTitle={playbook.title} className="mt-1 shrink-0" />
+      </div>
       {/* The status is real state and keeps its badge; the rest is a byline. */}
       <div className="mt-3 flex items-center gap-2.5">
         <StatusBadge status={playbook.status} />
@@ -206,7 +216,7 @@ export default function PlaybookDetailPage() {
       aside={
         <RelevantExpertsPanel
           {...expertsPanel}
-          className="hidden w-80 shrink-0 overflow-y-auto border-l border-gray-800 p-5 lg:flex"
+          className="hidden w-80 shrink-0 overflow-y-auto border-l border-gray-800 p-5 lg:flex print:hidden"
         />
       }
     >
@@ -226,7 +236,7 @@ export default function PlaybookDetailPage() {
         the end of the document instead of disappearing — on a phone the
         experts are the next thing to do after reading.
       */}
-      <RelevantExpertsPanel {...expertsPanel} className="lg:hidden" />
+      <RelevantExpertsPanel {...expertsPanel} className="lg:hidden print:hidden" />
     </DocumentShell>
   );
 }

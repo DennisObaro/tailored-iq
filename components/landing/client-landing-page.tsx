@@ -57,6 +57,17 @@ const TRUST_STATS = [
   { icon: Clock, label: "20yr+ Average experience" },
 ];
 
+/**
+ * The hero headline, duplicated into the h1's `data-text` for the shimmer
+ * overlay. One source of truth so the visible glyphs and the ones the
+ * gradient is clipped to can't drift apart.
+ *
+ * A plain string rather than JSX text also sidesteps the entity problem: an
+ * `&apos;` inside a JSX attribute isn't decoded, so the overlay would print
+ * the escape sequence rather than an apostrophe.
+ */
+const HERO_HEADLINE = "Make better decisions with Africa's Experience Capital.";
+
 // Inline CSS custom properties for the hero's staggered entrance — plain
 // object keys aren't in React's CSSProperties type, hence the cast.
 function heroDelayStyle(delayMs: number, riseFrom = 12): CSSProperties {
@@ -546,10 +557,11 @@ export function ClientLandingPage() {
           <div ref={anchoredGroupRef} className="flex flex-col items-center">
             <div className="flex max-w-[738px] flex-col items-center gap-[10px]">
               <h1
-                className="hero-anim-up text-balance text-[54px] font-semibold leading-[1.2] tracking-normal text-mkt-text"
+                className="hero-anim-up hero-shimmer relative text-balance text-[54px] font-semibold leading-[1.2] tracking-normal text-mkt-text"
                 style={heroDelayStyle(420, 12)}
+                data-text={HERO_HEADLINE}
               >
-                Make better decisions with Africa&apos;s Experience Capital.
+                {HERO_HEADLINE}
               </h1>
               <p
                 className="hero-anim-up max-w-[596px] text-lg font-medium leading-[1.4] text-mkt-text-mute"

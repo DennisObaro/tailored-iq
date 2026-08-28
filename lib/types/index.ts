@@ -8,5 +8,8 @@ export * from "./playbook";
 export * from "./opportunity";
 export * from "./live-brief";
 export * from "./expert-conversation";
+export * from "./playbook-workspace";
 export * from "./notification";
 export * from "./expert";
+export * from "./credit";
+export * from "./engagement";

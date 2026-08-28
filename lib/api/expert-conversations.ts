@@ -63,6 +63,42 @@ function messagesIn(d: Database, conversationId: string) {
 }
 
 /**
+ * The thread a consultation belongs to, opening one if the consultation
+ * predates conversations existing. Either participant may ask — they're both
+ * already party to the call, so there's nothing here they can't see.
+ *
+ * Returns null for anyone else, which is what lets a redirect fall through
+ * to the ordinary not-found state instead of leaking that the call exists.
+ */
+export async function getConversationForConsultation(
+  consultationId: string,
+  viewerId: string,
+): Promise<string | null> {
+  return simulateNetwork(
+    () =>
+      db.update((d) => {
+        const consultation = d.consultations.find((c) => c.id === consultationId);
+        if (!consultation) return null;
+        if (consultation.clientId !== viewerId && consultation.expertId !== viewerId) return null;
+
+        const linked = d.expertConversations.find((c) => c.consultationId === consultationId);
+        if (linked) return linked.id;
+
+        const conversation = getOrCreateConversationWithin(d, {
+          clientId: consultation.clientId,
+          expertId: consultation.expertId,
+          projectId: consultation.projectId,
+        });
+        conversation.consultationId = consultationId;
+        conversation.updatedAt = new Date().toISOString();
+        return conversation.id;
+      }),
+    { latency: [80, 160] },
+  );
+}
+
+
+/**
  * The same get-or-create, for callers already inside a db.update.
  * Booking uses it so the consultation and its conversation are one write.
  */

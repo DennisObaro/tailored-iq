@@ -3,8 +3,9 @@ import { simulateGeneration, ApiError } from "./client";
 import { db } from "./_db";
 import { canViewProject } from "./_access";
 import { id } from "@/lib/utils/id";
-import { generateBrief } from "@/lib/ai-sim/brief-generator";
+import { generateBrief, narrateBrief } from "@/lib/ai-sim/brief-generator";
 import { categorizeBrief } from "@/lib/ai-sim/categorizer";
+import { activateClientReferralWithin } from "./client-referrals";
 
 export async function getBrief(briefId: string, viewerId?: string): Promise<Brief | null> {
   return simulateGeneration(
@@ -59,6 +60,10 @@ export async function updateBrief(briefId: string, patch: Partial<Brief>): Promi
         const brief = d.briefs.find((b) => b.id === briefId);
         if (!brief) throw new ApiError("Brief not found.", "NOT_FOUND");
         Object.assign(brief, patch, { updatedAt: new Date().toISOString() });
+        // The prose is a reading of the fields, not a field in its own
+        // right — re-derive it here so an edited brief can never keep
+        // describing itself the way it read before the edit.
+        Object.assign(brief, narrateBrief(brief));
         return brief;
       }),
     { latency: [80, 150] },
@@ -84,6 +89,12 @@ export async function confirmBrief(briefId: string): Promise<Brief> {
         project.status = "analysing";
         project.updatedAt = now;
         project.activity.push({ id: id("act"), label: "Brief confirmed", timestamp: now });
+        /**
+         * The point a client referral counts. Confirming a brief is the
+         * first thing that means this client is actually here — and the
+         * call is idempotent, so every brief after the first pays nothing.
+         */
+        activateClientReferralWithin(d, project.clientId);
       }
       return brief;
     }),

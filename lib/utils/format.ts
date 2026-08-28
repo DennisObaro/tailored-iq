@@ -38,3 +38,8 @@ export function initials(firstName: string, lastName: string) {
 export function formatCurrency(amount: number) {
   return `₦${amount.toLocaleString("en-US")}`;
 }
+
+/** Referral rewards, not currency — see lib/types/credit.ts. */
+export function formatPoints(amount: number) {
+  return `${amount.toLocaleString("en-US")} point${Math.abs(amount) === 1 ? "" : "s"}`;
+}

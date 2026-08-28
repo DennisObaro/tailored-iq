@@ -2,7 +2,20 @@ import type { Conversation } from "@/lib/types";
 import { simulateNetwork, ApiError } from "./client";
 import { db } from "./_db";
 import { id } from "@/lib/utils/id";
-import { getNextAiMessage } from "@/lib/ai-sim/chat-responder";
+import {
+  CONVERSATION_TURN_LIMIT as SCRIPT_TURN_LIMIT,
+  getEarlyExitMessage,
+  getNextAiMessage,
+  getSuggestedReplies,
+} from "@/lib/ai-sim/chat-responder";
+
+/**
+ * How many questions the diagnosis asks in total. Re-exported through the
+ * service layer because `lib/ai-sim/*` is an implementation detail callers
+ * must never import — a real backend would serve this number off the
+ * conversation endpoint instead, without the UI noticing.
+ */
+export const CONVERSATION_TURN_LIMIT = SCRIPT_TURN_LIMIT;
 
 export async function getConversation(conversationId: string): Promise<Conversation | null> {
   return simulateNetwork(() => db.get().conversations.find((c) => c.id === conversationId) ?? null, {
@@ -34,7 +47,14 @@ export async function startConversation(conversationId: string): Promise<Convers
         }
         const now = new Date().toISOString();
         const { content: aiContent, isComplete } = getNextAiMessage(conversation.turnCount);
-        conversation.messages.push({ id: id("msg"), role: "ai", content: aiContent, createdAt: now });
+        const suggestedReplies = getSuggestedReplies(conversation.turnCount);
+        conversation.messages.push({
+          id: id("msg"),
+          role: "ai",
+          content: aiContent,
+          createdAt: now,
+          suggestedReplies: suggestedReplies.length > 0 ? suggestedReplies : undefined,
+        });
         conversation.turnCount += 1;
 
         if (isComplete) {
@@ -57,7 +77,14 @@ export async function postMessage(conversationId: string, content: string): Prom
         conversation.messages.push({ id: id("msg"), role: "user", content, createdAt: now });
 
         const { content: aiContent, isComplete } = getNextAiMessage(conversation.turnCount);
-        conversation.messages.push({ id: id("msg"), role: "ai", content: aiContent, createdAt: now });
+        const suggestedReplies = getSuggestedReplies(conversation.turnCount);
+        conversation.messages.push({
+          id: id("msg"),
+          role: "ai",
+          content: aiContent,
+          createdAt: now,
+          suggestedReplies: suggestedReplies.length > 0 ? suggestedReplies : undefined,
+        });
         conversation.turnCount += 1;
 
         if (isComplete) {
@@ -67,5 +94,35 @@ export async function postMessage(conversationId: string, content: string): Prom
         return conversation;
       }),
     { latency: [900, 1800] },
+  );
+}
+
+/**
+ * The escape hatch: a client can stop the diagnosis at any point rather than
+ * answering every question. Ends the conversation with whatever's been said
+ * so far — generateBrief already tolerates a short answer list, falling
+ * back field by field, so nothing downstream needs to know this conversation
+ * is shorter than a normal one.
+ */
+export async function endConversationEarly(conversationId: string): Promise<Conversation> {
+  return simulateNetwork(
+    () =>
+      db.update((d) => {
+        const conversation = d.conversations.find((c) => c.id === conversationId);
+        if (!conversation) throw new ApiError("Conversation not found.", "NOT_FOUND");
+        if (conversation.status === "complete") return conversation;
+
+        const now = new Date().toISOString();
+        conversation.messages.push({
+          id: id("msg"),
+          role: "ai",
+          content: getEarlyExitMessage(),
+          createdAt: now,
+        });
+        conversation.status = "complete";
+        conversation.endedAt = now;
+        return conversation;
+      }),
+    { latency: [400, 900] },
   );
 }
