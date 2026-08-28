@@ -201,6 +201,9 @@ export async function confirmCompletion(engagementId: string, userId: string): P
   return simulateNetwork(() =>
     db.update((d) => {
       const engagement = assertEngagement(d, engagementId);
+      if (engagement.clientId !== userId && engagement.expertId !== userId) {
+        throw new ApiError("You aren't part of this engagement.", "FORBIDDEN");
+      }
       if (engagement.status !== "pending_completion") {
         throw new ApiError("There's no completion proposal to confirm.", "INVALID_STATE");
       }
