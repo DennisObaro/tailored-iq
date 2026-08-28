@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import * as engagementsApi from "@/lib/api/engagements";
 import type { EngagementDetail } from "@/lib/api/engagements";
 import { EngagementHeader } from "@/components/engagement/engagement-header";
+import { EngagementScheduleLog } from "@/components/engagement/engagement-schedule-log";
 import { ThreadPanel } from "@/components/conversation/thread-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
@@ -41,6 +42,13 @@ export default function EngagementWorkspacePage() {
       <EngagementHeader detail={detail} onChange={(engagement) => setDetail({ ...detail, engagement })} />
       <div className="flex min-h-0 flex-1">
         <ThreadPanel conversationId={detail.engagement.conversationId} className="min-h-0 flex-1" />
+        <aside className="hidden w-80 shrink-0 flex-col gap-5 overflow-y-auto border-l border-gray-800 p-5 lg:flex">
+          <EngagementScheduleLog
+            engagementId={detail.engagement.id}
+            clientId={detail.engagement.clientId}
+            expertId={detail.engagement.expertId}
+          />
+        </aside>
       </div>
     </div>
   );
