@@ -1,6 +1,6 @@
 // lib/api/engagements.ts
 import type { Engagement, EngagementReview, MessageAttachment, Playbook, User, ExpertProfile } from "@/lib/types";
-import { simulateNetwork } from "./client";
+import { simulateNetwork, ApiError } from "./client";
 import { db, type Database } from "./_db";
 import { canViewEngagement } from "./_access";
 import { getOrCreateConversationWithin } from "./expert-conversations";
@@ -164,5 +164,114 @@ export async function listAttachmentsForEngagement(
       return out.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
     },
     { latency: [100, 200] },
+  );
+}
+
+function assertEngagement(d: Database, engagementId: string): Engagement {
+  const engagement = d.engagements.find((e) => e.id === engagementId);
+  if (!engagement) throw new ApiError("Engagement not found.", "NOT_FOUND");
+  return engagement;
+}
+
+function roleOf(engagement: Engagement, userId: string): "client" | "expert" {
+  return engagement.clientId === userId ? "client" : "expert";
+}
+
+export async function proposeCompletion(engagementId: string, userId: string): Promise<Engagement> {
+  return simulateNetwork(() =>
+    db.update((d) => {
+      const engagement = assertEngagement(d, engagementId);
+      if (engagement.clientId !== userId && engagement.expertId !== userId) {
+        throw new ApiError("You aren't part of this engagement.", "FORBIDDEN");
+      }
+      if (engagement.status !== "in_progress") {
+        throw new ApiError("This engagement isn't in progress.", "INVALID_STATE");
+      }
+      engagement.status = "pending_completion";
+      engagement.completionProposedBy = roleOf(engagement, userId);
+      engagement.completionProposedAt = new Date().toISOString();
+      engagement.updatedAt = engagement.completionProposedAt;
+      return engagement;
+    }),
+  );
+}
+
+/** Only the party that did NOT propose may confirm — a proposer can't unilaterally close their own proposal. */
+export async function confirmCompletion(engagementId: string, userId: string): Promise<Engagement> {
+  return simulateNetwork(() =>
+    db.update((d) => {
+      const engagement = assertEngagement(d, engagementId);
+      if (engagement.status !== "pending_completion") {
+        throw new ApiError("There's no completion proposal to confirm.", "INVALID_STATE");
+      }
+      if (roleOf(engagement, userId) === engagement.completionProposedBy) {
+        throw new ApiError("The other party needs to confirm this.", "FORBIDDEN");
+      }
+      engagement.status = "completed";
+      engagement.updatedAt = new Date().toISOString();
+      return engagement;
+    }),
+  );
+}
+
+export async function retractCompletionProposal(engagementId: string, userId: string): Promise<Engagement> {
+  return simulateNetwork(() =>
+    db.update((d) => {
+      const engagement = assertEngagement(d, engagementId);
+      if (engagement.clientId !== userId && engagement.expertId !== userId) {
+        throw new ApiError("You aren't part of this engagement.", "FORBIDDEN");
+      }
+      if (engagement.status !== "pending_completion") {
+        throw new ApiError("There's no completion proposal to retract.", "INVALID_STATE");
+      }
+      engagement.status = "in_progress";
+      engagement.completionProposedBy = undefined;
+      engagement.completionProposedAt = undefined;
+      engagement.updatedAt = new Date().toISOString();
+      return engagement;
+    }),
+  );
+}
+
+/** One review per (engagement, fromUserId) — resubmitting edits rather than duplicating. */
+export async function submitEngagementReview(input: {
+  engagementId: string;
+  fromUserId: string;
+  toUserId: string;
+  rating: number;
+  comment?: string;
+}): Promise<EngagementReview> {
+  return simulateNetwork(() =>
+    db.update((d) => {
+      const engagement = assertEngagement(d, input.engagementId);
+      if (engagement.status !== "completed") {
+        throw new ApiError("You can only rate a completed engagement.", "INVALID_STATE");
+      }
+      if (engagement.clientId !== input.fromUserId && engagement.expertId !== input.fromUserId) {
+        throw new ApiError("You aren't part of this engagement.", "FORBIDDEN");
+      }
+
+      const existing = d.engagementReviews.find(
+        (r) => r.engagementId === input.engagementId && r.fromUserId === input.fromUserId,
+      );
+      if (existing) {
+        existing.rating = input.rating;
+        existing.comment = input.comment;
+        return existing;
+      }
+
+      const review: EngagementReview = {
+        id: id("engagement_review"),
+        engagementId: input.engagementId,
+        fromUserId: input.fromUserId,
+        fromRole: roleOf(engagement, input.fromUserId),
+        toUserId: input.toUserId,
+        rating: input.rating,
+        comment: input.comment,
+        createdAt: new Date().toISOString(),
+      };
+      d.engagementReviews.push(review);
+      return review;
+    }),
   );
 }
