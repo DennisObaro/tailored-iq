@@ -18,18 +18,27 @@ import { formatRelative } from "@/lib/utils/format";
 export function ThreadPanel({
   conversationId,
   onThreadLoaded,
+  onMessageSent,
   beforeMessages,
   suppressEmptyState,
   className,
+  loadingFallback,
+  notFoundFallback,
 }: {
   conversationId: string;
   /** Lets a host read fields off the loaded thread (e.g. for its own header) without duplicating the fetch. */
   onThreadLoaded?: (thread: ConversationThread) => void;
+  /** Called after a message send completes, so a host showing other data derived from this thread (e.g. an attachments list) can refresh. */
+  onMessageSent?: () => void;
   /** Rendered above the message list, inside the same scroll container. */
   beforeMessages?: ReactNode;
   /** Set by a host that's already showing its own "nothing here yet" nudge (e.g. a just-booked-call card) — avoids a redundant empty state underneath it. */
   suppressEmptyState?: boolean;
   className?: string;
+  /** Shown while the thread is loading; defaults to a bare spacer if omitted. */
+  loadingFallback?: ReactNode;
+  /** Shown when the conversation can't be found/viewed; defaults to a plain message if omitted. */
+  notFoundFallback?: ReactNode;
 }) {
   const user = useSessionStore((s) => s.user);
   const [thread, setThread] = useState<ConversationThread | null | undefined>(undefined);
@@ -84,16 +93,21 @@ export function ThreadPanel({
       setValue("");
       setPendingFiles([]);
       await reload();
+      onMessageSent?.();
     } finally {
       setSending(false);
     }
   }
 
   if (thread === undefined) {
-    return <div className={cn("min-h-0 flex-1", className)} />;
+    return loadingFallback ?? <div className={cn("min-h-0 flex-1", className)} />;
   }
   if (!thread) {
-    return <p className={cn("p-6 text-sm text-gray-500", className)}>This conversation isn&apos;t available.</p>;
+    return (
+      notFoundFallback ?? (
+        <p className={cn("p-6 text-sm text-gray-500", className)}>This conversation isn&apos;t available.</p>
+      )
+    );
   }
 
   return (

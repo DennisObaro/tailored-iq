@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/ui/error-state";
 import { ThreadPanel } from "@/components/conversation/thread-panel";
 import { formatCallWhen } from "@/lib/utils/format";
 
@@ -62,6 +64,17 @@ export default function ConversationThreadPage() {
         conversationId={conversationId}
         onThreadLoaded={setThread}
         suppressEmptyState={Boolean(justBooked)}
+        loadingFallback={
+          <div className="mx-auto max-w-3xl space-y-4 p-6">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        }
+        notFoundFallback={
+          <div className="mx-auto max-w-3xl p-6">
+            <ErrorState whatHappened="We couldn't find this conversation." dataSafe="Nothing has been lost." />
+          </div>
+        }
         beforeMessages={
           project && (
             <>

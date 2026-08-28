@@ -17,6 +17,7 @@ export default function EngagementWorkspacePage() {
   const { engagementId } = useParams<{ engagementId: string }>();
   const user = useSessionStore((s) => s.user);
   const [detail, setDetail] = useState<EngagementDetail | null | undefined>(undefined);
+  const [filesRefreshKey, setFilesRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -43,14 +44,18 @@ export default function EngagementWorkspacePage() {
     <div className="flex h-full min-w-0 flex-col">
       <EngagementHeader detail={detail} onChange={(engagement) => setDetail({ ...detail, engagement })} />
       <div className="flex min-h-0 flex-1">
-        <ThreadPanel conversationId={detail.engagement.conversationId} className="min-h-0 flex-1" />
+        <ThreadPanel
+          conversationId={detail.engagement.conversationId}
+          className="min-h-0 flex-1"
+          onMessageSent={() => setFilesRefreshKey((k) => k + 1)}
+        />
         <aside className="hidden w-80 shrink-0 flex-col gap-5 overflow-y-auto border-l border-gray-800 p-5 lg:flex">
-          <EngagementScheduleLog
+          <EngagementScheduleLog engagementId={detail.engagement.id} viewerId={user!.id} />
+          <EngagementFiles
             engagementId={detail.engagement.id}
-            clientId={detail.engagement.clientId}
-            expertId={detail.engagement.expertId}
+            viewerId={user!.id}
+            refreshKey={filesRefreshKey}
           />
-          <EngagementFiles engagementId={detail.engagement.id} viewerId={user!.id} />
           {detail.engagement.status === "completed" && (
             <EngagementRating
               detail={detail}
@@ -58,6 +63,20 @@ export default function EngagementWorkspacePage() {
             />
           )}
         </aside>
+      </div>
+      <div className="flex flex-col gap-5 border-t border-gray-800 p-5 lg:hidden">
+        <EngagementScheduleLog engagementId={detail.engagement.id} viewerId={user!.id} />
+        <EngagementFiles
+          engagementId={detail.engagement.id}
+          viewerId={user!.id}
+          refreshKey={filesRefreshKey}
+        />
+        {detail.engagement.status === "completed" && (
+          <EngagementRating
+            detail={detail}
+            onSubmitted={(review) => setDetail({ ...detail, myReview: review })}
+          />
+        )}
       </div>
     </div>
   );

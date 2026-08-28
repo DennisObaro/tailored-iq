@@ -12,12 +12,21 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function EngagementFiles({ engagementId, viewerId }: { engagementId: string; viewerId: string }) {
+export function EngagementFiles({
+  engagementId,
+  viewerId,
+  refreshKey,
+}: {
+  engagementId: string;
+  viewerId: string;
+  /** Bump this to force a refetch — e.g. after a new message/attachment is sent elsewhere on the page. */
+  refreshKey?: number;
+}) {
   const [files, setFiles] = useState<EngagementAttachment[] | undefined>(undefined);
 
   useEffect(() => {
     engagementsApi.listAttachmentsForEngagement(engagementId, viewerId).then(setFiles);
-  }, [engagementId, viewerId]);
+  }, [engagementId, viewerId, refreshKey]);
 
   if (!files || files.length === 0) return null;
 
