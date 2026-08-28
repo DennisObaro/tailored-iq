@@ -13,6 +13,8 @@ import * as contributionsApi from "@/lib/api/contributions";
 import * as opportunitiesApi from "@/lib/api/opportunities";
 import * as liveBriefsApi from "@/lib/api/live-briefs";
 import * as expertApi from "@/lib/api/expert-onboarding";
+import * as engagementsApi from "@/lib/api/engagements";
+import type { EngagementListing } from "@/lib/api/engagements";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import { getExpertAccess } from "@/lib/utils/expert-access";
 import { WILLINGNESS_LABELS } from "@/lib/constants/expert";
@@ -36,6 +38,7 @@ export default function ExpertProjectViewPage() {
   const [report, setReport] = useState<Report | null>(null);
   const [consultation, setConsultation] = useState<Consultation | null>(null);
   const [contributions, setContributions] = useState<ExpertContribution[]>([]);
+  const [engagements, setEngagements] = useState<EngagementListing[]>([]);
   const [listing, setListing] = useState<opportunitiesApi.OpportunityListing | null>(null);
   const [finalState, setFinalState] = useState<liveBriefsApi.FinalPlaybookState | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -45,11 +48,12 @@ export default function ExpertProjectViewPage() {
     if (!user) return;
     let cancelled = false;
     (async () => {
-      const [p, expertProfile, opps, myContributions] = await Promise.all([
+      const [p, expertProfile, opps, myContributions, myEngagements] = await Promise.all([
         projectsApi.getProject(projectId),
         expertApi.getExpertProfile(user.id),
         opportunitiesApi.listOpportunities(user.id),
         contributionsApi.listContributionsByExpert(user.id),
+        engagementsApi.listEngagementsForExpert(user.id),
       ]);
       if (cancelled) return;
 
@@ -57,6 +61,7 @@ export default function ExpertProjectViewPage() {
       setProfile(expertProfile);
       setListing(opps.find((l) => l.opportunity.projectId === projectId) ?? null);
       setContributions(myContributions.filter((c) => c.projectId === projectId));
+      setEngagements(myEngagements.filter((e) => e.engagement.projectId === projectId));
       liveBriefsApi.getFinalPlaybookState(projectId, user.id).then((state) => {
         if (!cancelled) setFinalState(state);
       });
@@ -229,6 +234,26 @@ export default function ExpertProjectViewPage() {
               </Button>
             </CardContent>
           </Card>
+
+          {engagements.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Engagements</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-2">
+                {engagements.map(({ engagement, playbookTitle }) => (
+                  <Link
+                    key={engagement.id}
+                    href={`/engagements/${engagement.id}`}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-gray-800 px-3 py-2.5 text-sm hover:bg-gray-900"
+                  >
+                    <span className="text-gray-200">{playbookTitle}</span>
+                    <StatusBadge status={engagement.status} />
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
+          )}
 
           {/*
             Several experts can be drafting the same brief at once, so this is
