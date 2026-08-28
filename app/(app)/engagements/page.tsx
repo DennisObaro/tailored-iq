@@ -7,19 +7,7 @@ import { EngagementCard } from "@/components/engagement/engagement-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSessionStore } from "@/lib/store/use-session-store";
-
-type Bucket = "in_progress" | "rating" | "completed";
-
-function bucketOf(listing: EngagementListing): Bucket {
-  if (listing.engagement.status !== "completed") return "in_progress";
-  return listing.myReview ? "completed" : "rating";
-}
-
-const BUCKETS: [Bucket, string][] = [
-  ["in_progress", "In progress"],
-  ["rating", "Rating"],
-  ["completed", "Completed"],
-];
+import { ENGAGEMENT_BUCKETS, engagementBucketOf } from "@/lib/utils/engagement";
 
 export default function EngagementsPage() {
   const user = useSessionStore((s) => s.user);
@@ -52,8 +40,8 @@ export default function EngagementsPage() {
           description="Book time with an expert from a finished playbook's implementation panel to start one."
         />
       ) : (
-        BUCKETS.map(([key, label]) => {
-          const items = listings.filter((l) => bucketOf(l) === key);
+        ENGAGEMENT_BUCKETS.map(([key, label]) => {
+          const items = listings.filter((l) => engagementBucketOf(l) === key);
           if (items.length === 0) return null;
           return (
             <div key={key}>
