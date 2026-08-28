@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils/cn";
 
-type Tone = "neutral" | "progress" | "success" | "warning" | "danger";
+export type Tone = "neutral" | "progress" | "success" | "warning" | "danger" | "action";
 
 // Fills stay on the fixed 500 steps at low alpha, so a pill keeps the same
 // familiar tint in both themes. The ink and dot resolve through the semantic
@@ -12,20 +12,39 @@ const toneClasses: Record<Tone, string> = {
   success: "bg-success-500/15 text-success before:bg-success",
   warning: "bg-primary-500/15 text-gold before:bg-gold",
   danger: "bg-danger-500/15 text-destructive before:bg-destructive",
+  /** The one status colour gold doesn't already own — reserved for "this is
+      waiting on you", so it never gets confused with plain progress or a
+      literal warning. */
+  action: "bg-info-500/15 text-info before:bg-info",
 };
 
+/**
+ * Project statuses (lib/types/project.ts), mapped to four buckets rather than
+ * one shade of gold for everything that isn't done:
+ *
+ * - neutral (grey): automated backend work with nothing for the client to
+ *   look at yet — analysing, matching. Fast, and ours to finish.
+ * - action (blue): the client is the one who has to move it forward —
+ *   answer more questions, confirm a brief, attend a call, work through a
+ *   playbook's action items. Report/consultation/playbook "ready" states
+ *   live here rather than under success, since a document landing doesn't
+ *   mean the engagement is done — only `completed` does.
+ * - progress (amber): a person — an expert — is actively working on it over
+ *   real time, the way analysing/matching aren't.
+ * - success (green): reserved for the actual terminal state.
+ */
 const STATUS_LABELS: Record<string, { label: string; tone: Tone }> = {
-  draft: { label: "Draft", tone: "neutral" },
-  brief_in_progress: { label: "Brief in progress", tone: "progress" },
-  brief_submitted: { label: "Brief submitted", tone: "progress" },
-  analysing: { label: "Analysing", tone: "progress" },
-  report_ready: { label: "Executive summary ready", tone: "success" },
-  expert_matching: { label: "Matching experts", tone: "progress" },
-  consultation_scheduled: { label: "Consultation scheduled", tone: "progress" },
-  consultation_completed: { label: "Consultation completed", tone: "success" },
+  draft: { label: "Draft", tone: "action" },
+  brief_in_progress: { label: "Brief in progress", tone: "action" },
+  brief_submitted: { label: "Brief submitted", tone: "action" },
+  analysing: { label: "Analysing", tone: "neutral" },
+  report_ready: { label: "Executive summary ready", tone: "action" },
+  expert_matching: { label: "Matching experts", tone: "neutral" },
+  consultation_scheduled: { label: "Consultation scheduled", tone: "action" },
+  consultation_completed: { label: "Consultation completed", tone: "action" },
   playbook_in_progress: { label: "Playbook in progress", tone: "progress" },
   expert_review: { label: "Expert review", tone: "progress" },
-  playbook_ready: { label: "Playbook ready", tone: "success" },
+  playbook_ready: { label: "Playbook ready", tone: "action" },
   completed: { label: "Completed", tone: "success" },
   archived: { label: "Archived", tone: "neutral" },
   generating: { label: "Generating", tone: "progress" },
@@ -83,6 +102,15 @@ const STATUS_LABELS: Record<string, { label: string; tone: Tone }> = {
   expired: { label: "Expired", tone: "neutral" },
   revoked: { label: "Withdrawn", tone: "danger" },
 };
+
+/**
+ * The tone a status resolves to, exported so a caller can key other UI off
+ * the same taxonomy the badge itself uses — a CTA verb, a priority accent —
+ * without duplicating this lookup and risking the two drifting apart.
+ */
+export function statusTone(status: string): Tone {
+  return (STATUS_LABELS[status] ?? { tone: "neutral" as Tone }).tone;
+}
 
 export function StatusBadge({
   status,

@@ -39,6 +39,10 @@
   --danger-500: #e34545;
   --success-400: #4ade80;
   --success-500: #22c55e;
+  /* The "needs your action" signal — distinct from gold, which the badge
+     system already uses for both passive progress and literal warnings. */
+  --info-400: #60a5fa;
+  --info-500: #3b82f6;
 
   --font-sans: var(--font-dm-sans);
 
@@ -93,6 +97,9 @@
 
   --warning: var(--primary-400);
   --warning-foreground: var(--gray-975);
+
+  --info: var(--info-400);
+  --info-foreground: #06122b;
 
   --border: var(--gray-800);
   --input: var(--gray-800);
@@ -217,6 +224,7 @@
   --success: #15803d;
   --warning: var(--primary-700);
   --warning-foreground: #ffffff;
+  --info: #1d4ed8;
 
   /* Marketing surfaces, re-authored for light. The sand tints stay warm so
      the gold accent keeps its family, and the panels alternate by a hair
@@ -284,6 +292,8 @@
   --color-danger-500: var(--danger-500);
   --color-success-400: var(--success-400);
   --color-success-500: var(--success-500);
+  --color-info-400: var(--info-400);
+  --color-info-500: var(--info-500);
 
   /* Semantic colour utilities (bg-surface, text-muted-foreground,
      text-gold, border-border, ...) used throughout the ported landing
@@ -316,6 +326,8 @@
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
