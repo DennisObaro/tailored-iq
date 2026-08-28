@@ -61,6 +61,7 @@ export const CLIENT_NAV: NavItem[] = [
   { label: "Ask TailoredIQ", href: "/chat", icon: Chat },
   { label: "Executive summaries", href: "/reports", icon: Reports },
   { label: "Playbooks", href: "/playbooks", icon: Playbooks },
+  { label: "Projects", href: "/engagements", icon: Briefcase01 },
   { label: "Experts", href: "/experts", icon: Experts },
   { label: "Conversations", href: "/conversations", icon: Conversations },
 ];
