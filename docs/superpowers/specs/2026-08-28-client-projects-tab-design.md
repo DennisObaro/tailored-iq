@@ -136,8 +136,8 @@ rather than through the thread's derived stage.
 
 **`lib/api/_db.ts`** — add `engagements: Engagement[]` and
 `engagementReviews: EngagementReview[]` to `Database`, seed both as `[]`,
-and **bump the storage key from `tiq_db_v6` to `tiq_db_v7`** per the
-existing rule (a stale `v6` blob has no `engagements` array).
+and **bump the storage key** (currently `tiq_db_v11`, becomes `tiq_db_v12`)
+per the existing rule (a stale blob has no `engagements` array).
 
 ## Scope: catalog playbooks
 
