@@ -35,3 +35,15 @@ export function canViewExpertConversation(d: Database, conversationId: string, v
   if (!conversation) return false;
   return conversation.clientId === viewerId || conversation.expertId === viewerId;
 }
+
+/**
+ * An implementation engagement is a private relationship between exactly
+ * one client and one expert — same reasoning as canViewExpertConversation
+ * above, deliberately not routed through canViewProject's broader
+ * matched-experts logic.
+ */
+export function canViewEngagement(d: Database, engagementId: string, viewerId: string): boolean {
+  const engagement = d.engagements.find((e) => e.id === engagementId);
+  if (!engagement) return false;
+  return engagement.clientId === viewerId || engagement.expertId === viewerId;
+}
