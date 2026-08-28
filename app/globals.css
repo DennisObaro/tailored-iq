@@ -121,6 +121,9 @@
      pill on the light theme's off-white ground would lose all its weight. */
   --mkt-cta: #ffffff;
   --mkt-cta-ink: #0d0d0d;
+  /* The band that crosses the hero headline. Brighter than --mkt-text so the
+     sweep reads as light moving over the words, not as the text recolouring. */
+  --hero-shimmer-band: #ffffff;
   /* Shadow ink for the hero portrait grid. Pure black at the dark theme's
      alphas is far too heavy on off-white — light mode uses a warm brown-black
      at lower strength so the cards still read as lifted, not smeared. */
@@ -144,10 +147,6 @@
   /* Great Vibes — the founder-note signature, and the one genuinely new
      typeface the landing project brings in. */
   --font-signature: var(--font-great-vibes);
-  /* Source Serif 4 — the headings of the long-form documents (executive
-     summaries, playbooks). Deliberately not the app's heading face: it marks
-     out the two surfaces that are meant to read as printed documents. */
-  --font-document: var(--font-source-serif);
 }
 
 /* ===================================================================
@@ -237,6 +236,13 @@
   --mkt-chip-b: #eae5d6;
   --mkt-cta: #1a1815;
   --mkt-cta-ink: #f7f6f3;
+  /* A gleam needs the band to be brighter than what surrounds it, and on a
+     light ground the headline *is* the dark element — lightening it just
+     erases the words mid-sweep, and deepening near-black ink toward black is
+     imperceptible. Both were tried. So light mode shifts hue instead of
+     luminance: the band is the brand gold, which stays dark enough to read
+     while the letters visibly warm as it passes. */
+  --hero-shimmer-band: var(--gold);
   --portrait-shadow-rgb: 42, 36, 26;
   --portrait-shadow-scale: 0.55;
 
@@ -316,7 +322,6 @@
 
   --font-display: var(--font-display);
   --font-signature: var(--font-signature);
-  --font-document: var(--font-document);
 
   --color-mkt-page: var(--mkt-page);
   --color-mkt-panel: var(--mkt-panel);
@@ -781,6 +786,24 @@ body {
     animation-delay: var(--hero-delay, 0ms);
   }
 
+  /* Quick-answer cards land with the question they answer — one staggered
+     arrival rather than four independent fades. `--chip-delay` is set per
+     card inline, same idiom as `--hero-delay` above. */
+  @keyframes chip-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .chip-anim-up {
+    animation: chip-fade-up 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--chip-delay, 0ms);
+  }
+
   .hero-ambient-glow {
     position: absolute;
     top: 20%;
@@ -833,9 +856,75 @@ body {
     }
   }
 
+  /* --- Hero headline shimmer -----------------------------------------
+     A band of light that crosses the headline and then rests.
+
+     Two layers. The h1 paints normally in --mkt-text; a ::before duplicate
+     of the same string paints a transparent -> light -> transparent
+     gradient and clips it to the glyphs. Only the overlay moves, so the
+     headline is never dimmed — this is a gleam over finished text, not the
+     grey placeholder a loading shimmer implies.
+
+     `text-wrap: balance` is repeated here on purpose: it isn't inherited by
+     a pseudo-element, and without it the overlay would greedy-wrap against
+     a balanced headline and the two sets of glyphs would separate. */
+  .hero-shimmer::before {
+    content: attr(data-text);
+    /* Same content with empty alternative text, so assistive tech doesn't
+       read the headline twice. Browsers without the `/ alt` syntax discard
+       this declaration and keep the one above. */
+    content: attr(data-text) / "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    text-wrap: balance;
+    /* Tighter than the stock preset, and deliberately so. The base is
+       #dadada and the band is white — a 15% luminance step, which spread
+       across the preset's 80%-wide gradient is invisible. Concentrating it
+       is the only way to buy contrast without dimming the headline. */
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      transparent 44%,
+      var(--hero-shimmer-band) 50%,
+      transparent 56%,
+      transparent 100%
+    );
+    /* 250% is the geometry that makes the rest state honest: below 200% the
+       band can never leave the element (it would sit parked on the closing
+       glyphs), and far above it most of the sweep is spent off-screen. At
+       250% it clears both edges with nothing to spare. */
+    background-size: 250% 100%;
+    background-repeat: no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    /* Held back past the headline's own entrance (420ms delay + 380ms run):
+       a band crossing text that is still fading up reads as a glitch. */
+    animation: hero-shimmer 7s linear 1s infinite;
+  }
+
+  /* The sweep takes the first ~2s and the remaining 5s is rest — the same
+     shape as mosaic-shimmer, which dwells for most of its loop. An ambient
+     loop on this page is a brief event, not continuous motion. At both ends
+     of the travel the band sits off the element, so the parked state shows
+     nothing at all. */
+  @keyframes hero-shimmer {
+    0% {
+      background-position: 100% 0;
+    }
+    28% {
+      background-position: 0% 0;
+    }
+    100% {
+      background-position: 0% 0;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .hero-anim-fade,
-    .hero-anim-up {
+    .hero-anim-up,
+    .chip-anim-up {
       animation: none;
       opacity: 1;
       transform: none;
@@ -844,6 +933,9 @@ body {
       animation: none;
     }
     .hero-badge-dot-blink {
+      animation: none;
+    }
+    .hero-shimmer::before {
       animation: none;
     }
   }
@@ -1235,5 +1327,80 @@ body {
   }
   to {
     opacity: 1;
+  }
+}
+
+/* --- Print ---------------------------------------------------------------
+   Deliberately outside any @layer, and for the same cascade reason the base
+   overrides above are *inside* one: an unlayered rule beats any layered
+   Tailwind utility. Here that's the goal — these rules have to defeat the
+   shell's `overflow-hidden` and the document scroller's `overflow-y-auto`,
+   which otherwise clip a printed document to a single page.
+
+   The colour work is done by re-pointing the design tokens rather than by
+   overriding component classes. Every surface and every piece of ink in the
+   app resolves through this ramp, so redefining it here re-inks the whole
+   document for paper without touching a single component — and it covers
+   both themes, since a viewer printing from dark mode wants the same page a
+   viewer printing from light mode does. Values mirror the light theme's ink
+   with the surfaces pinned to white. */
+@media print {
+  :root,
+  :root[data-theme="light"],
+  :root[data-theme="dark"] {
+    /* Hairlines at the light theme's alpha are near-invisible on paper, so
+       the tint is the one value that deepens rather than mirrors. */
+    --hairline-tint: 23, 21, 17;
+    --gray-800: rgba(var(--hairline-tint), 0.25);
+
+    --gray-50: #000000;
+    --gray-100: #1a1815;
+    --gray-200: #2a2823;
+    --gray-300: #3d3a33;
+    --gray-400: #55524a;
+    --gray-500: #6e6a61;
+    --gray-600: #8b8880;
+    --gray-700: #c9c5bc;
+
+    --gray-850: #ffffff;
+    --gray-900: #ffffff;
+    --gray-925: #ffffff;
+    --gray-950: #ffffff;
+    --gray-975: #ffffff;
+
+    --surface: #ffffff;
+    --surface-elevated: #ffffff;
+    --background: #ffffff;
+    --gold: var(--primary-700);
+  }
+
+  @page {
+    margin: 18mm;
+  }
+
+  html,
+  body {
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  /* Keep a heading with the content it introduces, and don't split a step,
+     action item, or quote across a page break. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    break-after: avoid-page;
+  }
+  li,
+  blockquote {
+    break-inside: avoid;
+  }
+
+  /* Card surfaces lose their lift on paper — the shadow prints as a smudge
+     and the border is what actually separates them. */
+  .shadow-card {
+    box-shadow: none !important;
   }
 }

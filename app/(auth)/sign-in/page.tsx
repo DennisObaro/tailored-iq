@@ -89,7 +89,7 @@ export default function SignInPage() {
         <div className="h-px flex-1 bg-gray-800" />
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {demoPersonas.map((p) => (
           <Button
             key={p.id}

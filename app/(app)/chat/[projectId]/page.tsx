@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, CheckCircle2 } from "@/components/icons";
+import { BookOpen, FastForward } from "@/components/icons";
 import type { Brief, Conversation, Project } from "@/lib/types";
 import { PROJECT_STATUS_ORDER } from "@/lib/types";
 import * as projectsApi from "@/lib/api/projects";
@@ -17,22 +17,14 @@ import { PLAYBOOK_TURNAROUND } from "@/lib/api/playbooks";
 import { ChatMessageBubble } from "@/components/chat/chat-message-bubble";
 import { TypingIndicator } from "@/components/chat/typing-indicator";
 import { ChatInput } from "@/components/chat/chat-input";
+import { SuggestedReplies } from "@/components/chat/suggested-replies";
 import { RelevantExpertsPanel } from "@/components/expert/relevant-experts-panel";
 import { ExpertCard } from "@/components/expert/expert-card";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BriefField } from "@/components/brief/brief-field";
+import { BriefCard } from "@/components/brief/brief-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { CHAT_THINKING_COPY, LOADING_COPY } from "@/lib/constants/loading-copy";
-
-const BRIEF_FIELD_DEFS: { key: keyof Brief; label: string }[] = [
-  { key: "situation", label: "Situation" },
-  { key: "objective", label: "Goal" },
-  { key: "constraints", label: "Constraints" },
-  { key: "authority", label: "Authority" },
-  { key: "desiredOutcome", label: "Desired outcome" },
-];
 
 export default function ChatConversationPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -42,7 +34,16 @@ export default function ChatConversationPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [generatingBrief, setGeneratingBrief] = useState(false);
+  /**
+   * The escape hatch: ending the diagnosis and generating + confirming the
+   * brief in one action, rather than the normal multi-turn script. Tracked
+   * separately from `sending`/`generatingBrief` because it drives its own
+   * button and has to disable the ordinary inputs while it's in flight.
+   */
+  const [skipping, setSkipping] = useState(false);
   const [confirmingBrief, setConfirmingBrief] = useState(false);
+  const [editingBrief, setEditingBrief] = useState(false);
+  const [savingBrief, setSavingBrief] = useState(false);
   const [stage, setStage] = useState<"report" | "matching" | "playbook" | null>(null);
   const [matchedExperts, setMatchedExperts] = useState<ExpertListing[]>([]);
   const [error, setError] = useState(false);
@@ -206,8 +207,67 @@ export default function ChatConversationPage() {
     }
   }
 
+  /**
+   * The escape hatch. Ends the diagnosis with whatever's been answered so
+   * far, then generates and immediately confirms the brief — one action
+   * rather than the normal "review, then confirm" step, since asking someone
+   * who just opted out of more questions to make one more decision would
+   * defeat the point. The report/matching effects below don't need to know
+   * this happened any differently: they key off `project.status`, which
+   * `confirmBrief` sets exactly as it would after a manual confirm.
+   *
+   * `briefRequestedRef` is claimed before anything async runs, so the
+   * generic "conversation just completed" effect can't also fire and create
+   * a second brief once `setConversation` below flips the status.
+   */
+  async function skipToReport() {
+    if (!conversation || !project || conversation.status === "complete") return;
+    briefRequestedRef.current = true;
+    setSkipping(true);
+    setError(false);
+    try {
+      const ended = await conversationsApi.endConversationEarly(conversation.id);
+      setConversation(ended);
+      setGeneratingBrief(true);
+      const drafted = await briefsApi.createBriefFromConversation(project.id);
+      const confirmed = await briefsApi.confirmBrief(drafted.id);
+      setBrief(confirmed);
+      const updated = await projectsApi.getProject(project.id);
+      if (updated) setProject(updated);
+    } catch {
+      setError(true);
+    } finally {
+      setSkipping(false);
+      setGeneratingBrief(false);
+    }
+  }
+
   function updateBriefField(key: keyof Brief, fieldValue: string) {
     setBrief((b) => (b ? { ...b, [key]: fieldValue } : b));
+  }
+
+  /**
+   * Field edits live in local state while the form is open and are saved on
+   * the way out, because leaving edit mode is what puts the prose back on
+   * screen — and that prose is re-derived server-side, so it has to be read
+   * back from the save rather than assumed.
+   */
+  async function handleBriefEditingChange(next: boolean) {
+    if (next) {
+      setEditingBrief(true);
+      return;
+    }
+    if (!brief) return;
+    setSavingBrief(true);
+    setError(false);
+    try {
+      setBrief(await briefsApi.updateBrief(brief.id, brief));
+      setEditingBrief(false);
+    } catch {
+      setError(true);
+    } finally {
+      setSavingBrief(false);
+    }
   }
 
   async function confirmBrief() {
@@ -217,6 +277,7 @@ export default function ChatConversationPage() {
     try {
       await briefsApi.updateBrief(brief.id, brief);
       const confirmed = await briefsApi.confirmBrief(brief.id);
+      setEditingBrief(false);
       setBrief(confirmed);
       const updated = await projectsApi.getProject(projectId);
       if (updated) setProject(updated);
@@ -261,6 +322,24 @@ export default function ChatConversationPage() {
   const briefConfirmed =
     PROJECT_STATUS_ORDER.indexOf(project?.status ?? "draft") >= PROJECT_STATUS_ORDER.indexOf("analysing");
 
+  /**
+   * Quick answers belong to the question currently on screen, so they come
+   * off the last message and clear the moment it's been answered — while a
+   * turn is in flight there is nothing to answer yet.
+   */
+  const lastMessage = conversation.messages[conversation.messages.length - 1];
+  const activeSuggestions =
+    !sending && !skipping && !generatingBrief && conversation.status !== "complete" && lastMessage?.role === "ai"
+      ? lastMessage.suggestedReplies ?? []
+      : [];
+
+  /**
+   * The escape hatch shows for as long as there's a diagnosis left to skip —
+   * once the conversation is complete (by any route) there's nothing left to
+   * jump ahead of.
+   */
+  const canSkip = conversation.status !== "complete";
+
   return (
     <div className="flex h-full">
       <div className="flex h-full min-w-0 flex-1 flex-col">
@@ -273,36 +352,15 @@ export default function ChatConversationPage() {
             {generatingBrief && <TypingIndicator label={CHAT_THINKING_COPY} />}
 
             {brief && (
-              <Card className="p-4">
-                <div>
-                  <p className="text-sm font-semibold text-gray-50">Here&apos;s what I understand</p>
-                  <p className="text-xs text-gray-500">Review and edit before we generate your executive summary.</p>
-                </div>
-                <div className="mt-2 flex flex-col">
-                  {BRIEF_FIELD_DEFS.map((f) => (
-                    <BriefField
-                      key={f.key}
-                      label={f.label}
-                      value={String(brief[f.key] ?? "")}
-                      onChange={(v) => updateBriefField(f.key, v)}
-                      disabled={confirmingBrief || brief.confirmed}
-                    />
-                  ))}
-                </div>
-                {brief.confirmed ? (
-                  <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-success-400">
-                    <CheckCircle2 className="size-3.5" aria-hidden />
-                    Brief confirmed
-                  </p>
-                ) : (
-                  <div className="mt-3 flex justify-end">
-                    <Button size="sm" loading={confirmingBrief} onClick={confirmBrief} className="gap-1.5">
-                      <CheckCircle2 className="size-3.5" aria-hidden />
-                      Confirm brief
-                    </Button>
-                  </div>
-                )}
-              </Card>
+              <BriefCard
+                brief={brief}
+                editing={editingBrief}
+                onEditingChange={handleBriefEditingChange}
+                onFieldChange={updateBriefField}
+                onConfirm={confirmBrief}
+                confirming={confirmingBrief}
+                saving={savingBrief}
+              />
             )}
 
             {stage === "report" && <TypingIndicator label={LOADING_COPY.report[0]} />}
@@ -377,8 +435,39 @@ export default function ChatConversationPage() {
               </div>
             )}
           </div>
-          <div className="px-10 pb-8">
-            <ChatInput onSend={handleSend} disabled={sending || generatingBrief || conversation.status === "complete"} />
+          <div className="flex flex-col gap-3 px-10 pb-8">
+            {/*
+              Persistent rather than tucked beside the quick answers: it has
+              to stay visible and available for the whole diagnosis, not just
+              alongside whichever question happens to be on screen. It sits
+              in this fixed footer rather than the scrolling transcript above
+              for the same reason — it can't scroll out of view.
+            */}
+            {canSkip && (
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-gray-850 bg-gray-975/60 px-4 py-2.5">
+                <p className="text-xs text-gray-500">Answered enough already?</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5"
+                  loading={skipping}
+                  disabled={sending || generatingBrief}
+                  onClick={skipToReport}
+                >
+                  {!skipping && <FastForward className="size-3.5" aria-hidden />}
+                  {skipping ? "Wrapping up…" : "Skip ahead — get my report"}
+                </Button>
+              </div>
+            )}
+            <SuggestedReplies replies={activeSuggestions} onSelect={handleSend} />
+            <ChatInput
+              onSend={handleSend}
+              disabled={sending || skipping || generatingBrief || conversation.status === "complete"}
+              // The quick-answer cards are an alternative to typing, not the
+              // only option — the composer says so the moment they're on
+              // screen, rather than leaving "just type instead" implicit.
+              placeholder={activeSuggestions.length > 0 ? "Or reply directly…" : undefined}
+            />
           </div>
         </div>
       </div>

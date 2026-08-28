@@ -59,7 +59,7 @@ export function DocumentSection({
         </p>
       )}
       <div className="mb-4 flex items-baseline justify-between gap-4">
-        <h2 className="font-document text-[1.375rem] font-normal leading-snug text-gray-50">{label}</h2>
+        <h2 className="text-[1.375rem] font-semibold leading-snug text-gray-50">{label}</h2>
         {meta && <span className="shrink-0 text-xs text-gray-500">{meta}</span>}
       </div>
       {children}

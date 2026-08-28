@@ -1,4 +1,5 @@
 import type {
+  Brief,
   ExpertEngagementStage,
   ExpertWillingness,
   Opportunity,
@@ -8,6 +9,7 @@ import type {
 import { simulateNetwork, ApiError } from "./client";
 import { db, type Database } from "./_db";
 import { getExpertAccess } from "@/lib/utils/expert-access";
+import { matchPercent, scoreExperts } from "@/lib/ai-sim/expert-matcher";
 
 /**
  * What the expert is allowed to see of a client's challenge before they
@@ -19,6 +21,23 @@ export interface OpportunityListing {
   stage: ExpertEngagementStage;
   /** False while the expert hasn't accepted, or isn't approved. */
   canViewClientDetail: boolean;
+  /**
+   * How well this expert fits the challenge, as a share of the most anyone
+   * could score. Recomputed on read rather than stored, so it always
+   * reflects the profile the expert has now.
+   */
+  matchPercent: number;
+  /**
+   * The client's confirmed brief, if there is one yet.
+   *
+   * Deliberately disclosed before the expert answers, unlike everything else
+   * behind `canViewClientDetail`: deciding whether you can actually help is
+   * what the brief is for, and an expert opting in from a one-line summary is
+   * guessing. Everything else still gates it — the reader has to be the
+   * expert this opportunity was sent to, their profile has to be approved,
+   * and a brief the client hasn't confirmed is never shown.
+   */
+  brief: Brief | null;
 }
 
 export function engagementStage(opportunity: Opportunity, project: Project | undefined): ExpertEngagementStage {
@@ -55,14 +74,30 @@ export function engagementStage(opportunity: Opportunity, project: Project | und
   }
 }
 
-function listingFor(d: Database, opportunity: Opportunity): OpportunityListing {
+function listingFor(d: Database, opportunity: Opportunity, viewerId?: string): OpportunityListing {
   const project = d.projects.find((p) => p.id === opportunity.projectId);
   const profile = d.expertProfiles.find((p) => p.userId === opportunity.expertId);
   const access = getExpertAccess(profile);
+
+  const client = project ? d.clientProfiles.find((c) => c.userId === project.clientId) : undefined;
+  const [scored] = profile
+    ? scoreExperts([profile], opportunity.category, client ? [client.industry] : [], project?.challenge ?? "")
+    : [];
+
+  /**
+   * The opportunity's own expert only. `access` above describes them, not
+   * whoever is reading — without this the brief would be one URL away for
+   * anyone signed in.
+   */
+  const isAddressee = viewerId === opportunity.expertId;
+  const brief = project?.briefId ? d.briefs.find((b) => b.id === project.briefId) : undefined;
+
   return {
     opportunity,
     stage: engagementStage(opportunity, project),
     canViewClientDetail: access.canViewClientDetail && opportunity.response === "interested",
+    matchPercent: matchPercent(scored?.score ?? 0),
+    brief: isAddressee && access.canViewClientDetail && brief?.confirmed ? brief : null,
   };
 }
 
@@ -73,18 +108,26 @@ export async function listOpportunities(expertId: string): Promise<OpportunityLi
       return database.opportunities
         .filter((o) => o.expertId === expertId)
         .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
-        .map((o) => listingFor(database, o));
+        .map((o) => listingFor(database, o, expertId));
     },
     { latency: [150, 300] },
   );
 }
 
-export async function getOpportunity(opportunityId: string): Promise<OpportunityListing | null> {
+/**
+ * `viewerId` follows the same convention as the project getters: pass it
+ * whenever the result will be rendered, and the parts that aren't the
+ * reader's to see come back empty.
+ */
+export async function getOpportunity(
+  opportunityId: string,
+  viewerId?: string,
+): Promise<OpportunityListing | null> {
   return simulateNetwork(
     () => {
       const database = db.get();
       const opportunity = database.opportunities.find((o) => o.id === opportunityId);
-      return opportunity ? listingFor(database, opportunity) : null;
+      return opportunity ? listingFor(database, opportunity, viewerId) : null;
     },
     { latency: [80, 200] },
   );
@@ -159,7 +202,8 @@ export async function respondToOpportunity(
         project.matchedExpertIds = project.matchedExpertIds.filter((eid) => eid !== opportunity.expertId);
       }
 
-      return listingFor(d, opportunity);
+      /** The responder is the addressee by definition, so the brief stays put. */
+      return listingFor(d, opportunity, opportunity.expertId);
     }),
   );
 }

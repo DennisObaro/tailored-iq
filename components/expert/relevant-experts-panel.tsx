@@ -8,18 +8,39 @@ import { cn } from "@/lib/utils/cn";
  * Which question the panel is answering. `potential` is the open state — the
  * brief isn't confirmed, nothing has been decided, so the list is wide and
  * browsable. `relevant` is the committed state: these are the people actually
- * matched to the confirmed brief.
+ * matched to the confirmed brief. `implementation` is the state after that
+ * again — the client has a finished playbook, so the offer isn't more
+ * thinking, it's help carrying the thinking out.
  */
-export type ExpertsPanelVariant = "potential" | "relevant";
+export type ExpertsPanelVariant = "potential" | "relevant" | "implementation";
 
-const HEADINGS: Record<ExpertsPanelVariant, { settled: string; loading: string }> = {
+const HEADINGS: Record<ExpertsPanelVariant, { settled: string; loading: string; blurb?: string }> = {
   potential: {
     settled: "Potential experts you could talk to",
     loading: "Finding experts you could talk to",
   },
   relevant: {
-    settled: "Relevant experts for you",
+    /**
+     * Framed as the next move rather than a list of people. By the time this
+     * shows, the client has the thinking — what they don't have yet is
+     * somebody who has actually done it.
+     */
+    settled: "Take this further",
     loading: "Choosing the best experts for you",
+    blurb:
+      "You've got the strategic direction. Get perspective from an expert who's dealt with challenges like yours.",
+  },
+  implementation: {
+    /**
+     * A playbook is already the answer to "what should we do", so offering
+     * more thinking would be offering something the client just got. What's
+     * still missing is someone who has actually run it. Deliberately parallel
+     * to `relevant`'s blurb with the noun swapped, so the two rails read as
+     * one system rather than two unrelated pitches.
+     */
+    settled: "Need help implementing this playbook?",
+    loading: "Choosing the best experts for you",
+    blurb: "You've got the plan. An expert who's done this before can help you put it into practice.",
   },
 };
 
@@ -56,6 +77,10 @@ export function RelevantExpertsPanel({
         {loading && <Loader2 className="size-3 shrink-0 animate-spin text-gray-500" aria-hidden />}
       </div>
 
+      {!loading && HEADINGS[variant].blurb && experts.length > 0 && (
+        <p className="-mt-1 text-xs leading-relaxed text-gray-500">{HEADINGS[variant].blurb}</p>
+      )}
+
       {loading && experts.length === 0 ? (
         <div className="flex flex-col gap-3">
           <Skeleton className="h-32 w-full" />
@@ -68,6 +93,11 @@ export function RelevantExpertsPanel({
         </div>
       ) : (
         <div className={cn("flex flex-col gap-3 transition-opacity", refreshing && "opacity-60")}>
+          {/*
+            All of them are suggestions, so all of them are offered the same
+            way — the variant changes what the panel is claiming about the
+            list, not what you can do with the people in it.
+          */}
           {experts.map((listing) => (
             <ExpertCard key={listing.user.id} listing={listing} projectId={projectId} />
           ))}

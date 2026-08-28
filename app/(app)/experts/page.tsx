@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Bookmark, Search, Sparkles, Users } from "@/components/icons";
 import * as expertsApi from "@/lib/api/experts";
 import * as savedExpertsApi from "@/lib/api/saved-experts";
@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CATEGORIES } from "@/lib/constants/categories";
 import { useSessionStore } from "@/lib/store/use-session-store";
+import { useSavedExpertsStore } from "@/lib/store/use-saved-experts-store";
 import { cn } from "@/lib/utils/cn";
 
 const TABS = [
@@ -27,7 +28,13 @@ export default function ExpertsPage() {
   const [listings, setListings] = useState<ExpertListing[] | null>(null);
   const [recommended, setRecommended] = useState<RecommendedExpertsResult | null>(null);
   const [saved, setSaved] = useState<ExpertListing[] | null>(null);
-  const [savedIds, setSavedIds] = useState<string[] | null>(null);
+  /**
+   * The ids live in the store, shared with every card on the page (and every
+   * other page) — a bookmark tapped in the rail beside a summary has to show
+   * as set the moment this list opens.
+   */
+  const savedIds = useSavedExpertsStore((s) => s.ids);
+  const loadSavedIds = useSavedExpertsStore((s) => s.load);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
 
@@ -46,36 +53,21 @@ export default function ExpertsPage() {
    * whether it's set.
    */
   useEffect(() => {
-    if (!user) return;
-    savedExpertsApi.listSavedExpertIds(user.id).then(setSavedIds);
-    savedExpertsApi.listSavedExperts(user.id).then(setSaved);
-  }, [user]);
+    if (user) loadSavedIds(user.id);
+  }, [user, loadSavedIds]);
 
   /**
-   * Optimistic on both fronts — the ids (which drive every bookmark on the
-   * page) and the Saved tab's own list, so switching straight to it after
-   * saving doesn't show a stale list while the write settles.
+   * Re-fetched whenever the ids change, so an expert saved from another tab's
+   * card is here by the time the client switches over. Removals don't wait
+   * for it — the list is filtered by the ids as it renders.
    */
-  const toggleSaved = useCallback(
-    async (listing: ExpertListing, next: boolean) => {
-      if (!user) return;
-      const expertId = listing.user.id;
-      setSavedIds((ids) =>
-        next ? [...(ids ?? []), expertId] : (ids ?? []).filter((i) => i !== expertId),
-      );
-      setSaved((list) =>
-        next
-          ? [listing, ...(list ?? []).filter((l) => l.user.id !== expertId)]
-          : (list ?? []).filter((l) => l.user.id !== expertId),
-      );
-      await savedExpertsApi.setExpertSaved(user.id, expertId, next);
-    },
-    [user],
-  );
+  useEffect(() => {
+    if (!user) return;
+    savedExpertsApi.listSavedExperts(user.id).then(setSaved);
+  }, [user, savedIds]);
 
-  /** Until the ids land, no bookmark claims to be set. */
-  const isSaved = (expertId: string) => savedIds?.includes(expertId) ?? false;
-  const savedCount = savedIds?.length ?? 0;
+  const savedListings = (saved ?? []).filter((l) => savedIds.includes(l.user.id));
+  const savedCount = savedIds.length;
 
   return (
     <div className="mx-auto max-w-4xl p-6">
@@ -119,13 +111,7 @@ export default function ExpertsPage() {
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
               {recommended.recommendations.map((r) => (
-                <ExpertCard
-                  key={r.listing.user.id}
-                  listing={r.listing}
-                  reason={r.reason}
-                  saved={isSaved(r.listing.user.id)}
-                  onToggleSaved={(next) => toggleSaved(r.listing, next)}
-                />
+                <ExpertCard key={r.listing.user.id} listing={r.listing} reason={r.reason} />
               ))}
             </div>
           </div>
@@ -178,12 +164,7 @@ export default function ExpertsPage() {
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {listings.map((l) => (
-                <ExpertCard
-                  key={l.user.id}
-                  listing={l}
-                  saved={isSaved(l.user.id)}
-                  onToggleSaved={(next) => toggleSaved(l, next)}
-                />
+                <ExpertCard key={l.user.id} listing={l} />
               ))}
             </div>
           )}
@@ -196,7 +177,7 @@ export default function ExpertsPage() {
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-32 w-full" />
           </div>
-        ) : saved.length === 0 ? (
+        ) : savedListings.length === 0 ? (
           <EmptyState
             icon={Bookmark}
             title="No saved experts yet."
@@ -211,13 +192,8 @@ export default function ExpertsPage() {
           <div>
             <p className="mb-3 text-xs text-gray-400">Experts you&apos;ve saved to come back to.</p>
             <div className="grid gap-3 sm:grid-cols-2">
-              {saved.map((l) => (
-                <ExpertCard
-                  key={l.user.id}
-                  listing={l}
-                  saved={isSaved(l.user.id)}
-                  onToggleSaved={(next) => toggleSaved(l, next)}
-                />
+              {savedListings.map((l) => (
+                <ExpertCard key={l.user.id} listing={l} />
               ))}
             </div>
           </div>

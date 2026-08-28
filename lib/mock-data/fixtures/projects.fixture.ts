@@ -1,6 +1,7 @@
 import type { Project, Brief, Conversation } from "@/lib/types";
 import { DEMO_CLIENT_ID, DEMO_DUAL_ID, DEMO_EXPERT_ID } from "./users.fixture";
 import { historicalProjects } from "./expert-review-history.fixture";
+import { narrateBrief } from "@/lib/ai-sim/brief-generator";
 
 const d = (day: number) => `2026-07-${String(day).padStart(2, "0")}T10:00:00.000Z`;
 
@@ -186,7 +187,13 @@ export const seedProjects: Project[] = [
   ...historicalProjects,
 ];
 
-export const seedBriefs: Brief[] = [
+/**
+ * Written as structured fields only. The prose the brief card reads back is
+ * derived below by the same `narrateBrief` the generator uses, so a seeded
+ * brief and a freshly diagnosed one are narrated identically — and editing
+ * the fields here can't leave a stale summary behind.
+ */
+const baseBriefs: Omit<Brief, "summary" | "rootCause">[] = [
   {
     id: "brief_1",
     projectId: "project_1",
@@ -293,6 +300,8 @@ export const seedBriefs: Brief[] = [
     updatedAt: d(19),
   },
 ];
+
+export const seedBriefs: Brief[] = baseBriefs.map((brief) => ({ ...brief, ...narrateBrief(brief) }));
 
 const msg = (idPrefix: string, role: "user" | "ai", content: string, minute: number) => ({
   id: `${idPrefix}_${minute}`,
