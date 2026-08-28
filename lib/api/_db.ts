@@ -21,6 +21,8 @@ import type {
   ExpertBriefParticipation,
   ExpertConversation,
   ConversationMessage,
+  Engagement,
+  EngagementReview,
 } from "@/lib/types";
 import { seedDatabase } from "@/lib/mock-data/fixtures/seed";
 
@@ -93,9 +95,16 @@ export interface Database {
    */
   expertConversations: ExpertConversation[];
   conversationMessages: ConversationMessage[];
+  /**
+   * Implementation-tracking relationships, one per (client, expert,
+   * playbook) — created when a client books implementation support from a
+   * playbook's "Need help implementing this?" panel.
+   */
+  engagements: Engagement[];
+  engagementReviews: EngagementReview[];
 }
 
-const STORAGE_KEY = "tiq_db_v6";
+const STORAGE_KEY = "tiq_db_v7";
 const SESSION_KEY = "tiq_session_v1";
 
 let cache: Database | null = null;
