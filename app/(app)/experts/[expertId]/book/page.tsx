@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "@/components/icons";
-import type { Project } from "@/lib/types";
+import type { ConsultationMode, Playbook, Project } from "@/lib/types";
 import * as expertsApi from "@/lib/api/experts";
 import type { ExpertListing } from "@/lib/api/experts";
 import * as projectsApi from "@/lib/api/projects";
 import * as consultationsApi from "@/lib/api/consultations";
+import * as playbooksApi from "@/lib/api/playbooks";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import { Avatar } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
@@ -17,6 +18,7 @@ import { Select, Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
 import { SlotPicker } from "@/components/booking/slot-picker";
+import { Video, MapPin } from "@/components/icons";
 
 const NEW_CHALLENGE = "__new__";
 
@@ -30,6 +32,10 @@ export default function BookConsultationPage() {
   const [eligibleProjects, setEligibleProjects] = useState<Project[]>([]);
   const [projectId, setProjectId] = useState(searchParams.get("projectId") ?? "");
   const [newChallenge, setNewChallenge] = useState("");
+  const playbookId = searchParams.get("playbookId");
+  const isImplementation = Boolean(playbookId);
+  const [playbook, setPlaybook] = useState<Playbook | null | undefined>(undefined);
+  const [mode, setMode] = useState<ConsultationMode>("virtual");
   const [slot, setSlot] = useState<string | null>(null);
   const [booking, setBooking] = useState(false);
   const [error, setError] = useState(false);
@@ -39,13 +45,18 @@ export default function BookConsultationPage() {
   }, [expertId]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || isImplementation) return;
     projectsApi.listProjects(user.id).then((projects) => {
       const eligible = projects.filter((p) => !p.consultationId);
       setEligibleProjects(eligible);
       if (!projectId && eligible.length > 0) setProjectId(eligible[0].id);
     });
-  }, [user, projectId]);
+  }, [user, projectId, isImplementation]);
+
+  useEffect(() => {
+    if (!playbookId || !user) return;
+    playbooksApi.getPlaybook(playbookId, user.id).then(setPlaybook);
+  }, [playbookId, user]);
 
   /**
    * The deliberate "I haven't worked this out yet" option — a client can come
@@ -58,13 +69,25 @@ export default function BookConsultationPage() {
    * distinguishable from an unanswered one or it gets overwritten.
    */
   const isNewChallenge = projectId === NEW_CHALLENGE;
-  const canBook = Boolean(slot) && (isNewChallenge ? newChallenge.trim().length > 0 : Boolean(projectId));
+  const canBook =
+    Boolean(slot) && (isImplementation ? true : isNewChallenge ? newChallenge.trim().length > 0 : Boolean(projectId));
 
   async function confirmBooking() {
     if (!user || !slot || !canBook) return;
     setBooking(true);
     setError(false);
     try {
+      if (isImplementation && playbookId) {
+        const { engagementId } = await consultationsApi.bookImplementationConsultation({
+          playbookId,
+          clientId: user.id,
+          expertId,
+          scheduledFor: slot,
+          mode,
+        });
+        router.push(`/engagements/${engagementId}`);
+        return;
+      }
       const { conversationId } = await consultationsApi.bookConsultation({
         ...(isNewChallenge ? { newChallenge: newChallenge.trim() } : { projectId }),
         clientId: user.id,
@@ -125,37 +148,69 @@ export default function BookConsultationPage() {
       </div>
 
       <Card className="flex flex-col gap-4 p-4">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-300" htmlFor="project">
-            Which challenge is this for?
-          </label>
-          <Select id="project" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
-            {eligibleProjects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.title}
-              </option>
-            ))}
-            <option value={NEW_CHALLENGE}>A new challenge — we&apos;ll define it on the call</option>
-          </Select>
-        </div>
-
-        {isNewChallenge && (
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-300" htmlFor="new-challenge">
-              What&apos;s on your mind?
-            </label>
-            <Textarea
-              id="new-challenge"
-              rows={3}
-              value={newChallenge}
-              onChange={(e) => setNewChallenge(e.target.value)}
-              placeholder="A line or two is enough — you'll work through it together on the call."
-            />
-            <p className="text-xs text-gray-500">
-              {expertUser.firstName} will walk you through the questions we&apos;d normally ask, and write up your
-              brief from the conversation.
+        {isImplementation ? (
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-medium text-gray-300">
+              Implementing {playbook === undefined ? "…" : (playbook?.title ?? "this playbook")}
             </p>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={mode === "virtual" ? "primary" : "outline"}
+                className="gap-1.5"
+                onClick={() => setMode("virtual")}
+              >
+                <Video className="size-3.5" aria-hidden />
+                Virtual call
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={mode === "on_site" ? "primary" : "outline"}
+                className="gap-1.5"
+                onClick={() => setMode("on_site")}
+              >
+                <MapPin className="size-3.5" aria-hidden />
+                On-site session
+              </Button>
+            </div>
           </div>
+        ) : (
+          <>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-gray-300" htmlFor="project">
+                Which challenge is this for?
+              </label>
+              <Select id="project" value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+                {eligibleProjects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.title}
+                  </option>
+                ))}
+                <option value={NEW_CHALLENGE}>A new challenge — we&apos;ll define it on the call</option>
+              </Select>
+            </div>
+
+            {isNewChallenge && (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-300" htmlFor="new-challenge">
+                  What&apos;s on your mind?
+                </label>
+                <Textarea
+                  id="new-challenge"
+                  rows={3}
+                  value={newChallenge}
+                  onChange={(e) => setNewChallenge(e.target.value)}
+                  placeholder="A line or two is enough — you'll work through it together on the call."
+                />
+                <p className="text-xs text-gray-500">
+                  {expertUser.firstName} will walk you through the questions we&apos;d normally ask, and write up
+                  your brief from the conversation.
+                </p>
+              </div>
+            )}
+          </>
         )}
 
         <div className="flex flex-col gap-1.5">
@@ -183,7 +238,7 @@ export default function BookConsultationPage() {
         loading={booking}
         onClick={confirmBooking}
       >
-        Confirm consultation
+        {isImplementation ? "Confirm session" : "Confirm consultation"}
       </Button>
     </div>
   );
