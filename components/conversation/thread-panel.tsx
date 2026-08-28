@@ -7,6 +7,7 @@ import * as conversationsApi from "@/lib/api/expert-conversations";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
+import { formatRelative } from "@/lib/utils/format";
 
 /**
  * The message list + composer for one ExpertConversation thread. Extracted
@@ -18,6 +19,7 @@ export function ThreadPanel({
   conversationId,
   onThreadLoaded,
   beforeMessages,
+  suppressEmptyState,
   className,
 }: {
   conversationId: string;
@@ -25,6 +27,8 @@ export function ThreadPanel({
   onThreadLoaded?: (thread: ConversationThread) => void;
   /** Rendered above the message list, inside the same scroll container. */
   beforeMessages?: ReactNode;
+  /** Set by a host that's already showing its own "nothing here yet" nudge (e.g. a just-booked-call card) — avoids a redundant empty state underneath it. */
+  suppressEmptyState?: boolean;
   className?: string;
 }) {
   const user = useSessionStore((s) => s.user);
@@ -98,9 +102,14 @@ export function ThreadPanel({
         <div className="mx-auto flex max-w-3xl flex-col gap-4 p-6">
           {beforeMessages}
 
-          {thread.messages.filter((m) => m.senderRole !== "system").length === 0 ? (
+          {thread.messages.filter((m) => m.senderRole !== "system").length === 0 && !suppressEmptyState ? (
             <div className="rounded-lg border border-dashed border-gray-800 px-4 py-8 text-center">
               <p className="text-sm font-medium text-gray-200">Start the conversation</p>
+              <p className="mx-auto mt-1 max-w-sm text-sm text-gray-500">
+                {thread.viewerRole === "client"
+                  ? `Tell ${thread.counterpart.firstName} what you're trying to figure out, or ask a question about your challenge.`
+                  : `Ask ${thread.counterpart.firstName} what they're trying to figure out, or share where your experience is relevant.`}
+              </p>
             </div>
           ) : (
             thread.messages.map((message) => {
@@ -135,7 +144,9 @@ export function ThreadPanel({
                       </div>
                     )}
                   </div>
-                  <span className="px-1 text-xs text-gray-500">{mine ? "You" : thread.counterpart.firstName}</span>
+                  <span className="px-1 text-xs text-gray-500">
+                    {mine ? "You" : thread.counterpart.firstName} · {formatRelative(message.createdAt)}
+                  </span>
                 </div>
               );
             })

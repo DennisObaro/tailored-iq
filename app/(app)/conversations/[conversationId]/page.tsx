@@ -61,6 +61,7 @@ export default function ConversationThreadPage() {
       <ThreadPanel
         conversationId={conversationId}
         onThreadLoaded={setThread}
+        suppressEmptyState={Boolean(justBooked)}
         beforeMessages={
           project && (
             <>
