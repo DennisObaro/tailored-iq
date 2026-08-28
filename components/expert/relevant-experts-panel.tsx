@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils/cn";
  * browsable. `relevant` is the committed state: these are the people actually
  * matched to the confirmed brief. `implementation` is the state after that
  * again — the client has a finished playbook, so the offer isn't more
- * thinking, it's help carrying the thinking out.
+ * thinking, it's help carrying the thinking out — filtered to experts who
+ * marked themselves willing to support implementation.
  */
 export type ExpertsPanelVariant = "potential" | "relevant" | "implementation";
 
@@ -46,6 +47,7 @@ const HEADINGS: Record<ExpertsPanelVariant, { settled: string; loading: string; 
 
 export function RelevantExpertsPanel({
   projectId,
+  playbookId,
   experts,
   loading,
   variant = "relevant",
@@ -53,6 +55,7 @@ export function RelevantExpertsPanel({
   className,
 }: {
   projectId?: string;
+  playbookId?: string;
   experts: ExpertListing[];
   loading: boolean;
   variant?: ExpertsPanelVariant;
@@ -99,7 +102,7 @@ export function RelevantExpertsPanel({
             list, not what you can do with the people in it.
           */}
           {experts.map((listing) => (
-            <ExpertCard key={listing.user.id} listing={listing} projectId={projectId} />
+            <ExpertCard key={listing.user.id} listing={listing} projectId={projectId} playbookId={playbookId} />
           ))}
         </div>
       )}

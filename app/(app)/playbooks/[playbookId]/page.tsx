@@ -58,6 +58,7 @@ export default function PlaybookDetailPage() {
         clientId,
         projectId: matchProjectId,
         text: matchText,
+        requireWillingness: "consulting_engagement",
       });
       if (cancelled) return;
       setExperts(listings);
@@ -99,6 +100,7 @@ export default function PlaybookDetailPage() {
 
   const expertsPanel = {
     projectId: playbook.projectId,
+    playbookId: playbook.projectId ? playbook.id : undefined,
     experts,
     loading: expertsLoading,
     // Set once and spread into both placements — the sidebar rail and the

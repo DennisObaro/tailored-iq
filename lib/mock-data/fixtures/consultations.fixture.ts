@@ -12,6 +12,7 @@ export const seedConsultations: Consultation[] = [
     expertId: DEMO_EXPERT_ID,
     scheduledFor: d(5),
     status: "completed",
+    mode: "virtual",
     recordingConsent: true,
     durationSeconds: 1860,
     transcript: [
@@ -36,6 +37,7 @@ export const seedConsultations: Consultation[] = [
     expertId: DEMO_DUAL_ID,
     scheduledFor: "2026-08-14T13:00:00.000Z",
     status: "scheduled",
+    mode: "virtual",
     recordingConsent: true,
     createdAt: "2026-07-10T10:00:00.000Z",
   },
@@ -46,6 +48,7 @@ export const seedConsultations: Consultation[] = [
     expertId: "user_expert_6",
     scheduledFor: d(6),
     status: "completed",
+    mode: "virtual",
     recordingConsent: true,
     durationSeconds: 1500,
     transcript: [
@@ -68,6 +71,7 @@ export const seedConsultations: Consultation[] = [
     expertId: DEMO_EXPERT_ID,
     scheduledFor: d(22),
     status: "completed",
+    mode: "virtual",
     recordingConsent: true,
     durationSeconds: 1740,
     createdAt: d(21),

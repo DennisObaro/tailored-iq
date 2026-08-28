@@ -213,6 +213,7 @@ export const historicalConsultations: Consultation[] = ROWS.map((row) => ({
   expertId: row.expertId,
   scheduledFor: d(row.day),
   status: "completed",
+  mode: "virtual",
   recordingConsent: true,
   durationSeconds: 1800,
   createdAt: d(row.day),

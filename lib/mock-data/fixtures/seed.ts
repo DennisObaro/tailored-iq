@@ -75,5 +75,8 @@ export function seedDatabase(): Database {
     expertConversations: structuredClone(seedExpertConversations),
     conversationMessages: [],
     ...seedPlaybookWorkspace(),
+    /** Nothing pre-seeded: an engagement only exists once a client books implementation support. */
+    engagements: [],
+    engagementReviews: [],
   };
 }

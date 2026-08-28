@@ -28,6 +28,8 @@ import type {
   PlaybookActivity,
   ClientReferral,
   CreditTransaction,
+  Engagement,
+  EngagementReview,
 } from "@/lib/types";
 import { seedDatabase } from "@/lib/mock-data/fixtures/seed";
 
@@ -119,9 +121,16 @@ export interface Database {
   playbookCollaborators: PlaybookCollaborator[];
   playbookComments: PlaybookComment[];
   playbookActivity: PlaybookActivity[];
+  /**
+   * Implementation-tracking relationships, one per (client, expert,
+   * playbook) — created when a client books implementation support from a
+   * playbook's "Need help implementing this?" panel.
+   */
+  engagements: Engagement[];
+  engagementReviews: EngagementReview[];
 }
 
-const STORAGE_KEY = "tiq_db_v11";
+const STORAGE_KEY = "tiq_db_v12";
 const SESSION_KEY = "tiq_session_v1";
 
 let cache: Database | null = null;

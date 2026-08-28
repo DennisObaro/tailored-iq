@@ -65,6 +65,7 @@ export const CLIENT_NAV: NavItem[] = [
   { label: "Challenges", href: "/projects", icon: FolderKanban },
   { label: "Executive summaries", href: "/reports", icon: Reports },
   { label: "Playbooks", href: "/playbooks", icon: Playbooks },
+  { label: "Projects", href: "/engagements", icon: Briefcase01 },
   { label: "Experts", href: "/experts", icon: Experts },
   { label: "Conversations", href: "/conversations", icon: Conversations },
   { label: "Rewards", href: "/rewards", icon: Award01 },
