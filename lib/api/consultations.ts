@@ -8,6 +8,11 @@ import { getOrCreateConversationWithin, postSystemMessageWithin } from "./expert
 import { generateTranscript } from "@/lib/ai-sim/transcript-generator";
 import { getExpertAccess } from "@/lib/utils/expert-access";
 import { awardPointsWithin } from "./expert-points";
+import {
+  BOOKING_WINDOW_DAYS,
+  expandAvailability,
+  type SlotCandidate,
+} from "@/lib/utils/availability";
 
 /**
  * Transcripts are the most sensitive thing in a project, so a consultation
@@ -96,6 +101,51 @@ function createIntakeOpportunityWithin(d: Database, project: Project, expertId: 
  * expert has already been chosen, and gives that expert an opportunity whose
  * work is running the conversation and completing the brief.
  */
+/**
+ * A time this expert offers, and whether anyone already has it.
+ *
+ * Taken slots are returned rather than filtered out so the calendar can grey
+ * them in place — a day showing "10:00 taken, 14:00 free" tells the client
+ * more than a day that silently offers one time.
+ */
+export interface AvailableSlot extends SlotCandidate {
+  taken: boolean;
+}
+
+/** Which datetimes hold a live booking. Cancelled calls release their slot. */
+function bookedTimesWithin(d: Database, expertId: string): Set<string> {
+  return new Set(
+    d.consultations
+      .filter((c) => c.expertId === expertId && c.status !== "cancelled")
+      .map((c) => new Date(c.scheduledFor).getTime().toString()),
+  );
+}
+
+/**
+ * The expert's weekly pattern expanded into real datetimes for the booking
+ * window. The single source of what a client may pick — the calendar renders
+ * exactly this, and bookConsultation re-derives it to check what it's given.
+ */
+export async function listAvailableSlots(expertId: string): Promise<AvailableSlot[]> {
+  return simulateNetwork(
+    () => {
+      const d = db.get();
+      const profile = d.expertProfiles.find((p) => p.userId === expertId);
+      if (!profile) return [];
+
+      const booked = bookedTimesWithin(d, expertId);
+      return expandAvailability(profile.weeklyAvailability, {
+        noticeDays: profile.availabilityPreferences?.noticeDays ?? 0,
+        windowDays: BOOKING_WINDOW_DAYS,
+      }).map((slot) => ({
+        ...slot,
+        taken: booked.has(new Date(slot.iso).getTime().toString()),
+      }));
+    },
+    { latency: [150, 300] },
+  );
+}
+
 export async function bookConsultation(input: {
   projectId?: string;
   /** A one-line description of the challenge, when there's no project yet. */
@@ -107,6 +157,27 @@ export async function bookConsultation(input: {
   return simulateNetwork(() =>
     db.update((d) => {
       const now = new Date().toISOString();
+
+      /**
+       * The time has to be one the expert actually offers, and still free.
+       * Checked here rather than trusted from the picker: the client sends a
+       * datetime, and a stale calendar left open while someone else booked
+       * would otherwise write a double-booking straight into the database.
+       */
+      const expertProfile = d.expertProfiles.find((p) => p.userId === input.expertId);
+      if (!expertProfile) throw new ApiError("Expert not found.", "NOT_FOUND");
+
+      const wanted = new Date(input.scheduledFor).getTime();
+      const offered = expandAvailability(expertProfile.weeklyAvailability, {
+        noticeDays: expertProfile.availabilityPreferences?.noticeDays ?? 0,
+        windowDays: BOOKING_WINDOW_DAYS,
+      }).some((slot) => new Date(slot.iso).getTime() === wanted);
+      if (!offered) {
+        throw new ApiError("That time is no longer offered by this expert.", "SLOT_UNAVAILABLE");
+      }
+      if (bookedTimesWithin(d, input.expertId).has(wanted.toString())) {
+        throw new ApiError("Someone else just booked that time.", "SLOT_TAKEN");
+      }
 
       const project = input.projectId
         ? d.projects.find((p) => p.id === input.projectId)

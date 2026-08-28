@@ -1,5 +1,6 @@
 import type {
   ExpertAvailabilityPreferences,
+  ExpertWeeklyAvailability,
   ExpertEvidence,
   ExpertExpertise,
   ExpertOnboardingStep,
@@ -54,7 +55,7 @@ function blankProfile(userId: string, referralCode?: string): ExpertProfile {
     totalProjects: 0,
     points: 0,
     consultationRate: 0,
-    availabilitySlots: [],
+    weeklyAvailability: [],
     isOnline: false,
     willingness: [],
   };
@@ -460,7 +461,7 @@ export async function saveAvailability(
   input: {
     preferences: ExpertAvailabilityPreferences;
     consultationRate: number;
-    availabilitySlots: string[];
+    weeklyAvailability: ExpertWeeklyAvailability[];
   },
 ): Promise<ExpertProfile> {
   return simulateNetwork(() =>
@@ -468,7 +469,7 @@ export async function saveAvailability(
       const profile = requireProfile(d, userId);
       profile.availabilityPreferences = input.preferences;
       profile.consultationRate = input.consultationRate;
-      profile.availabilitySlots = input.availabilitySlots;
+      profile.weeklyAvailability = input.weeklyAvailability;
       markStep(profile, "availability");
       return profile;
     }),
@@ -617,7 +618,7 @@ export async function updateExpertProfile(
       | "contributionPreferences"
       | "willingness"
       | "consultationRate"
-      | "availabilitySlots"
+      | "weeklyAvailability"
       | "availabilityPreferences"
       | "isOnline"
       | "linkedinUrl"

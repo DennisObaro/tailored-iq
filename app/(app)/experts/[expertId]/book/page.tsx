@@ -7,6 +7,7 @@ import { ChevronRight } from "@/components/icons";
 import type { Project } from "@/lib/types";
 import * as expertsApi from "@/lib/api/experts";
 import type { ExpertListing } from "@/lib/api/experts";
+import type { AvailableSlot } from "@/lib/api/consultations";
 import * as projectsApi from "@/lib/api/projects";
 import * as consultationsApi from "@/lib/api/consultations";
 import { useSessionStore } from "@/lib/store/use-session-store";
@@ -16,7 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Select, Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
-import { SlotPicker } from "@/components/booking/slot-picker";
+import { AvailabilityCalendar } from "@/components/booking/availability-calendar";
+import { describeAvailability } from "@/lib/utils/availability";
 
 const NEW_CHALLENGE = "__new__";
 
@@ -31,11 +33,16 @@ export default function BookConsultationPage() {
   const [projectId, setProjectId] = useState(searchParams.get("projectId") ?? "");
   const [newChallenge, setNewChallenge] = useState("");
   const [slot, setSlot] = useState<string | null>(null);
+  const [slots, setSlots] = useState<AvailableSlot[] | undefined>(undefined);
   const [booking, setBooking] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     expertsApi.getExpert(expertId).then(setListing);
+  }, [expertId]);
+
+  useEffect(() => {
+    consultationsApi.listAvailableSlots(expertId).then(setSlots);
   }, [expertId]);
 
   useEffect(() => {
@@ -63,7 +70,7 @@ export default function BookConsultationPage() {
   async function confirmBooking() {
     if (!user || !slot || !canBook) return;
     setBooking(true);
-    setError(false);
+    setError(null);
     try {
       const { conversationId } = await consultationsApi.bookConsultation({
         ...(isNewChallenge ? { newChallenge: newChallenge.trim() } : { projectId }),
@@ -74,8 +81,15 @@ export default function BookConsultationPage() {
       // Into the conversation rather than the call page: the useful thing to
       // do between booking and the call is talk to the expert.
       router.push(`/conversations/${conversationId}`);
-    } catch {
-      setError(true);
+    } catch (e) {
+      /**
+       * Surfaced rather than swallowed: "someone else just booked that time"
+       * is the one failure a client can actually do something about, and the
+       * refreshed calendar below shows them what's left.
+       */
+      setError(e instanceof Error ? e.message : "We couldn't confirm this booking.");
+      setSlot(null);
+      setSlots(await consultationsApi.listAvailableSlots(expertId));
     } finally {
       setBooking(false);
     }
@@ -158,21 +172,32 @@ export default function BookConsultationPage() {
           </div>
         )}
 
-        <div className="flex flex-col gap-1.5">
-          <p className="text-sm font-medium text-gray-300">Pick a time</p>
-          {profile.availabilitySlots.length === 0 ? (
-            <p className="text-sm text-gray-500">No availability listed right now.</p>
+        <div className="flex flex-col gap-2.5">
+          <div>
+            <p className="text-sm font-medium text-gray-300">Pick a time</p>
+            {profile.weeklyAvailability.length > 0 && (
+              <p className="mt-0.5 text-xs text-gray-500">
+                {expertUser.firstName} takes calls on {describeAvailability(profile.weeklyAvailability)}.
+              </p>
+            )}
+          </div>
+          {slots === undefined ? (
+            <Skeleton className="h-64 w-full" />
+          ) : slots.some((s) => !s.taken) ? (
+            <AvailabilityCalendar slots={slots} selected={slot} onSelect={setSlot} />
           ) : (
-            <SlotPicker slots={profile.availabilitySlots} selected={slot} onSelect={setSlot} />
+            <p className="text-sm text-gray-500">
+              No times available in the next four weeks. Message {expertUser.firstName} to ask about later
+              dates.
+            </p>
           )}
         </div>
       </Card>
 
       {error && (
         <ErrorState
-          whatHappened="We couldn't confirm this booking."
+          whatHappened={error}
           dataSafe="No booking was created — nothing was lost."
-          onRetry={confirmBooking}
         />
       )}
 

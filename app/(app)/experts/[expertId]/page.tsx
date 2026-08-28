@@ -5,7 +5,6 @@ import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Star, StarFilled, ExternalLink, Calendar, ChevronRight } from "@/components/icons";
 import * as expertsApi from "@/lib/api/experts";
-import * as savedExpertsApi from "@/lib/api/saved-experts";
 import type { ExpertListing } from "@/lib/api/experts";
 import * as consultationsApi from "@/lib/api/consultations";
 import type { ReviewListing } from "@/lib/api/consultations";
@@ -19,8 +18,10 @@ import { ErrorState } from "@/components/ui/error-state";
 import { SaveExpertButton } from "@/components/expert/save-expert-button";
 import { MessageExpertButton } from "@/components/conversation/message-expert-button";
 import { formatCallWhen, formatRelative, formatCurrency } from "@/lib/utils/format";
+import { describeAvailability, expandAvailability } from "@/lib/utils/availability";
 import { helpAreaLabel } from "@/lib/constants/expert";
 import { useSessionStore } from "@/lib/store/use-session-store";
+import { useSavedExpertsStore } from "@/lib/store/use-saved-experts-store";
 
 export default function ExpertProfilePage() {
   // `viewer` rather than `user`: further down, `user` is the expert being viewed.
@@ -31,7 +32,6 @@ export default function ExpertProfilePage() {
   const reason = searchParams.get("reason");
 
   const [listing, setListing] = useState<ExpertListing | null | undefined>(undefined);
-  const [saved, setSaved] = useState(false);
   const [advisoryCount, setAdvisoryCount] = useState<number | null>(null);
   const [contributionCount, setContributionCount] = useState<number | null>(null);
   const [reviews, setReviews] = useState<ReviewListing[] | null>(null);
@@ -40,16 +40,17 @@ export default function ExpertProfilePage() {
     expertsApi.getExpert(expertId).then(setListing);
   }, [expertId]);
 
-  useEffect(() => {
-    if (!viewer) return;
-    savedExpertsApi.listSavedExpertIds(viewer.id).then((ids) => setSaved(ids.includes(expertId)));
-  }, [viewer, expertId]);
+  /**
+   * Shared with the cards rather than held here: a client who saved this
+   * expert from a rail should find the profile already showing it.
+   */
+  const saved = useSavedExpertsStore((s) => s.ids.includes(expertId));
+  const loadSavedIds = useSavedExpertsStore((s) => s.load);
+  const setExpertSaved = useSavedExpertsStore((s) => s.setSaved);
 
-  async function toggleSaved(next: boolean) {
-    if (!viewer) return;
-    setSaved(next);
-    await savedExpertsApi.setExpertSaved(viewer.id, expertId, next);
-  }
+  useEffect(() => {
+    if (viewer) loadSavedIds(viewer.id);
+  }, [viewer, loadSavedIds]);
 
   useEffect(() => {
     consultationsApi.listConsultationsForExpert(expertId).then((consultations) => {
@@ -90,7 +91,10 @@ export default function ExpertProfilePage() {
       : profile.expertise.length > 0
         ? profile.expertise.map((e) => e.label)
         : profile.expertiseTags;
-  const hasAvailability = profile.availabilitySlots.length > 0;
+  const hasAvailability = profile.weeklyAvailability.some((day) => day.times.length > 0);
+  const nextSlots = expandAvailability(profile.weeklyAvailability, {
+    noticeDays: profile.availabilityPreferences?.noticeDays ?? 0,
+  }).slice(0, 3);
   const bookHref = projectId ? `/experts/${user.id}/book?projectId=${projectId}` : `/experts/${user.id}/book`;
 
   return (
@@ -156,7 +160,7 @@ export default function ExpertProfilePage() {
           <SaveExpertButton
             variant="labelled"
             saved={saved}
-            onToggle={toggleSaved}
+            onToggle={(next) => viewer && void setExpertSaved(viewer.id, expertId, next)}
             name={`${user.firstName} ${user.lastName}`}
           />
           {profile.linkedinUrl && (
@@ -284,18 +288,27 @@ export default function ExpertProfilePage() {
 
             {hasAvailability ? (
               <>
-                <p className="mb-2 mt-4 text-xs font-medium uppercase tracking-wide text-gray-500">Pick a time</p>
+                <p className="mb-2 mt-4 text-xs font-medium uppercase tracking-wide text-gray-500">
+                  Next available
+                </p>
+                {/* The next few real datetimes, not the whole week — the
+                    calendar on the booking page is where the choosing
+                    happens; this only has to prove there is something to
+                    choose from. */}
                 <div className="flex flex-col gap-1.5">
-                  {profile.availabilitySlots.slice(0, 3).map((slot) => (
+                  {nextSlots.map((slot) => (
                     <Link
-                      key={slot}
+                      key={slot.iso}
                       href={bookHref}
                       className="rounded-md border border-gray-800 px-3 py-2 text-xs text-gray-300 hover:border-gray-700 hover:bg-gray-900"
                     >
-                      {formatCallWhen(slot)}
+                      {formatCallWhen(slot.iso)}
                     </Link>
                   ))}
                 </div>
+                <p className="mt-2 text-xs text-gray-500">
+                  Usually {describeAvailability(profile.weeklyAvailability)}.
+                </p>
                 <Button asChild className="mt-4 w-full justify-center gap-1.5">
                   <Link href={bookHref}>
                     <Calendar className="size-4" aria-hidden />
