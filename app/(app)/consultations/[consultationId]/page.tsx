@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Video, ShieldCheck, Star, StarFilled, ChevronRight, HandHeart } from "@/components/icons";
+import { Video, ShieldCheck, ChevronRight, HandHeart } from "@/components/icons";
 import type { Consultation, ExpertWillingness, User, Review } from "@/lib/types";
 import * as consultationsApi from "@/lib/api/consultations";
 import * as usersApi from "@/lib/api/users";
@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { StarRating } from "@/components/ui/star-rating";
 import { formatDateTime } from "@/lib/utils/format";
 import { WILLINGNESS_LABELS } from "@/lib/constants/expert";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,22 +27,6 @@ const FOLLOW_UP_OPTIONS: ExpertWillingness[] = [
   "review",
   "consulting_engagement",
 ];
-
-function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  return (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <button key={n} onClick={() => onChange(n)} aria-label={`${n} star${n > 1 ? "s" : ""}`} type="button">
-          {n <= value ? (
-            <StarFilled className="size-5 text-gold" />
-          ) : (
-            <Star className="size-5 text-gray-700" />
-          )}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 export default function ConsultationLobbyPage() {
   const { consultationId } = useParams<{ consultationId: string }>();
