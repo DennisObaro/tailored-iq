@@ -9,6 +9,7 @@ import { generateTranscript } from "@/lib/ai-sim/transcript-generator";
 import { getExpertAccess } from "@/lib/utils/expert-access";
 import { awardPointsWithin } from "./expert-points";
 import { getOrCreateEngagementWithin } from "./engagements";
+import { canViewEngagement } from "./_access";
 
 /**
  * Transcripts are the most sensitive thing in a project, so a consultation
@@ -44,6 +45,30 @@ export async function listConsultationsForExpert(expertId: string): Promise<Cons
         .get()
         .consultations.filter((c) => c.expertId === expertId)
         .sort((a, b) => (a.scheduledFor < b.scheduledFor ? -1 : 1)),
+    { latency: [120, 250] },
+  );
+}
+
+/**
+ * The schedule log on an engagement workspace needs every consultation tied
+ * to that one engagement — not the client's or expert's whole history, which
+ * would both duplicate rows (an engagement's consultation matches both
+ * listConsultationsForClient and listConsultationsForExpert) and leak an
+ * expert's consultations with their other clients. Gated the same way every
+ * other engagement-scoped read is (getEngagement, listAttachmentsForEngagement).
+ */
+export async function listConsultationsForEngagement(
+  engagementId: string,
+  viewerId: string,
+): Promise<Consultation[]> {
+  return simulateNetwork(
+    () => {
+      const d = db.get();
+      if (!canViewEngagement(d, engagementId, viewerId)) return [];
+      return d.consultations
+        .filter((c) => c.engagementId === engagementId)
+        .sort((a, b) => (a.scheduledFor < b.scheduledFor ? -1 : 1));
+    },
     { latency: [120, 250] },
   );
 }
@@ -327,6 +352,10 @@ export async function startCall(consultationId: string): Promise<Consultation> {
       db.update((d) => {
         const consultation = d.consultations.find((c) => c.id === consultationId);
         if (!consultation) throw new ApiError("Consultation not found.", "NOT_FOUND");
+
+        if (consultation.mode === "on_site") {
+          throw new ApiError("On-site sessions don't use the video call.", "INVALID_STATE");
+        }
 
         /**
          * An expert whose approval has lapsed (restricted, suspended) must

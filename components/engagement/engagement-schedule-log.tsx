@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { MapPin, Video } from "@/components/icons";
 import type { Consultation } from "@/lib/types";
@@ -12,41 +12,36 @@ import { formatCallWhen } from "@/lib/utils/format";
 
 export function EngagementScheduleLog({
   engagementId,
-  clientId,
-  expertId,
+  viewerId,
 }: {
   engagementId: string;
-  clientId: string;
-  expertId: string;
+  viewerId: string;
 }) {
   const [consultations, setConsultations] = useState<Consultation[] | undefined>(undefined);
 
+  const load = useCallback(async () => {
+    const result = await consultationsApi.listConsultationsForEngagement(engagementId, viewerId);
+    setConsultations(result);
+  }, [engagementId, viewerId]);
+
   useEffect(() => {
     let cancelled = false;
-    async function load() {
-      const [client, expert] = await Promise.all([
-        consultationsApi.listConsultationsForClient(clientId),
-        consultationsApi.listConsultationsForExpert(expertId),
-      ]);
+    async function run() {
+      const result = await consultationsApi.listConsultationsForEngagement(engagementId, viewerId);
       if (cancelled) return;
-      setConsultations([...client, ...expert].filter((c) => c.engagementId === engagementId));
+      setConsultations(result);
     }
-    load();
+    run();
     return () => {
       cancelled = true;
     };
-  }, [engagementId, clientId, expertId]);
+  }, [engagementId, viewerId]);
 
   if (!consultations || consultations.length === 0) return null;
 
   const handleCompleteSession = async (consultationId: string) => {
     await consultationsApi.completeOnSiteSession(consultationId);
-    // Reload consultations after marking complete
-    const [client, expert] = await Promise.all([
-      consultationsApi.listConsultationsForClient(clientId),
-      consultationsApi.listConsultationsForExpert(expertId),
-    ]);
-    setConsultations([...client, ...expert].filter((c) => c.engagementId === engagementId));
+    await load();
   };
 
   return (
