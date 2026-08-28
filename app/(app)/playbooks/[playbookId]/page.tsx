@@ -99,7 +99,7 @@ export default function PlaybookDetailPage() {
 
   const expertsPanel = {
     projectId: playbook.projectId,
-    playbookId: playbook.id,
+    playbookId: playbook.projectId ? playbook.id : undefined,
     experts,
     loading: expertsLoading,
     variant: "implementation" as const,
