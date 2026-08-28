@@ -1,4 +1,4 @@
-import type { Consultation, ExpertWillingness, Project, Review, User } from "@/lib/types";
+import type { Consultation, ConsultationMode, ExpertWillingness, Project, Review, User } from "@/lib/types";
 import { simulateNetwork, simulateGeneration, ApiError } from "./client";
 import { db, type Database } from "./_db";
 import { createProjectWithin } from "./projects";
@@ -8,6 +8,7 @@ import { getOrCreateConversationWithin, postSystemMessageWithin } from "./expert
 import { generateTranscript } from "@/lib/ai-sim/transcript-generator";
 import { getExpertAccess } from "@/lib/utils/expert-access";
 import { awardPointsWithin } from "./expert-points";
+import { getOrCreateEngagementWithin } from "./engagements";
 
 /**
  * Transcripts are the most sensitive thing in a project, so a consultation
@@ -197,6 +198,129 @@ export async function bookConsultation(input: {
   );
 }
 
+/**
+ * Booking implementation support against a finished playbook — separate
+ * from bookConsultation (the diagnostic flow) because that function
+ * unconditionally rewrites project.status/project.consultationId, which
+ * must never happen here: the project this playbook came from is typically
+ * already playbook_ready/completed, and an engagement can have many
+ * consultations over time. Matches bookConsultation's own lack of
+ * slot-conflict validation — this codebase has no availability-schedule
+ * system to validate against.
+ */
+export async function bookImplementationConsultation(input: {
+  playbookId: string;
+  clientId: string;
+  expertId: string;
+  scheduledFor: string;
+  mode: ConsultationMode;
+}): Promise<{ consultation: Consultation; engagementId: string; conversationId: string }> {
+  return simulateNetwork(() =>
+    db.update((d) => {
+      const now = new Date().toISOString();
+
+      const playbook = d.playbooks.find((p) => p.id === input.playbookId);
+      if (!playbook) throw new ApiError("Playbook not found.", "NOT_FOUND");
+      if (!playbook.projectId) {
+        throw new ApiError("This playbook isn't linked to a challenge yet.", "VALIDATION");
+      }
+      const project = d.projects.find((p) => p.id === playbook.projectId);
+      if (!project) throw new ApiError("Project not found.", "NOT_FOUND");
+
+      /** Same reasoning as bookConsultation: the expert needs read access to the brief/report for context. */
+      if (!project.matchedExpertIds.includes(input.expertId)) {
+        project.matchedExpertIds.push(input.expertId);
+      }
+
+      const engagement = getOrCreateEngagementWithin(d, {
+        clientId: input.clientId,
+        expertId: input.expertId,
+        playbookId: input.playbookId,
+        projectId: project.id,
+      });
+
+      const consultation: Consultation = {
+        id: id("consultation"),
+        projectId: project.id,
+        clientId: input.clientId,
+        expertId: input.expertId,
+        scheduledFor: input.scheduledFor,
+        status: "scheduled",
+        mode: input.mode,
+        engagementId: engagement.id,
+        recordingConsent: true,
+        createdAt: now,
+      };
+      d.consultations.push(consultation);
+
+      const conversation = d.expertConversations.find((c) => c.id === engagement.conversationId)!;
+      conversation.consultationId = consultation.id;
+      conversation.playbookId = input.playbookId;
+      conversation.engagementId = engagement.id;
+      conversation.updatedAt = now;
+      postSystemMessageWithin(
+        d,
+        conversation.id,
+        input.mode === "virtual"
+          ? `Implementation call scheduled — ${formatCallWhen(consultation.scheduledFor)}`
+          : `On-site session scheduled — ${formatCallWhen(consultation.scheduledFor)}`,
+      );
+
+      const client = d.users.find((u) => u.id === input.clientId);
+      const expert = d.users.find((u) => u.id === input.expertId);
+      d.notifications.unshift({
+        id: id("notif"),
+        userId: input.clientId,
+        type: "booking_confirmed",
+        title: "Implementation session confirmed",
+        body: `Your session with ${expert ? expert.firstName : "your expert"} on "${playbook.title}" is scheduled.`,
+        linkHref: `/engagements/${engagement.id}`,
+        read: false,
+        createdAt: now,
+      });
+      d.notifications.unshift({
+        id: id("notif"),
+        userId: input.expertId,
+        type: "booking_confirmed",
+        title: "Implementation session booked",
+        body: `${client ? client.firstName : "A client"} booked a session on "${playbook.title}".`,
+        linkHref: `/engagements/${engagement.id}`,
+        read: false,
+        createdAt: now,
+      });
+
+      return { consultation, engagementId: engagement.id, conversationId: conversation.id };
+    }),
+  );
+}
+
+/** On-site sessions have no call audio to transcribe — either party logs them done directly. */
+export async function completeOnSiteSession(consultationId: string): Promise<Consultation> {
+  return simulateNetwork(() =>
+    db.update((d) => {
+      const consultation = d.consultations.find((c) => c.id === consultationId);
+      if (!consultation) throw new ApiError("Consultation not found.", "NOT_FOUND");
+      if (consultation.mode !== "on_site") {
+        throw new ApiError("Only on-site sessions are completed this way.", "INVALID_STATE");
+      }
+      if (consultation.status !== "scheduled") {
+        throw new ApiError("This session isn't scheduled.", "INVALID_STATE");
+      }
+      consultation.status = "completed";
+
+      const expertProfile = d.expertProfiles.find((p) => p.userId === consultation.expertId);
+      if (expertProfile) {
+        awardPointsWithin(d, {
+          expertId: consultation.expertId,
+          source: "client_consultation",
+          note: "Implementation session completed",
+        });
+      }
+      return consultation;
+    }),
+  );
+}
+
 export async function startCall(consultationId: string): Promise<Consultation> {
   return simulateNetwork(
     () =>
@@ -245,9 +369,11 @@ export async function endCall(consultationId: string): Promise<Consultation> {
       consultation.extractedInsights = extractedInsights;
       consultation.durationSeconds = durationSeconds;
 
-      project.status = "consultation_completed";
-      project.updatedAt = now;
-      project.activity.push({ id: id("act"), label: "Consultation completed", timestamp: now });
+      if (!consultation.engagementId) {
+        project.status = "consultation_completed";
+        project.updatedAt = now;
+        project.activity.push({ id: id("act"), label: "Consultation completed", timestamp: now });
+      }
 
       const expertProfile = d.expertProfiles.find((p) => p.userId === consultation.expertId);
       if (expertProfile) {
