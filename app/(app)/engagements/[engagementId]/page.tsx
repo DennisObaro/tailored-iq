@@ -6,6 +6,7 @@ import * as engagementsApi from "@/lib/api/engagements";
 import type { EngagementDetail } from "@/lib/api/engagements";
 import { EngagementHeader } from "@/components/engagement/engagement-header";
 import { EngagementScheduleLog } from "@/components/engagement/engagement-schedule-log";
+import { EngagementFiles } from "@/components/engagement/engagement-files";
 import { ThreadPanel } from "@/components/conversation/thread-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
@@ -48,6 +49,7 @@ export default function EngagementWorkspacePage() {
             clientId={detail.engagement.clientId}
             expertId={detail.engagement.expertId}
           />
+          <EngagementFiles engagementId={detail.engagement.id} viewerId={user!.id} />
         </aside>
       </div>
     </div>
