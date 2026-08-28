@@ -4,6 +4,7 @@ import { db } from "./_db";
 import { canViewProject } from "./_access";
 import { id } from "@/lib/utils/id";
 import { generateReport } from "@/lib/ai-sim/report-generator";
+import { createBaselineDocumentWithin } from "./playbook-workspace";
 
 export async function getReport(reportId: string, viewerId?: string): Promise<Report | null> {
   return simulateGeneration(
@@ -48,6 +49,14 @@ export async function generateReportForProject(projectId: string): Promise<Repor
       project.status = "report_ready";
       project.updatedAt = now;
       project.activity.push({ id: id("act"), label: "Executive summary generated", timestamp: now });
+      /**
+       * The client's material is now complete, so the baseline playbook is
+       * built here — for every confirmed brief, whether or not the client ever
+       * asks for a playbook. It lives entirely on the expert side; only what
+       * the Scribe finalises ever reaches the client.
+       */
+      createBaselineDocumentWithin(d, { projectId, brief, report });
+
       d.notifications.unshift({
         id: id("notif"),
         userId: project.clientId,

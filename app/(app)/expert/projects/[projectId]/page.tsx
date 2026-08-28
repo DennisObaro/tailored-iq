@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, Lock, Lightbulb, FileText, Check } from "@/components/icons";
+import { ChevronRight, Lock, FileText, Check } from "@/components/icons";
 import type { Brief, Consultation, ExpertContribution, ExpertProfile, Project, Report } from "@/lib/types";
 import * as projectsApi from "@/lib/api/projects";
 import * as briefsApi from "@/lib/api/briefs";
@@ -18,6 +18,7 @@ import { getExpertAccess } from "@/lib/utils/expert-access";
 import { WILLINGNESS_LABELS } from "@/lib/constants/expert";
 import { ExpertGate } from "@/components/expert/expert-gate";
 import { ContributionCard } from "@/components/expert/contribution-card";
+import { ContributeToPlaybookButton } from "@/components/playbook/contribute-to-playbook-button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -221,12 +222,7 @@ export default function ExpertProjectViewPage() {
                   ))}
                 </div>
               )}
-              <Button asChild size="sm" className="gap-1.5 self-start">
-                <Link href={`/expert/contributions/new?projectId=${project.id}&type=playbook_input`}>
-                  <Lightbulb className="size-4" aria-hidden />
-                  Contribute to the playbook
-                </Link>
-              </Button>
+              <ContributeToPlaybookButton projectId={project.id} />
             </CardContent>
           </Card>
 

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowUp, Calendar, ChevronRight, FileText, Video } from "@/components/icons";
+import { ArrowUp, Calendar, ChevronLeft, ChevronRight, FileText, Video, X } from "@/components/icons";
 import type { ConversationThread } from "@/lib/api/expert-conversations";
 import * as conversationsApi from "@/lib/api/expert-conversations";
 import { useSessionStore } from "@/lib/store/use-session-store";
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
+import { ConsultationSummary } from "@/components/consultation/consultation-summary";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatCallWhen, formatRelative } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
@@ -23,6 +24,12 @@ export default function ConversationThreadPage() {
   const [thread, setThread] = useState<ConversationThread | null | undefined>(undefined);
   const [value, setValue] = useState("");
   const [sending, setSending] = useState(false);
+  /**
+   * The summary opens beside the thread rather than replacing it: it's the
+   * record of a conversation these two already had, so reading it while
+   * still able to see — and answer — what they said next is the point.
+   */
+  const [summaryOpen, setSummaryOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
@@ -103,10 +110,28 @@ export default function ConversationThreadPage() {
     );
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-w-0">
+      {/* The thread column. Its own max-width does the shifting — with the
+          panel open there is simply less room to centre in, so nothing has
+          to be told to move. */}
+      <div className="flex h-full min-w-0 flex-1 flex-col">
       {/* Who, and what about — the expert should never have to guess why
           they're being contacted, so the challenge sits in the header. */}
       <header className="shrink-0 border-b border-gray-800 px-6 py-4">
+        {/* A back link rather than the breadcrumb the sibling detail pages
+            use: the counterpart's name is already the first line of the row
+            below, so `Conversations › Name` would only repeat it. On desktop
+            the sidebar can get you back too, but on mobile it's behind the
+            drawer — this is the only way out that's actually on screen. */}
+        <div className="mx-auto mb-3 max-w-3xl">
+          <Link
+            href="/conversations"
+            className="-ml-1 inline-flex items-center gap-0.5 rounded-md py-0.5 pl-1 pr-2 text-xs text-gray-500 transition-colors hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+          >
+            <ChevronLeft className="size-3.5" aria-hidden />
+            Conversations
+          </Link>
+        </div>
         <div className="mx-auto flex max-w-3xl flex-wrap items-start gap-3">
           <Avatar
             firstName={counterpart.firstName}
@@ -166,12 +191,25 @@ export default function ConversationThreadPage() {
                   <p className="mt-0.5 text-xs text-gray-400">{formatCallWhen(consultation.scheduledFor)}</p>
                 </div>
               </div>
-              <Button asChild size="sm" variant="outline" className="gap-1.5">
-                <Link href={`/consultations/${consultation.id}`}>
+              {consultation.status === "completed" ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5"
+                  aria-expanded={summaryOpen}
+                  onClick={() => setSummaryOpen((open) => !open)}
+                >
                   <Video className="size-4" aria-hidden />
-                  {consultation.status === "completed" ? "View summary" : "Join call"}
-                </Link>
-              </Button>
+                  {summaryOpen ? "Hide summary" : "View summary"}
+                </Button>
+              ) : (
+                <Button asChild size="sm" variant="outline" className="gap-1.5">
+                  <Link href={`/consultations/${consultation.id}`}>
+                    <Video className="size-4" aria-hidden />
+                    Join call
+                  </Link>
+                </Button>
+              )}
             </Card>
           )}
 
@@ -269,6 +307,35 @@ export default function ConversationThreadPage() {
           </Button>
         </div>
       </div>
+      </div>
+
+      {/*
+        A column on a wide screen, a sheet over the thread on a narrow one —
+        below `lg` there isn't room for both, and a 320px-wide transcript is
+        not a transcript.
+      */}
+      {summaryOpen && consultation && (
+        <aside
+          aria-label="Consultation summary"
+          className="fixed inset-0 z-30 flex flex-col border-gray-800 bg-gray-975 lg:static lg:z-auto lg:w-[26rem] lg:shrink-0 lg:border-l"
+        >
+          <header className="flex shrink-0 items-center gap-3 border-b border-gray-800 px-5 py-4">
+            <p className="min-w-0 flex-1 text-sm font-medium text-gray-50">Consultation summary</p>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="rounded-full"
+              onClick={() => setSummaryOpen(false)}
+              aria-label="Close summary"
+            >
+              <X className="size-4" aria-hidden />
+            </Button>
+          </header>
+          <div className="thin-scrollbar flex-1 overflow-y-auto p-5">
+            <ConsultationSummary consultationId={consultation.id} variant="panel" />
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

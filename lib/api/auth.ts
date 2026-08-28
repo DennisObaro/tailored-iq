@@ -2,7 +2,12 @@ import type { Role, User } from "@/lib/types";
 import { simulateNetwork, ApiError } from "./client";
 import { db, getSessionUserId, setSessionUserId } from "./_db";
 import { id } from "@/lib/utils/id";
-import { DEMO_CLIENT_ID, DEMO_EXPERT_ID, DEMO_DUAL_ID } from "@/lib/mock-data/fixtures/users.fixture";
+import {
+  DEMO_CLIENT_ID,
+  DEMO_EXPERT_ID,
+  DEMO_CONTRIBUTOR_ID,
+  DEMO_DUAL_ID,
+} from "@/lib/mock-data/fixtures/users.fixture";
 
 export interface DemoPersona {
   id: string;
@@ -12,7 +17,10 @@ export interface DemoPersona {
 
 const DEMO_PERSONAS: DemoPersona[] = [
   { id: DEMO_CLIENT_ID, label: "Demo client", sublabel: "Amara Chen" },
-  { id: DEMO_EXPERT_ID, label: "Demo expert", sublabel: "Marcus Webb" },
+  /* The two sides of the playbook workspace: the Scribe who writes, and a
+     contributor who can only comment and suggest. */
+  { id: DEMO_EXPERT_ID, label: "Demo expert · Scribe", sublabel: "Marcus Webb" },
+  { id: DEMO_CONTRIBUTOR_ID, label: "Demo expert · Contributor", sublabel: "Priya Raman" },
   { id: DEMO_DUAL_ID, label: "Demo dual-role", sublabel: "Jordan Blake" },
 ];
 
