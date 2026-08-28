@@ -1,6 +1,7 @@
 import type { ExpertWillingness } from "./user";
 
 export type ConsultationStatus = "scheduled" | "in_call" | "completed" | "cancelled";
+export type ConsultationMode = "virtual" | "on_site";
 
 export interface TranscriptLine {
   speaker: "client" | "expert";
@@ -22,6 +23,9 @@ export interface Consultation {
   expertId: string;
   scheduledFor: string;
   status: ConsultationStatus;
+  mode: ConsultationMode;
+  /** Set when this call belongs to an implementation Engagement rather than the diagnostic booking flow. */
+  engagementId?: string;
   recordingConsent: boolean;
   durationSeconds?: number;
   transcript?: TranscriptLine[];

@@ -135,6 +135,7 @@ export async function bookConsultation(input: {
         expertId: input.expertId,
         scheduledFor: input.scheduledFor,
         status: "scheduled",
+        mode: "virtual",
         recordingConsent: true,
         createdAt: now,
       };
