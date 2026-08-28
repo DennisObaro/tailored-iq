@@ -8,9 +8,10 @@ import { cn } from "@/lib/utils/cn";
  * Which question the panel is answering. `potential` is the open state — the
  * brief isn't confirmed, nothing has been decided, so the list is wide and
  * browsable. `relevant` is the committed state: these are the people actually
- * matched to the confirmed brief.
+ * matched to the confirmed brief. `implementation` is for the post-playbook rail
+ * with willingness-filtered experts.
  */
-export type ExpertsPanelVariant = "potential" | "relevant";
+export type ExpertsPanelVariant = "potential" | "relevant" | "implementation";
 
 const HEADINGS: Record<ExpertsPanelVariant, { settled: string; loading: string }> = {
   potential: {
@@ -21,10 +22,15 @@ const HEADINGS: Record<ExpertsPanelVariant, { settled: string; loading: string }
     settled: "Relevant experts for you",
     loading: "Choosing the best experts for you",
   },
+  implementation: {
+    settled: "Need help implementing this playbook?",
+    loading: "Finding implementation experts for you",
+  },
 };
 
 export function RelevantExpertsPanel({
   projectId,
+  playbookId,
   experts,
   loading,
   variant = "relevant",
@@ -32,6 +38,7 @@ export function RelevantExpertsPanel({
   className,
 }: {
   projectId?: string;
+  playbookId?: string;
   experts: ExpertListing[];
   loading: boolean;
   variant?: ExpertsPanelVariant;
@@ -69,7 +76,7 @@ export function RelevantExpertsPanel({
       ) : (
         <div className={cn("flex flex-col gap-3 transition-opacity", refreshing && "opacity-60")}>
           {experts.map((listing) => (
-            <ExpertCard key={listing.user.id} listing={listing} projectId={projectId} />
+            <ExpertCard key={listing.user.id} listing={listing} projectId={projectId} playbookId={playbookId} />
           ))}
         </div>
       )}

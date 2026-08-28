@@ -57,6 +57,7 @@ export default function PlaybookDetailPage() {
         clientId,
         projectId: matchProjectId,
         text: matchText,
+        requireWillingness: "consulting_engagement",
       });
       if (cancelled) return;
       setExperts(listings);
@@ -98,8 +99,10 @@ export default function PlaybookDetailPage() {
 
   const expertsPanel = {
     projectId: playbook.projectId,
+    playbookId: playbook.id,
     experts,
     loading: expertsLoading,
+    variant: "implementation" as const,
     emptyMessage: "No expert experience matches this playbook yet — we'll surface people as soon as one does.",
   };
 

@@ -28,6 +28,7 @@ export default function ExpertProfilePage() {
   const { expertId } = useParams<{ expertId: string }>();
   const searchParams = useSearchParams();
   const projectId = searchParams.get("projectId");
+  const playbookId = searchParams.get("playbookId");
   const reason = searchParams.get("reason");
 
   const [listing, setListing] = useState<ExpertListing | null | undefined>(undefined);
@@ -91,7 +92,10 @@ export default function ExpertProfilePage() {
         ? profile.expertise.map((e) => e.label)
         : profile.expertiseTags;
   const hasAvailability = profile.availabilitySlots.length > 0;
-  const bookHref = projectId ? `/experts/${user.id}/book?projectId=${projectId}` : `/experts/${user.id}/book`;
+  const bookParams = new URLSearchParams();
+  if (playbookId) bookParams.set("playbookId", playbookId);
+  else if (projectId) bookParams.set("projectId", projectId);
+  const bookHref = `/experts/${user.id}/book${bookParams.toString() ? `?${bookParams.toString()}` : ""}`;
 
   return (
     <div className="mx-auto max-w-4xl p-6">

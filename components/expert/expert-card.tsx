@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils/cn";
 export function ExpertCard({
   listing,
   projectId,
+  playbookId,
   reason,
   truncateReason = false,
   saved,
@@ -17,6 +18,7 @@ export function ExpertCard({
 }: {
   listing: ExpertListing;
   projectId?: string;
+  playbookId?: string;
   reason?: string;
   /** Clamps the reason chip to one line and stretches it full-width instead of hugging the text. */
   truncateReason?: boolean;
@@ -31,6 +33,7 @@ export function ExpertCard({
   const { user, profile } = listing;
   const params = new URLSearchParams();
   if (projectId) params.set("projectId", projectId);
+  if (playbookId) params.set("playbookId", playbookId);
   if (reason) params.set("reason", reason);
   const query = params.toString();
   const href = `/experts/${user.id}${query ? `?${query}` : ""}`;
