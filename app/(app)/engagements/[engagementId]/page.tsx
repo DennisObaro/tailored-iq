@@ -7,6 +7,7 @@ import type { EngagementDetail } from "@/lib/api/engagements";
 import { EngagementHeader } from "@/components/engagement/engagement-header";
 import { EngagementScheduleLog } from "@/components/engagement/engagement-schedule-log";
 import { EngagementFiles } from "@/components/engagement/engagement-files";
+import { EngagementRating } from "@/components/engagement/engagement-rating";
 import { ThreadPanel } from "@/components/conversation/thread-panel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ErrorState } from "@/components/ui/error-state";
@@ -50,6 +51,12 @@ export default function EngagementWorkspacePage() {
             expertId={detail.engagement.expertId}
           />
           <EngagementFiles engagementId={detail.engagement.id} viewerId={user!.id} />
+          {detail.engagement.status === "completed" && (
+            <EngagementRating
+              detail={detail}
+              onSubmitted={(review) => setDetail({ ...detail, myReview: review })}
+            />
+          )}
         </aside>
       </div>
     </div>
