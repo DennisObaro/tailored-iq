@@ -73,7 +73,11 @@ export default function EngagementWorkspacePage() {
   return (
     <div className="flex h-full min-w-0">
       <div className="flex h-full min-w-0 flex-1 flex-col">
-        <EngagementHeader detail={detail} onChange={handleEngagementChange} />
+        <EngagementHeader
+          detail={detail}
+          onChange={handleEngagementChange}
+          onReviewSubmitted={(review) => setDetail((d) => (d ? { ...d, myReview: review } : d))}
+        />
         <ThreadPanel
           conversationId={detail.engagement.conversationId}
           className="min-h-0 flex-1"

@@ -63,7 +63,11 @@ const STATUS_LABELS: Record<string, { label: string; tone: Tone }> = {
   in_call: { label: "In call", tone: "progress" },
   cancelled: { label: "Cancelled", tone: "danger" },
   // Engagement status (lib/types/engagement.ts) — in_progress/completed reuse the entries above.
-  pending_completion: { label: "Pending completion", tone: "warning" },
+  // The label says "proposed" rather than "pending" so the status chip alone
+  // carries what used to need a second "Completion proposed" badge next to
+  // it (see engagement-card.tsx) — the two always co-occur, so showing both
+  // was saying the same thing twice.
+  pending_completion: { label: "Completion proposed", tone: "warning" },
   interested: { label: "Interested", tone: "success" },
   not_for_me: { label: "Not for me", tone: "neutral" },
   submitted: { label: "Submitted", tone: "progress" },

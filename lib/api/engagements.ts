@@ -247,8 +247,12 @@ export async function submitEngagementReview(input: {
   return simulateNetwork(() =>
     db.update((d) => {
       const engagement = assertEngagement(d, input.engagementId);
-      if (engagement.status !== "completed") {
-        throw new ApiError("You can only rate a completed engagement.", "INVALID_STATE");
+      // Either party can rate as soon as they've proposed or been asked to
+      // confirm a completion — not only once both sides have finished, so a
+      // client marking their side done can rate in the same moment rather
+      // than being sent back later.
+      if (engagement.status === "in_progress") {
+        throw new ApiError("You can only rate a completed or proposed engagement.", "INVALID_STATE");
       }
       if (engagement.clientId !== input.fromUserId && engagement.expertId !== input.fromUserId) {
         throw new ApiError("You aren't part of this engagement.", "FORBIDDEN");

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { EngagementListing } from "@/lib/api/engagements";
 import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatRelative } from "@/lib/utils/format";
@@ -21,7 +20,6 @@ export function EngagementCard({ listing }: { listing: EngagementListing }) {
           </div>
           <StatusBadge status={engagement.status} />
         </div>
-        {engagement.status === "pending_completion" && <Badge variant="outline">Completion proposed</Badge>}
         <p className="text-xs text-gray-500">Updated {formatRelative(engagement.updatedAt)}</p>
       </Card>
     </Link>
