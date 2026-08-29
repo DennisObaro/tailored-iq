@@ -148,7 +148,7 @@ export default function DashboardPage() {
   if (isNewUser) {
     return (
       <div className="mx-auto flex h-full max-w-4xl flex-col items-center justify-center px-6 text-center">
-        <h1 className="text-3xl font-semibold">
+        <h1 className="text-2xl font-semibold sm:text-3xl">
           <span className="text-gray-50">{greeting()}, </span>
           <span className="text-gray-400">{user.firstName}</span>
         </h1>
@@ -210,14 +210,14 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col space-y-8 p-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-50">
             {greeting()}, {user.firstName}
           </h1>
           <p className="mt-1 text-sm text-gray-400">Continue where you left off or bring us a new challenge.</p>
         </div>
-        <Button asChild className="gap-1.5">
+        <Button asChild className="w-full justify-center gap-1.5 sm:w-auto sm:justify-start">
           <Link href="/chat">
             Bring a new challenge <ArrowRight className="size-4" />
           </Link>

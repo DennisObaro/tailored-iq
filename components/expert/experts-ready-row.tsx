@@ -77,7 +77,7 @@ export function ExpertsReadyRow({ className }: { className?: string }) {
           />
         ))}
       </div>
-      <p className="text-base font-medium text-gray-300">
+      <p className="text-left text-base font-medium text-gray-300 sm:text-center">
         30+ experts available to share their experience.
       </p>
     </div>

@@ -66,7 +66,11 @@ export const Select = React.forwardRef<
   <select
     ref={ref}
     className={cn(
-      "h-9 w-full rounded-md border bg-gray-900 px-3 text-sm text-gray-50 [color-scheme:dark]",
+      // 16px on mobile so the native option list (sized off this element's
+      // own font-size on iOS/Android) is readable, not the 12-13px it
+      // renders at from a 14px source — and it dodges iOS's zoom-on-focus
+      // trigger, which fires under 16px. Desktop keeps the tighter size.
+      "h-9 w-full rounded-md border bg-gray-900 px-3 text-base text-gray-50 sm:text-sm [color-scheme:dark]",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500",
       "disabled:cursor-not-allowed disabled:opacity-50",
       error ? "border-danger-500" : "border-gray-800",

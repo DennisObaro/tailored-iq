@@ -98,11 +98,11 @@ export default function ProjectsPage() {
         />
       ) : (
         <>
-          <div className="mb-6 flex flex-wrap gap-2">
+          <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-              className="w-44"
+              className="w-full sm:w-44"
               aria-label="Filter by status"
             >
               {STATUS_FILTERS.map((f) => (
@@ -115,7 +115,7 @@ export default function ProjectsPage() {
               <Select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="w-44"
+                className="w-full sm:w-44"
                 aria-label="Filter by category"
               >
                 <option value="">All categories</option>
@@ -129,7 +129,7 @@ export default function ProjectsPage() {
             <Select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortOption)}
-              className="ml-auto w-52"
+              className="w-full sm:ml-auto sm:w-52"
               aria-label="Sort challenges"
             >
               {SORT_OPTIONS.map((s) => (

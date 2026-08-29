@@ -37,12 +37,12 @@ export function ProjectCard({ project }: { project: Project }) {
           needsAction && "border-l-2 border-l-info",
         )}
       >
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1">
           <p className="line-clamp-2 text-sm font-medium text-gray-50">{project.title}</p>
           <StatusBadge status={project.status} className="shrink-0" />
         </div>
         <p className="line-clamp-2 text-xs text-gray-400">{project.challenge}</p>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {project.category && <Badge variant="outline">{project.category}</Badge>}
           {/* Pushed clear of the tag and visibly quieter than it — the tag is
               what a scanning eye should land on first. */}

@@ -102,7 +102,7 @@ export default function ConversationsPage() {
                 <Card
                   key={listing.conversation.id}
                   className={cn(
-                    "relative flex items-start gap-3 p-4 transition-colors hover:bg-gray-900",
+                    "relative flex flex-col gap-3 p-4 transition-colors hover:bg-gray-900 sm:flex-row sm:items-start",
                     unread && "border-primary-500/30",
                     isLive && "border-primary-500/60",
                   )}
@@ -112,41 +112,43 @@ export default function ConversationsPage() {
                     className="absolute inset-0 z-10"
                     aria-label={`Open conversation with ${listing.counterpart.firstName} ${listing.counterpart.lastName}`}
                   />
-                  <Avatar
-                    firstName={listing.counterpart.firstName}
-                    lastName={listing.counterpart.lastName}
-                    src={listing.counterpart.avatarUrl}
-                    size="lg"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
+                  <div className="flex min-w-0 flex-1 items-start gap-3">
+                    <Avatar
+                      firstName={listing.counterpart.firstName}
+                      lastName={listing.counterpart.lastName}
+                      src={listing.counterpart.avatarUrl}
+                      size="lg"
+                    />
+                    <div className="min-w-0 flex-1">
                       <p className={cn("truncate text-sm text-gray-100", unread && "font-medium text-gray-50")}>
                         {listing.counterpart.firstName} {listing.counterpart.lastName}
                       </p>
-                      <span className="shrink-0 text-xs text-gray-500">
-                        {isLive
-                          ? "Live now"
-                          : formatRelative(listing.lastMessage?.createdAt ?? listing.conversation.updatedAt)}
-                      </span>
-                    </div>
-                    <p className="mt-0.5 truncate text-xs text-gray-400">{listing.projectTitle}</p>
-                    <p className={cn("mt-1.5 truncate text-sm", unread ? "text-gray-200" : "text-gray-500")}>
-                      {previewFor(listing, user?.id)}
-                    </p>
-                    <div className="mt-2 flex items-center gap-2">
-                      <StatusBadge status={isLive ? "in_call" : listing.stage} />
-                      {unread && (
-                        <span className="rounded-full bg-primary-500 px-1.5 py-0.5 text-[11px] font-medium text-primary-foreground">
-                          {listing.unreadCount}
-                        </span>
-                      )}
+                      <p className="mt-0.5 truncate text-xs text-gray-400">{listing.projectTitle}</p>
+                      <p className={cn("mt-1.5 truncate text-sm", unread ? "text-gray-200" : "text-gray-500")}>
+                        {previewFor(listing, user?.id)}
+                      </p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <StatusBadge status={isLive ? "in_call" : listing.stage} />
+                        {unread && (
+                          <span className="rounded-full bg-primary-500 px-1.5 py-0.5 text-[11px] font-medium text-primary-foreground">
+                            {listing.unreadCount}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  {action && consultation && (
-                    <Button asChild size="sm" variant={action.variant} className="relative z-20 shrink-0 self-center">
-                      <Link href={`/consultations/${consultation.id}`}>{action.label}</Link>
-                    </Button>
-                  )}
+                  <div className="relative z-20 flex shrink-0 items-center justify-between gap-3 sm:flex-col sm:items-end sm:gap-1.5">
+                    {action && consultation && (
+                      <Button asChild size="sm" variant={action.variant}>
+                        <Link href={`/consultations/${consultation.id}`}>{action.label}</Link>
+                      </Button>
+                    )}
+                    <span className="shrink-0 text-xs text-gray-500">
+                      {isLive
+                        ? "Live now"
+                        : formatRelative(listing.lastMessage?.createdAt ?? listing.conversation.updatedAt)}
+                    </span>
+                  </div>
                 </Card>
               );
             })}

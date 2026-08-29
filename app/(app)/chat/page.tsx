@@ -21,7 +21,7 @@ export default function NewChatPage() {
 
   return (
     <div className="mx-auto flex h-full max-w-4xl flex-col items-center justify-center px-6 text-center">
-      <h1 className="text-3xl font-semibold text-gray-50">What are you trying to solve?</h1>
+      <h1 className="text-2xl font-semibold text-gray-50 sm:text-3xl">What are you trying to solve?</h1>
       <p className="mt-3 max-w-md text-sm leading-[1.4] text-gray-400">
         TailoredIQ will ask the right questions, clarify your situation, and help you find relevant
         experts to solve your challenges.
