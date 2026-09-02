@@ -79,6 +79,7 @@ import {
 } from "@hugeicons-pro/core-stroke-rounded";
 import {
   Bookmark02Icon as BookmarkSolid,
+  PlayIcon as PlaySolid,
   StarIcon as StarSolid,
 } from "@hugeicons-pro/core-solid-rounded";
 import { hugeiconsAdapter, type IconComponent } from "./hugeicon";
@@ -175,8 +176,10 @@ export const X = hugeiconsAdapter(XStroke);
 export const XCircle = hugeiconsAdapter(XCircleStroke);
 
 /**
- * The one solid icon in general use: a stroke star can't show a filled
- * rating, since `fill-current` cannot override the `fill="none"` the
- * stroke variant sets on its own paths.
+ * Solid icons in general use: a stroke outline can't fill solid the way a
+ * rating star or a play-button triangle need to, since `fill-current`
+ * cannot override the `fill="none"` the stroke variant sets on its own
+ * paths.
  */
 export const StarFilled = hugeiconsAdapter(StarSolid);
+export const Play = hugeiconsAdapter(PlaySolid);

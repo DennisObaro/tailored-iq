@@ -604,6 +604,8 @@ body {
     display: flex;
     align-items: center;
     width: max-content;
+    position: relative;
+    top: -12px;
     animation: logo-marquee-scroll 40s linear infinite;
     /* The parent's mask can stop the browser promoting this to its own
        compositor layer, forcing a repaint through the mask every frame —
@@ -954,93 +956,26 @@ body {
 
   /* --- Founder note -------------------------------------------------- */
 
-  /* Two nested wrappers so translateY/opacity (a transition) and rotate (a
-     keyframe animation) don't fight over one element's `transform`: the
-     outer drops the paper in, the inner — origin pinned near the pushpin
-     rather than the card's centre, so it reads as hanging from it —
-     carries the tilt settle and the nudge timed to the pin landing. */
-  .founder-note-drop-wrapper {
+  /* Two-panel card (copy + video) settling in on scroll: each panel fades
+     and rises independently, the video a beat behind the copy so the eye
+     lands on the words first. Same opacity/translateY pattern as
+     .expert-photo-wrap / .expert-text above. */
+  .founder-note-panel {
     opacity: 0;
-    transform: translateY(-40px);
+    transform: translateY(28px);
   }
-  .founder-note-drop-wrapper.founder-note-in {
+  .founder-note-panel.founder-note-in {
     opacity: 1;
     transform: translateY(0);
     transition:
-      opacity 450ms ease-out,
-      transform 450ms cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  .founder-note-rotate-wrapper {
-    transform: rotate(-3deg);
-  }
-  .founder-note-rotate-wrapper.founder-note-in {
-    animation: founder-note-rotate 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  }
-  @keyframes founder-note-rotate {
-    0% {
-      transform: rotate(-3deg);
-    }
-    70% {
-      transform: rotate(-1deg);
-      animation-timing-function: ease-in-out;
-    }
-    84% {
-      transform: rotate(-1.8deg);
-    }
-    100% {
-      transform: rotate(-1deg);
-    }
-  }
-
-  /* Horizontal centring stays baked into every pin state below rather than
-     relying on a separate translate utility — the entrance motion already
-     owns this element's `transform`. */
-  .founder-note-pin {
-    opacity: 0;
-    transform: translate(-50%, -20px) scale(1.15);
-  }
-  .founder-note-pin.founder-note-in {
-    opacity: 1;
-    transform: translate(-50%, 0) scale(1);
-    transition:
-      opacity 200ms ease-out,
-      transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
-    transition-delay: 150ms;
-  }
-
-  .founder-note-text {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  .founder-note-text.founder-note-in {
-    opacity: 1;
-    transform: translateY(0);
-    transition:
-      opacity 300ms ease-out,
-      transform 300ms ease-out;
-    transition-delay: calc(450ms + var(--text-stagger, 0ms));
+      opacity 500ms ease-out var(--panel-delay, 0ms),
+      transform 500ms ease-out var(--panel-delay, 0ms);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .founder-note-drop-wrapper {
-      opacity: 1;
-      transform: none;
-      transition: none;
-    }
-    .founder-note-rotate-wrapper {
-      transform: rotate(-1deg);
-      animation: none;
-    }
-    .founder-note-pin {
-      opacity: 1;
-      transform: translate(-50%, 0) scale(1);
-      transition: none;
-    }
-    .founder-note-text {
+    .founder-note-panel {
       transform: none;
       transition: opacity 200ms ease-out;
-      transition-delay: 0ms;
     }
   }
 

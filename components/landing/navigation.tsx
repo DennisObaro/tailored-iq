@@ -173,7 +173,7 @@ export function Navigation({ heroEntrance = false }: { heroEntrance?: boolean } 
           from .hero-anim-fade — is itself composited separately. */}
       <nav
         ref={navRef}
-        className="nav-pill relative z-10 mx-auto flex w-fit max-w-full items-center gap-8 rounded-[100px] py-2.5 pl-5 pr-3 isolate [transform:translateZ(0)] lg:gap-[228px]"
+        className="nav-pill relative z-10 mx-auto flex w-full max-w-full items-center gap-8 rounded-[100px] py-2.5 pl-5 pr-3 isolate [transform:translateZ(0)] md:w-fit lg:gap-[228px]"
       >
         <Link href="/" className="group flex shrink-0 items-center gap-[9px]">
           <Logo />

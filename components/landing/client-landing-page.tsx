@@ -6,7 +6,7 @@ import { BookOpen, Clock, UserCircle } from "@/components/icons";
 import { Navigation } from "@/components/landing/navigation";
 import { Footer } from "@/components/landing/footer";
 import { FounderNote } from "@/components/landing/founder-note";
-import { HeroPortraitCollage } from "@/components/landing/hero-portrait-collage";
+import { CoverflowCarousel, type CoverflowSlide } from "@/components/ui/coverflow-carousel";
 import { HeroChallengeInput } from "@/components/landing/hero-challenge-input";
 import { HowItWorksScroller } from "@/components/landing/how-it-works-scroller";
 import {
@@ -67,6 +67,14 @@ const TRUST_STATS = [
  * the escape sequence rather than an apostrophe.
  */
 const HERO_HEADLINE = "Make better decisions with Africa's Experience Capital.";
+
+// Pre-cropped to the carousel's 200x210 desktop card frame, hence no
+// object-position offset needed on the <img> — decorative only, hence
+// alt="", matching hero-portrait-collage.tsx's a11y treatment.
+const HERO_CAROUSEL_SLIDES: CoverflowSlide[] = Array.from({ length: 9 }, (_, i) => ({
+  src: `/landing/hero-expert-${i + 1}.png`,
+  alt: "",
+}));
 
 // Inline CSS custom properties for the hero's staggered entrance — plain
 // object keys aren't in React's CSSProperties type, hence the cast.
@@ -288,6 +296,30 @@ const CTA_MOSAIC_PHOTOS = [
   "/landing/cta-mosaic/rect64.jpg",
 ];
 
+// Mobile-only closing CTA (Figma node 366:1092) — a compact 4-col x 2-row
+// tile grid above and below the text, unrelated to the desktop version's
+// scattered 11-col mosaic. `null` is an empty placeholder tile.
+const CTA_MOBILE_TOP_TILES: (string | null)[] = [
+  "/landing/cta-mosaic/rect41.jpg",
+  null,
+  null,
+  "/landing/cta-mosaic/rect44.jpg",
+  null,
+  null,
+  "/landing/cta-mosaic/rect16.jpg",
+  null,
+];
+const CTA_MOBILE_BOTTOM_TILES: (string | null)[] = [
+  "/landing/cta-mosaic/rect20.jpg",
+  null,
+  null,
+  "/landing/cta-mosaic/rect24.jpg",
+  null,
+  "/landing/cta-mosaic/rect30.jpg",
+  null,
+  null,
+];
+
 // Testimonial #2 (Timothy Ayomide) is the one real quote supplied so far
 // (Figma spec). The other 3 are PLACEHOLDER copy written to exercise the
 // filmstrip's 4-way layout — swap for real quotes as they arrive.
@@ -295,6 +327,9 @@ const TESTIMONIALS: Testimonial[] = [
   {
     photo: "/landing/testimonials/testimonial-1.jpg",
     objectPosition: "45% 0%",
+    // Figma's mobile card crop (node 368:1361): same source photo, shifted
+    // to show the right/top of the frame rather than the desktop crop.
+    mobileObjectPosition: "100% 0%",
     quote:
       "We came in with three options and no clear way to compare them. TailoredIQ broke down the trade-offs in a way our board actually understood.",
     name: "Adaeze Nwosu",
@@ -303,6 +338,11 @@ const TESTIMONIALS: Testimonial[] = [
   {
     photo: "/landing/testimonials/testimonial-2.jpg",
     objectPosition: "50% 46%",
+    // Figma's mobile card (node 368:1367) isn't a full-bleed crop of this
+    // photo — it's a background-removed cutout centered on a solid tan
+    // panel, exported straight from Figma at its exact display size.
+    mobilePhoto: "/landing/testimonials-mobile/testimonial-2-cutout.png",
+    mobileCutoutBg: "#dfd4be",
     quote:
       "TailoredIQ helped us evaluate our expansion strategy from multiple angles. The recommendations were practical, structured, and gave our leadership team confidence to move forward.",
     name: "Timothy Ayomide",
@@ -311,14 +351,15 @@ const TESTIMONIALS: Testimonial[] = [
   {
     photo: "/landing/testimonials/testimonial-3.jpg",
     // The one source photo shot wide rather than as a tight head crop, so it
-    // needs a real zoom to sit at the same scale as the other three — see
-    // `zoom`/`shift` on the Testimonial type. The object-position Y is for
-    // the mobile carousel, whose 4/5 panel is wider than the source and so
-    // crops vertically (the desktop strip is narrower and crops sideways,
-    // where a Y value has nothing to act on).
+    // needs a real zoom to sit at the same scale as the other three on
+    // desktop — see `zoom`/`shift` on the Testimonial type.
     objectPosition: "50% 18%",
     zoom: 1.65,
     shift: "7%",
+    // Figma's mobile card (node 368:1376) uses its own pre-cropped export at
+    // exactly the panel's size, wider than the desktop crop above — exported
+    // straight from Figma rather than reverse-engineered as an object-position.
+    mobilePhoto: "/landing/testimonials-mobile/testimonial-3-crop.png",
     quote:
       "What stood out was how fast we went from a vague problem to an actual plan. It felt like having a consultant on call.",
     name: "Kwame Boateng",
@@ -327,6 +368,9 @@ const TESTIMONIALS: Testimonial[] = [
   {
     photo: "/landing/testimonials/testimonial-4.jpg",
     objectPosition: "54% 57%",
+    // Figma's mobile card crop (node 368:1385): same source photo, shifted
+    // further right and up than the desktop crop.
+    mobileObjectPosition: "78% 25%",
     quote:
       "The playbook didn't just tell us what to do — it explained why, with examples from people who'd actually solved similar problems.",
     name: "Ngozi Adeyemi",
@@ -535,7 +579,7 @@ export function ClientLandingPage() {
       <section ref={heroRef} className="relative overflow-hidden bg-mkt-page">
         <div aria-hidden className="hero-ambient-glow -z-10" />
         <div className="container-tight relative flex flex-col items-center pb-24 pt-16 text-center md:pb-32 md:pt-[99px]">
-          <div ref={recedeGroupRef} className="flex flex-col items-center">
+          <div ref={recedeGroupRef} className="flex flex-col items-center self-stretch">
             <div
               className="hero-anim-up mb-0 flex items-center gap-[7px]"
               style={heroDelayStyle(120, 8)}
@@ -546,25 +590,32 @@ export function ClientLandingPage() {
                 alt=""
                 className="hero-badge-dot-blink h-4 w-4"
               />
-              <span className="text-[18px] font-medium text-mkt-text-mute">
+              <span className="text-[12px] font-medium text-mkt-text-mute md:text-[18px]">
                 Trusted by leaders behind Africa&apos;s Experience Capital
               </span>
             </div>
 
-            <HeroPortraitCollage parallaxSourceRef={heroRef} />
+            <CoverflowCarousel
+              slides={HERO_CAROUSEL_SLIDES}
+              label="Leaders behind Africa's Experience Capital"
+              cardWidth="clamp(148px, 16vw, 200px)"
+              cardClassName="h-[calc(var(--cf-card)_+_10px)]"
+              autoPlay
+              autoPlayInterval={3000}
+            />
           </div>
 
           <div ref={anchoredGroupRef} className="flex flex-col items-center">
             <div className="flex max-w-[738px] flex-col items-center gap-[10px]">
               <h1
-                className="hero-anim-up hero-shimmer relative text-balance text-[54px] font-semibold leading-[1.2] tracking-normal text-mkt-text"
+                className="hero-anim-up hero-shimmer relative text-balance text-[30px] font-semibold leading-[1.2] tracking-normal text-mkt-text md:text-[54px]"
                 style={heroDelayStyle(420, 12)}
                 data-text={HERO_HEADLINE}
               >
                 {HERO_HEADLINE}
               </h1>
               <p
-                className="hero-anim-up max-w-[596px] text-lg font-medium leading-[1.4] text-mkt-text-mute"
+                className="hero-anim-up max-w-[596px] text-base font-medium leading-[1.4] text-mkt-text-mute md:text-lg"
                 style={heroDelayStyle(500, 10)}
               >
                 Describe your challenge and receive a personalized Playbook inspired by the
@@ -600,10 +651,10 @@ export function ClientLandingPage() {
           not something to reconstruct with CSS). */}
       <section
         id="how-it-works"
-        className="bg-mkt-panel pt-16 scroll-mt-[calc(var(--nav-height)+2rem)] md:pt-24"
+        className="bg-mkt-panel pb-8 pt-8 scroll-mt-[calc(var(--nav-height)+2rem)] md:pb-0 md:pt-24"
       >
         <div className="container-tight text-center">
-          <h2 className="text-4xl font-semibold tracking-normal md:text-5xl">
+          <h2 className="text-[26px] font-semibold tracking-normal md:text-5xl">
             From Challenge to Clarity
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
@@ -617,10 +668,10 @@ export function ClientLandingPage() {
       </section>
 
       {/* WHAT YOUR PLAYBOOK INCLUDES */}
-      <section className="bg-mkt-sand py-24 md:py-32">
+      <section className="bg-mkt-sand py-8 md:py-32">
         <div className="container-tight">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-4xl font-semibold tracking-normal md:text-5xl">
+            <h2 className="text-[26px] font-semibold tracking-normal md:text-5xl">
               What Your Playbook Includes
             </h2>
             <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
@@ -804,11 +855,11 @@ export function ClientLandingPage() {
           destination for this curated showcase) so keyboard users get a real
           focus stop that triggers the same gold-tags state as a mouse, via
           :focus-within in CSS. */}
-      <section className="bg-mkt-panel py-24 md:py-32">
+      <section className="bg-mkt-panel py-8 md:py-32">
         <div className="container-tight">
           <div className="mb-[42px] flex flex-wrap items-start justify-between gap-6">
             <div className={`experts-header ${expertsInView ? "experts-in" : ""}`}>
-              <h2 className="whitespace-nowrap text-4xl font-semibold tracking-normal md:text-5xl">
+              <h2 className="whitespace-nowrap text-[26px] font-semibold tracking-normal md:text-5xl">
                 Meet the experts
               </h2>
               <p className="mt-4 max-w-md text-lg text-muted-foreground">
@@ -900,13 +951,13 @@ export function ClientLandingPage() {
           container at threshold 0.1 meant the entrance could fire and finish
           while only the heading had scrolled into view, reading as "no
           animation" even though it ran. */}
-      <section className="overflow-hidden bg-mkt-page py-24 md:py-32">
+      <section className="overflow-hidden bg-mkt-page py-8 md:py-32">
         <div className="container-tight">
           <div
             className="mb-10 flex flex-wrap items-start justify-between gap-8 md:mb-14"
             style={cardEntranceStyle(challengesInView, 0, reducedMotion)}
           >
-            <h2 className="max-w-md text-4xl font-semibold tracking-normal md:text-5xl">
+            <h2 className="max-w-md text-[26px] font-semibold tracking-normal md:text-5xl">
               Challenges We Help Solve
             </h2>
             <p className="max-w-xs text-lg text-muted-foreground">
@@ -962,8 +1013,8 @@ export function ClientLandingPage() {
       </section>
 
       {/* TRUSTED BY — logo marquee */}
-      <section className="overflow-hidden bg-surface py-14">
-        <div className="container-tight mb-8 text-center">
+      <section className="h-[200px] overflow-hidden bg-surface py-8 md:py-14">
+        <div className="container-tight relative -top-3 mb-8 text-center">
           <span className="eyebrow">Trusted by</span>
         </div>
         <div className="logo-marquee">
@@ -983,11 +1034,11 @@ export function ClientLandingPage() {
           auto-advances until the user picks one). */}
       <section
         id="testimonials"
-        className="bg-mkt-sand py-24 scroll-mt-[calc(var(--nav-height)+2rem)] md:py-32"
+        className="bg-mkt-sand py-8 scroll-mt-[calc(var(--nav-height)+2rem)] md:py-32"
       >
         <div className="container-tight">
           <div className="mx-auto mb-14 max-w-xl text-center">
-            <h2 className="text-4xl font-semibold tracking-normal md:text-5xl">Testimonials</h2>
+            <h2 className="text-[26px] font-semibold tracking-normal md:text-5xl">Testimonials</h2>
             <p className="mt-4 text-lg text-muted-foreground">
               Hear how founders, CEOs, executives, and senior leaders use TailoredIQ to make better
               decisions with greater confidence.
@@ -1010,7 +1061,61 @@ export function ClientLandingPage() {
           in have no tiles at all, so there's no click-target conflict with
           the CTA button. */}
       <section className="relative overflow-hidden bg-mkt-panel">
-        <div className="container-tight relative flex aspect-[1440/850] min-h-[520px] w-full items-center justify-center">
+        {/* MOBILE — Figma node 366:1092. A simpler static grid than the
+            desktop mosaic below (no scatter animation, no 11-col scan),
+            hidden at md and up where the desktop version takes over. */}
+        <div className="px-5 py-8 md:hidden">
+          <div className="mx-auto grid max-w-[349px] grid-cols-4 gap-3">
+            {CTA_MOBILE_TOP_TILES.map((photo, i) =>
+              photo ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  key={i}
+                  src={photo}
+                  alt=""
+                  className="aspect-[78/72] w-full rounded-xl object-cover"
+                />
+              ) : (
+                <div key={i} className="aspect-[78/72] w-full rounded-xl bg-[#151515]" />
+              ),
+            )}
+          </div>
+          <div className="mx-auto mt-5 flex max-w-[293px] flex-col items-center gap-5 text-center">
+            <div className="flex flex-col gap-[11px]">
+              <h2 className="text-[26px] font-semibold leading-[1.4] text-white">
+                The best decisions are backed by experience.
+              </h2>
+              <p className="text-sm leading-[1.4] text-mkt-text-soft">
+                Describe your challenge and receive a tailored Playbook inspired by leaders
+                who&apos;ve faced similar decisions.
+              </p>
+            </div>
+            <Link
+              href={getStartedHref}
+              className="inline-flex items-center justify-center rounded-full bg-white px-[14px] py-[10px] text-[18px] font-semibold text-[#0d0d0d] transition-colors hover:bg-white/90"
+            >
+              Get Started
+            </Link>
+          </div>
+          <div className="mx-auto mt-5 grid max-w-[349px] grid-cols-4 gap-3">
+            {CTA_MOBILE_BOTTOM_TILES.map((photo, i) =>
+              photo ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  key={i}
+                  src={photo}
+                  alt=""
+                  className="aspect-[78/72] w-full rounded-xl object-cover"
+                />
+              ) : (
+                <div key={i} className="aspect-[78/72] w-full rounded-xl bg-[#151515]" />
+              ),
+            )}
+          </div>
+        </div>
+
+        {/* DESKTOP — unchanged 11-col scattered mosaic. */}
+        <div className="container-tight relative hidden aspect-[1440/850] min-h-[520px] w-full items-center justify-center md:flex">
           <div
             ref={mosaicRef}
             className={`absolute inset-0 grid gap-3 p-6 ${mosaicInView ? "mosaic-in" : ""}`}
@@ -1054,7 +1159,7 @@ export function ClientLandingPage() {
           <div
             className={`mosaic-text relative mx-auto w-full max-w-xl px-4 text-center ${mosaicInView ? "mosaic-in" : ""}`}
           >
-            <h2 className="text-4xl font-semibold tracking-normal md:text-5xl">
+            <h2 className="text-[26px] font-semibold tracking-normal md:text-5xl">
               The best decisions are backed by experience.
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">

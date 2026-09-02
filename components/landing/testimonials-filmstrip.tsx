@@ -26,6 +26,20 @@ export interface Testimonial {
   zoom?: number;
   /** Percentage of panel height to nudge a zoomed photo onto the face. */
   shift?: string;
+  /**
+   * Mobile-card-only overrides (Figma node 368:1358) — the mobile carousel's
+   * 314x203 photo panel crops each source photo differently than the desktop
+   * filmstrip does, so these never touch `photo`/`objectPosition` above,
+   * which stay tuned for the desktop layout.
+   */
+  mobilePhoto?: string;
+  mobileObjectPosition?: string;
+  /**
+   * Some Figma cards aren't a full-bleed photo — a background-removed cutout
+   * centered on a solid colour panel instead. Set together with
+   * `mobilePhoto` pointing at the (transparent) cutout asset.
+   */
+  mobileCutoutBg?: string;
 }
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
@@ -222,28 +236,37 @@ function MobileCarousel({ testimonials }: { testimonials: Testimonial[] }) {
             ref={(node) => {
               cardRefs.current[i] = node;
             }}
-            className="flex w-[82%] shrink-0 snap-center flex-col overflow-hidden rounded-[32px] bg-mkt-card"
+            className="flex h-[448px] w-[314px] shrink-0 snap-center flex-col overflow-hidden rounded-[20px] bg-mkt-card"
           >
-            <div className="aspect-[4/5] w-full">
+            <div
+              className="flex h-[203px] w-full shrink-0 items-center justify-center overflow-hidden"
+              style={t.mobileCutoutBg ? { backgroundColor: t.mobileCutoutBg } : undefined}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={t.photo}
+                src={t.mobilePhoto ?? t.photo}
                 alt=""
-                className="testimonial-photo h-full w-full object-cover"
+                className={
+                  t.mobileCutoutBg
+                    ? "h-full w-auto object-contain"
+                    : "testimonial-photo h-full w-full object-cover"
+                }
                 style={
-                  {
-                    objectPosition: t.objectPosition,
-                    "--photo-zoom": t.zoom,
-                    "--photo-shift": t.shift,
-                  } as CSSProperties
+                  t.mobileCutoutBg
+                    ? undefined
+                    : ({
+                        objectPosition: t.mobileObjectPosition ?? t.objectPosition,
+                        "--photo-zoom": t.zoom,
+                        "--photo-shift": t.shift,
+                      } as CSSProperties)
                 }
               />
             </div>
-            <div className="flex flex-col gap-3 p-5">
-              <p className="text-[15px] font-medium leading-[1.4] text-mkt-text">{t.quote}</p>
+            <div className="flex flex-col gap-5 p-4">
+              <p className="text-[16px] font-medium leading-[1.4] text-white">{t.quote}</p>
               <div>
-                <div className="text-[15px] font-semibold leading-[1.4] text-mkt-text">{t.name}</div>
-                <div className="mt-1 text-[12px] leading-[1.4] text-mkt-text-soft">{t.title}</div>
+                <div className="text-[16px] font-semibold leading-[1.4] text-white">{t.name}</div>
+                <div className="mt-1 text-[12px] leading-[1.4] text-[#ccc]">{t.title}</div>
               </div>
             </div>
           </div>
