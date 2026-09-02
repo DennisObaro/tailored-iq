@@ -6,6 +6,7 @@ import Link from "next/link";
 import { StarFilled } from "@/components/icons";
 import type { ExpertListing } from "@/lib/api/experts";
 import * as conversationsApi from "@/lib/api/expert-conversations";
+import * as engagementsApi from "@/lib/api/engagements";
 import { Card } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -67,7 +68,11 @@ export function ExpertCard({
   /**
    * With a challenge in hand this opens the thread about it directly. Without
    * one — the directory, a catalog playbook — it falls back to the profile,
-   * where the client is asked which challenge it concerns.
+   * where the client is asked which challenge it concerns. A playbook's
+   * implementation panel carries a playbookId too, and that's engagement
+   * territory, not a bare conversation — it lands in the Projects workspace
+   * (/engagements) that implementation booking already uses, so both paths
+   * into an engagement end up in the same place.
    */
   async function talk() {
     if (!viewer || !projectId) {
@@ -77,6 +82,16 @@ export function ExpertCard({
     setBusy(true);
     setError(null);
     try {
+      if (playbookId) {
+        const engagement = await engagementsApi.getOrCreateEngagement({
+          clientId: viewer.id,
+          expertId: user.id,
+          playbookId,
+          projectId,
+        });
+        router.push(`/engagements/${engagement.id}`);
+        return;
+      }
       const conversation = await conversationsApi.getOrCreateConversation({
         clientId: viewer.id,
         expertId: user.id,

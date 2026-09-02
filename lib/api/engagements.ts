@@ -44,6 +44,33 @@ export function getOrCreateEngagementWithin(
   return engagement;
 }
 
+/**
+ * Client-facing entry point for talking to an expert from a playbook's
+ * implementation panel — same identity rule as getOrCreateEngagementWithin,
+ * but callable outside an existing db.update(). Skips the scheduling step
+ * bookImplementationConsultation goes through; a client picking this up
+ * lands in the engagement workspace to talk first and book a call from
+ * there if they want one.
+ */
+export async function getOrCreateEngagement(input: {
+  clientId: string;
+  expertId: string;
+  playbookId: string;
+  projectId: string;
+}): Promise<Engagement> {
+  return simulateNetwork(() =>
+    db.update((d) => {
+      const playbook = d.playbooks.find((p) => p.id === input.playbookId);
+      if (!playbook) throw new ApiError("Playbook not found.", "NOT_FOUND");
+      const expert = d.expertProfiles.find((p) => p.userId === input.expertId);
+      if (!expert || expert.verificationStatus !== "approved") {
+        throw new ApiError("That expert isn't available.", "NOT_FOUND");
+      }
+      return getOrCreateEngagementWithin(d, input);
+    }),
+  );
+}
+
 export interface EngagementListing {
   engagement: Engagement;
   counterpart: User;
