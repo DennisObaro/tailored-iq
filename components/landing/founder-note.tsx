@@ -41,10 +41,10 @@ export function FounderNote() {
           style={{ "--panel-delay": "0ms" } as CSSProperties}
         >
           <div className="flex flex-col gap-5">
-            <span className="text-sm uppercase tracking-[3px] text-white/50 md:text-base">
+            <span className="text-sm uppercase tracking-[3px] text-mkt-text-mute md:text-base">
               A note from our founder
             </span>
-            <h3 className="text-[26px] font-medium leading-[1.4] tracking-tight text-white md:text-[36px] lg:text-[40px]">
+            <h3 className="text-[26px] font-medium leading-[1.4] tracking-tight text-mkt-text md:text-[36px] lg:text-[40px]">
               When experience can be leveraged, it is a form of capital.
             </h3>
             <p className="text-base leading-[1.8] text-mkt-text-soft md:text-lg lg:text-[22px]">
@@ -101,7 +101,10 @@ export function FounderNote() {
               className="group absolute inset-0 flex items-center justify-center bg-black/10 transition-colors hover:bg-black/25"
             >
               <span className="flex size-16 items-center justify-center rounded-full bg-white/90 shadow-lg backdrop-blur transition-transform duration-200 group-hover:scale-110 md:size-20">
-                <Play className="ml-1 size-6 text-gray-975 md:size-7" aria-hidden />
+                {/* Pinned ink: this glyph sits on a literal white/90 disc over
+                    the video, so it must not flip with the gray ramp (light
+                    mode's gray-975 is near-white). */}
+                <Play className="ml-1 size-6 text-[#121212] md:size-7" aria-hidden />
               </span>
             </button>
           )}

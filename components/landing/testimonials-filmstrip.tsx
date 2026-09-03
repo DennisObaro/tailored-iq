@@ -263,10 +263,12 @@ function MobileCarousel({ testimonials }: { testimonials: Testimonial[] }) {
               />
             </div>
             <div className="flex flex-col gap-5 p-4">
-              <p className="text-[16px] font-medium leading-[1.4] text-white">{t.quote}</p>
+              <p className="text-[16px] font-medium leading-[1.4] text-mkt-text">{t.quote}</p>
               <div>
-                <div className="text-[16px] font-semibold leading-[1.4] text-white">{t.name}</div>
-                <div className="mt-1 text-[12px] leading-[1.4] text-[#ccc]">{t.title}</div>
+                <div className="text-[16px] font-semibold leading-[1.4] text-mkt-text">
+                  {t.name}
+                </div>
+                <div className="mt-1 text-[12px] leading-[1.4] text-mkt-text-soft">{t.title}</div>
               </div>
             </div>
           </div>
@@ -285,7 +287,7 @@ function MobileCarousel({ testimonials }: { testimonials: Testimonial[] }) {
           >
             <span
               className={`block rounded-full transition-all duration-300 ${
-                i === activeIndex ? "h-1.5 w-6 bg-gold" : "h-1.5 w-1.5 bg-[#4c4c4c]"
+                i === activeIndex ? "h-1.5 w-6 bg-gold" : "h-1.5 w-1.5 bg-gray-600"
               }`}
             />
           </button>

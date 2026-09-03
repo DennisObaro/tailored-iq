@@ -1,16 +1,12 @@
-const GRID_PITCH = 16;
-const DOT_SIZE = 2;
+import { cn } from "@/lib/utils/cn";
 
-const GRID_TILE_SVG = `<svg xmlns='http://www.w3.org/2000/svg' width='${GRID_PITCH}' height='${GRID_PITCH}'><rect x='${(GRID_PITCH - DOT_SIZE) / 2}' y='${(GRID_PITCH - DOT_SIZE) / 2}' width='${DOT_SIZE}' height='${DOT_SIZE}' fill='white' fill-opacity='0.07'/></svg>`;
-const GRID_BACKGROUND_IMAGE = `url("data:image/svg+xml,${encodeURIComponent(GRID_TILE_SVG)}")`;
-
-/** Static dot-grid ambience for the sign-up right panel — a single tiled CSS background, no DOM nodes per dot. */
+/**
+ * Static dot-grid ambience for the sign-up right panel — a single tiled CSS
+ * background, no DOM nodes per dot. Rendering goes through the shared
+ * `.dot-grid-bg` tile in globals.css (same 16px pitch / 2px dot this component
+ * used to inline), which is what makes the dots flip with the theme — the old
+ * hardcoded white tile was invisible on the light theme's off-white panel.
+ */
 export function DotGridBackground({ className }: { className?: string }) {
-  return (
-    <div
-      className={className}
-      style={{ backgroundImage: GRID_BACKGROUND_IMAGE, backgroundSize: `${GRID_PITCH}px ${GRID_PITCH}px` }}
-      aria-hidden
-    />
-  );
+  return <div className={cn("dot-grid-bg", className)} aria-hidden />;
 }

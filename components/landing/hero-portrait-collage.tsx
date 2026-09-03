@@ -297,7 +297,7 @@ function HeroPortraitTile({
           <div className="group relative h-full w-full">
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-[20px] opacity-0 shadow-[0_10px_30px_-8px_rgba(0,0,0,0.6)] transition-opacity duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 motion-reduce:group-hover:opacity-0"
+              className="pointer-events-none absolute inset-0 rounded-[20px] opacity-0 shadow-[0_10px_30px_-8px_rgba(var(--portrait-shadow-rgb),calc(var(--portrait-shadow-scale)*0.6))] transition-opacity duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:opacity-100 motion-reduce:group-hover:opacity-0"
             />
             <div
               className="h-full w-full rounded-[20px] transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"

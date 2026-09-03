@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 import { BookOpen, Clock, UserCircle } from "@/components/icons";
 import { Navigation } from "@/components/landing/navigation";
 import { Footer } from "@/components/landing/footer";
@@ -71,10 +72,20 @@ const HERO_HEADLINE = "Make better decisions with Africa's Experience Capital.";
 // Pre-cropped to the carousel's 200x210 desktop card frame, hence no
 // object-position offset needed on the <img> — decorative only, hence
 // alt="", matching hero-portrait-collage.tsx's a11y treatment.
-const HERO_CAROUSEL_SLIDES: CoverflowSlide[] = Array.from({ length: 9 }, (_, i) => ({
-  src: `/landing/hero-expert-${i + 1}.png`,
-  alt: "",
-}));
+//
+// Two exports per person: the dark-theme originals shot against a near-black
+// backdrop, and a `-light` set (same subjects, same crop) shot against a warm
+// off-white backdrop for the light theme — a dark-backdrop portrait sitting on
+// the light theme's off-white page reads as a set of cutout holes rather than
+// photos.
+function heroCarouselSlides(suffix: "" | "-light"): CoverflowSlide[] {
+  return Array.from({ length: 9 }, (_, i) => ({
+    src: `/landing/hero-expert-${i + 1}${suffix}.png`,
+    alt: "",
+  }));
+}
+const HERO_CAROUSEL_SLIDES_DARK = heroCarouselSlides("");
+const HERO_CAROUSEL_SLIDES_LIGHT = heroCarouselSlides("-light");
 
 // Inline CSS custom properties for the hero's staggered entrance — plain
 // object keys aren't in React's CSSProperties type, hence the cast.
@@ -234,20 +245,22 @@ const PLAYBOOK_FOLDER_PAPERS = [
 
 // Two alternating pill fills from the Figma spec, kept per item (the source
 // pattern breaks a simple odd/even formula) so the sequence matches exactly.
+// The fills resolve through --mkt-chip-a/-b (globals.css), which carry the
+// spec's literal dark values and re-author them for the light theme.
 const CHALLENGES = [
-  { label: "Entering a new market", bg: "#1C1B18" },
-  { label: "Scaling operations without losing efficiency", bg: "#302D24" },
-  { label: "Raising capital or planning your next funding round", bg: "#302D24" },
-  { label: "Building a stronger leadership team", bg: "#1C1B18" },
-  { label: "Navigating regulatory and stakeholder challenges", bg: "#1C1B18" },
-  { label: "Implementing AI across your organization", bg: "#302D24" },
-  { label: "Preparing for board meetings and governance", bg: "#302D24" },
-  { label: "Leading organizational change", bg: "#1C1B18" },
-  { label: "Planning founder succession and leadership transitions", bg: "#1C1B18" },
-  { label: "Hiring and retaining top talent", bg: "#302D24" },
-  { label: "Building strategic partnerships across markets", bg: "#302D24" },
-  { label: "Integrating acquisitions successfully", bg: "#1C1B18" },
-  { label: "Much more", bg: "#302D24" },
+  { label: "Entering a new market", bg: "var(--mkt-chip-a)" },
+  { label: "Scaling operations without losing efficiency", bg: "var(--mkt-chip-b)" },
+  { label: "Raising capital or planning your next funding round", bg: "var(--mkt-chip-b)" },
+  { label: "Building a stronger leadership team", bg: "var(--mkt-chip-a)" },
+  { label: "Navigating regulatory and stakeholder challenges", bg: "var(--mkt-chip-a)" },
+  { label: "Implementing AI across your organization", bg: "var(--mkt-chip-b)" },
+  { label: "Preparing for board meetings and governance", bg: "var(--mkt-chip-b)" },
+  { label: "Leading organizational change", bg: "var(--mkt-chip-a)" },
+  { label: "Planning founder succession and leadership transitions", bg: "var(--mkt-chip-a)" },
+  { label: "Hiring and retaining top talent", bg: "var(--mkt-chip-b)" },
+  { label: "Building strategic partnerships across markets", bg: "var(--mkt-chip-b)" },
+  { label: "Integrating acquisitions successfully", bg: "var(--mkt-chip-a)" },
+  { label: "Much more", bg: "var(--mkt-chip-b)" },
 ];
 
 // Dealt into two rows by alternating index rather than splitting the list in
@@ -479,6 +492,13 @@ export function ClientLandingPage() {
   const user = useSessionStore((s) => s.user);
   const signedIn = hydrated && !!user;
 
+  // `resolvedTheme` is unknown until mount, so this defaults to the dark set
+  // (the SSR-rendered markup) and swaps once hydrated — never before, or the
+  // image the client renders on first paint wouldn't match the server's.
+  const { resolvedTheme } = useTheme();
+  const heroCarouselSlides =
+    hydrated && resolvedTheme === "light" ? HERO_CAROUSEL_SLIDES_LIGHT : HERO_CAROUSEL_SLIDES_DARK;
+
   // Signed in, the primary CTA goes straight into the app; signed out it
   // goes to sign-up. (The source project passed a `role` search param to its
   // own /signup route; this app's sign-up has no such param.)
@@ -596,7 +616,7 @@ export function ClientLandingPage() {
             </div>
 
             <CoverflowCarousel
-              slides={HERO_CAROUSEL_SLIDES}
+              slides={heroCarouselSlides}
               label="Leaders behind Africa's Experience Capital"
               cardWidth="clamp(148px, 16vw, 200px)"
               cardClassName="h-[calc(var(--cf-card)_+_10px)]"
@@ -720,7 +740,7 @@ export function ClientLandingPage() {
               className="flex flex-col items-center rounded-[40px] bg-mkt-card p-8 text-center"
               style={cardEntranceStyle(playbookInView, 270, reducedMotion)}
             >
-              <span className="inline-flex items-center rounded-full bg-[#3a3107] px-5 py-1.5 text-sm font-semibold text-gold">
+              <span className="inline-flex items-center rounded-full bg-gold/15 px-5 py-1.5 text-sm font-semibold text-gold">
                 Sample
               </span>
               <h3 className="mt-3 font-display text-4xl font-semibold text-mkt-text">Playbook</h3>
@@ -756,7 +776,7 @@ export function ClientLandingPage() {
                   {PLAYBOOK_FOLDER_PAPERS.map((p, i) => (
                     <div
                       key={p.rotate}
-                      className="absolute rounded-[19px] bg-mkt-cta shadow-[0px_3px_16px_0px_rgba(0,0,0,0.15)]"
+                      className="absolute rounded-[19px] bg-white shadow-[0px_3px_16px_0px_rgba(0,0,0,0.15)]"
                       style={{
                         left: `${p.left}%`,
                         top: `${p.top}%`,
@@ -807,7 +827,11 @@ export function ClientLandingPage() {
               >
                 Download Sample
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/landing/playbook/arrow-down-03.svg" alt="" className="h-6 w-6" />
+                <img
+                  src="/landing/playbook/arrow-down-03.svg"
+                  alt=""
+                  className="invert-on-light h-6 w-6"
+                />
               </Link>
             </div>
 
@@ -1076,13 +1100,13 @@ export function ClientLandingPage() {
                   className="aspect-[78/72] w-full rounded-xl object-cover"
                 />
               ) : (
-                <div key={i} className="aspect-[78/72] w-full rounded-xl bg-[#151515]" />
+                <div key={i} className="mosaic-tile-empty aspect-[78/72] w-full rounded-xl" />
               ),
             )}
           </div>
           <div className="mx-auto mt-5 flex max-w-[293px] flex-col items-center gap-5 text-center">
             <div className="flex flex-col gap-[11px]">
-              <h2 className="text-[26px] font-semibold leading-[1.4] text-white">
+              <h2 className="text-[26px] font-semibold leading-[1.4] text-mkt-text">
                 The best decisions are backed by experience.
               </h2>
               <p className="text-sm leading-[1.4] text-mkt-text-soft">
@@ -1092,7 +1116,7 @@ export function ClientLandingPage() {
             </div>
             <Link
               href={getStartedHref}
-              className="inline-flex items-center justify-center rounded-full bg-white px-[14px] py-[10px] text-[18px] font-semibold text-[#0d0d0d] transition-colors hover:bg-white/90"
+              className="inline-flex items-center justify-center rounded-full bg-mkt-cta px-[14px] py-[10px] text-[18px] font-semibold text-mkt-cta-ink transition-colors hover:bg-mkt-cta/90"
             >
               Get Started
             </Link>
@@ -1108,7 +1132,7 @@ export function ClientLandingPage() {
                   className="aspect-[78/72] w-full rounded-xl object-cover"
                 />
               ) : (
-                <div key={i} className="aspect-[78/72] w-full rounded-xl bg-[#151515]" />
+                <div key={i} className="mosaic-tile-empty aspect-[78/72] w-full rounded-xl" />
               ),
             )}
           </div>

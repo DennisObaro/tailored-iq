@@ -93,8 +93,8 @@ function StepCard({ step, index }: { step: HowItWorksStep; index: number }) {
       ref={ref}
       className={`sticky flex h-[clamp(500px,68vh,640px)] w-full items-center overflow-hidden md:h-[clamp(440px,62vh,600px)] ${
         index === 0 ? "rounded-t-[40px]" : "rounded-t-[40px] border-t border-mkt-hairline"
-      }`}
-      style={{ top: "var(--nav-height)", backgroundColor: index % 2 === 0 ? "#111" : "#161616" }}
+      } ${index % 2 === 0 ? "bg-mkt-panel" : "bg-mkt-panel-alt"}`}
+      style={{ top: "var(--nav-height)" }}
     >
       <div
         className={`w-full transition-[opacity,translate] duration-500 ease-out ${
@@ -107,7 +107,7 @@ function StepCard({ step, index }: { step: HowItWorksStep; index: number }) {
       <img
         src={step.icon}
         alt=""
-        className="absolute left-6 top-6 h-[30px] w-8 md:left-[104px] md:top-16"
+        className="invert-on-light absolute left-6 top-6 h-[30px] w-8 md:left-[104px] md:top-16"
       />
     </div>
   );
@@ -132,7 +132,7 @@ function FadeInRow({ step, index }: { step: HowItWorksStep; index: number }) {
       <img
         src={step.icon}
         alt=""
-        className="absolute left-6 top-6 h-[30px] w-8 md:left-[104px] md:top-16"
+        className="invert-on-light absolute left-6 top-6 h-[30px] w-8 md:left-[104px] md:top-16"
       />
       <div className="py-16 md:py-24">
         <StepContent step={step} index={index} />

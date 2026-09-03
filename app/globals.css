@@ -510,6 +510,16 @@ body {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Crect x='7' y='7' width='2' height='2' fill='%23171511' fill-opacity='0.10'/%3E%3C/svg%3E");
   }
 
+  /* Several landing icons ship as <img src="….svg"> with their ink baked in
+     for the dark theme (white / #4c4c4c strokes), and an <img> can't inherit
+     currentColor. Rather than exporting a second set of assets, the light
+     theme flips them: the icons are grayscale, so invert() preserves their
+     internal hierarchy exactly (white -> near-black, mid-gray -> mid-gray).
+     Never put this on a colour asset — invert() would shift its hue. */
+  [data-theme="light"] .invert-on-light {
+    filter: invert(1);
+  }
+
   .text-gold {
     color: var(--gold);
   }
@@ -643,6 +653,12 @@ body {
      reveal colour. Only the mono asset is ever in the DOM. */
   .logo-marquee-mono {
     opacity: 0.7;
+  }
+  /* The mono assets are white-on-transparent PNGs exported for the dark
+     theme; on the light theme's surface they all but vanish, so flip them
+     to dark ink — same mechanism as .invert-on-light for the SVG icons. */
+  [data-theme="light"] .logo-marquee-mono {
+    filter: invert(1);
   }
   .logo-marquee-item:hover {
     transform: translateY(-2px);

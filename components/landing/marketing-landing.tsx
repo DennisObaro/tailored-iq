@@ -209,7 +209,9 @@ export function MarketingLanding({
               </div>
               <div>
                 <div className="text-xs tracking-wide text-white/50">EXPERT CONTRIBUTOR</div>
-                <div className="text-base text-mkt-text">28 years operating</div>
+                {/* Literal white, not --mkt-text: this sits on a black/60 scrim
+                    over the photo, which stays dark in both themes. */}
+                <div className="text-base text-white">28 years operating</div>
               </div>
             </div>
 
@@ -222,7 +224,8 @@ export function MarketingLanding({
                     <span className="mt-1 size-3.5 shrink-0 rounded-full border border-[#aeaead]" />
                     <div className="flex flex-col gap-1">
                       <span className="text-xs text-white/50">{item.label}</span>
-                      <span className="text-sm leading-[1.4] text-mkt-text">{item.body}</span>
+                      {/* Literal white for the same scrim reason as above. */}
+                      <span className="text-sm leading-[1.4] text-white">{item.body}</span>
                     </div>
                   </div>
                 ))}

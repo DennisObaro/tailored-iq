@@ -51,7 +51,7 @@ export function HeroChallengeInput() {
   return (
     <form
       onSubmit={submit}
-      className="flex w-full max-w-[712px] flex-col items-center gap-3 rounded-[20px] border border-mkt-hairline bg-mkt-input px-5 pb-7 pt-5 transition-[border-color,box-shadow] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] focus-within:border-[#eabd1d]/50 focus-within:shadow-[0_0_0_4px_rgba(234,189,29,0.15)] sm:h-[62px] sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:py-1.5 sm:pl-6 sm:pr-1.5"
+      className="flex w-full max-w-[712px] flex-col items-center gap-3 rounded-[20px] border border-mkt-hairline bg-mkt-input px-5 pb-7 pt-5 transition-[border-color,box-shadow] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] focus-within:border-gold/50 focus-within:shadow-[0_0_0_4px_color-mix(in_srgb,var(--gold)_15%,transparent)] sm:h-[62px] sm:flex-row sm:items-center sm:gap-2 sm:rounded-full sm:py-1.5 sm:pl-6 sm:pr-1.5"
     >
       <label htmlFor="hero-challenge" className="sr-only">
         Describe your business challenge
