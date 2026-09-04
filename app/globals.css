@@ -121,6 +121,7 @@
   --mkt-text: #dadada;
   --mkt-text-soft: #b8b8b8;
   --mkt-text-mute: #868686;
+  --mkt-heading: var(--mkt-text);
   --mkt-chip-a: #1c1b18;
   --mkt-chip-b: #302d24;
   /* The high-contrast CTA pill. Its job is to be the brightest thing on the
@@ -240,10 +241,11 @@
   --mkt-text: #1a1815;
   --mkt-text-soft: #55524a;
   --mkt-text-mute: #6e6a61;
+  --mkt-heading: #453512;
   --mkt-chip-a: #f2efe6;
   --mkt-chip-b: #eae5d6;
-  --mkt-cta: #1a1815;
-  --mkt-cta-ink: #f7f6f3;
+  --mkt-cta: #362708;
+  --mkt-cta-ink: #f2ddb8;
   /* A gleam needs the band to be brighter than what surrounds it, and on a
      light ground the headline *is* the dark element — lightening it just
      erases the words mid-sweep, and deepening near-black ink toward black is
@@ -346,6 +348,7 @@
   --color-mkt-text: var(--mkt-text);
   --color-mkt-text-soft: var(--mkt-text-soft);
   --color-mkt-text-mute: var(--mkt-text-mute);
+  --color-mkt-heading: var(--mkt-heading);
   --color-mkt-cta: var(--mkt-cta);
   --color-mkt-cta-ink: var(--mkt-cta-ink);
 
@@ -816,6 +819,26 @@ body {
     animation-delay: var(--hero-delay, 0ms);
   }
 
+  /* Coverflow hero avatars: each photo fades and scales into its already-
+     positioned card (the JS carousel sets transform/opacity on the card div
+     on mount, not the image), staggered outer-cards-first so the row reads
+     as assembling toward the centre card — the image-only equivalent of
+     .hero-anim-up above, kept separate so it never fights the carousel's
+     own per-frame transform writes. */
+  @keyframes coverflow-card-in {
+    from {
+      opacity: 0;
+      transform: scale(0.85) translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+  .coverflow-card-entrance {
+    animation: coverflow-card-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
   /* Quick-answer cards land with the question they answer — one staggered
      arrival rather than four independent fades. `--chip-delay` is set per
      card inline, same idiom as `--hero-delay` above. */
@@ -954,7 +977,8 @@ body {
   @media (prefers-reduced-motion: reduce) {
     .hero-anim-fade,
     .hero-anim-up,
-    .chip-anim-up {
+    .chip-anim-up,
+    .coverflow-card-entrance {
       animation: none;
       opacity: 1;
       transform: none;
@@ -1214,6 +1238,20 @@ body {
       transform: none;
     }
   }
+
+  /* --- Process strip --------------------------------------------------
+     Below md this is a plain stacked list (the .rounded-2xl set in the
+     component's className), so nothing here needs to run until the tabs
+     sit in a row. From md, each tab is its own flag/arrow shape, cut with
+     clip-path, standing apart on a real 20px gap (see the row's md:gap-5)
+     rather than touching. */
+  @media (min-width: 48rem) {
+    .process-tab {
+      flex: 1 1 0%;
+      border-radius: 0;
+      clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 50%, calc(100% - 28px) 100%, 0 100%);
+    }
+  }
 }
 
 /* Nav dropdown "content aware" shadow — deliberately outside any @layer:
@@ -1266,11 +1304,9 @@ body {
 [data-theme="light"] .nav-pill {
   /* Light mode has no brightness headroom to lift the pill above an off-white
      page, so it separates the way every other light surface does: white plus
-     a hairline plus the card shadow. */
+     the card shadow (no hairline outline). */
   background-color: color-mix(in oklch, var(--gray-950) 94%, transparent);
-  box-shadow:
-    0 0 0 1px var(--gray-800),
-    var(--elevation-card);
+  box-shadow: var(--elevation-card);
 }
 .nav-pill.nav-scrolled {
   /* Once page content is passing underneath, the pill lightens a step and the
@@ -1279,6 +1315,13 @@ body {
   background-color: color-mix(in oklch, var(--gray-900) 82%, transparent);
   -webkit-backdrop-filter: blur(120px);
   backdrop-filter: blur(120px);
+}
+[data-theme="light"] .nav-pill.nav-scrolled {
+  /* --gray-900 is only a shade off white in light mode, so the 82% dark-mode
+     opacity reads as a plain solid bar — nothing behind it is bright/dark
+     enough to show through as a blur. Dropping well below that lets whatever
+     is scrolling underneath actually read through the frost. */
+  background-color: color-mix(in oklch, var(--gray-950) 68%, transparent);
 }
 
 /* Quote/name fade used by the testimonial filmstrip. Lives here rather than

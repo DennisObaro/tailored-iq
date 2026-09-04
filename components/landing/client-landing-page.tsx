@@ -18,6 +18,7 @@ import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { useInViewOnce } from "@/hooks/use-in-view-once";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import { useHydrated } from "@/hooks/use-hydrated";
+import { cn } from "@/lib/utils/cn";
 
 /**
  * The marketing home page. Ported from the landing-page project's
@@ -163,6 +164,10 @@ function paperEntranceStyle(
   };
 }
 
+// Process strip directly under the hero — a condensed, four-word-per-step
+// preview of the fuller "From Challenge to Clarity" walkthrough just below.
+const PROCESS_STEPS = ["Share your need", "Get matched", "Engage directly", "Problem solved"];
+
 // "From Challenge to Clarity" — a stack of sticky panels the user scrolls
 // through, each covering the previous one (see HowItWorksScroller). Numbers
 // are 01-04: the Figma file labels steps 3 and 4 both "04", which reads as a
@@ -201,16 +206,19 @@ const HOW_IT_WORKS = [
 const PLAYBOOK_INCLUDES_LEFT = [
   {
     icon: "/landing/playbook/ai-search-lines.svg",
+    iconLight: "/landing/playbook/ai-search-lines-light.svg",
     title: "Executive Summary",
     body: "A concise overview of your challenge and the recommended strategic direction.",
   },
   {
     icon: "/landing/playbook/lightbulb.svg",
+    iconLight: "/landing/playbook/lightbulb-light.svg",
     title: "Key Insights",
     body: "The critical observations and patterns influencing your decision.",
   },
   {
     icon: "/landing/playbook/work.svg",
+    iconLight: "/landing/playbook/work-light.svg",
     title: "Why This Works",
     body: "The thinking, research, and real-world experience behind each recommendation.",
   },
@@ -219,16 +227,19 @@ const PLAYBOOK_INCLUDES_LEFT = [
 const PLAYBOOK_INCLUDES_RIGHT = [
   {
     icon: "/landing/playbook/stairs-02.svg",
+    iconLight: "/landing/playbook/stairs-02-light.svg",
     title: "Recommended Actions",
     body: "A practical implementation plan with prioritised actions tailored to your specific situation.",
   },
   {
     icon: "/landing/playbook/keyframes-double.svg",
+    iconLight: "/landing/playbook/keyframes-double-light.svg",
     title: "Practical Frameworks",
     body: "Decision-making frameworks, templates, and models you can immediately apply.",
   },
   {
     icon: "/landing/playbook/question.svg",
+    iconLight: "/landing/playbook/question-light.svg",
     title: "Expert Support",
     body: "If you need additional guidance, book a session with experts behind the recommendations.",
   },
@@ -496,8 +507,8 @@ export function ClientLandingPage() {
   // (the SSR-rendered markup) and swaps once hydrated — never before, or the
   // image the client renders on first paint wouldn't match the server's.
   const { resolvedTheme } = useTheme();
-  const heroCarouselSlides =
-    hydrated && resolvedTheme === "light" ? HERO_CAROUSEL_SLIDES_LIGHT : HERO_CAROUSEL_SLIDES_DARK;
+  const isLightMode = hydrated && resolvedTheme === "light";
+  const heroCarouselSlides = isLightMode ? HERO_CAROUSEL_SLIDES_LIGHT : HERO_CAROUSEL_SLIDES_DARK;
 
   // Signed in, the primary CTA goes straight into the app; signed out it
   // goes to sign-up. (The source project passed a `role` search param to its
@@ -568,6 +579,9 @@ export function ClientLandingPage() {
   const { ref: playbookGridRef, inView: playbookInView } = useInViewOnce<HTMLDivElement>({
     threshold: 0.15,
   });
+  const { ref: processStripRef, inView: processStripInView } = useInViewOnce<HTMLDivElement>({
+    threshold: 0.3,
+  });
   const { ref: mosaicRef, inView: mosaicInView } = useInViewOnce<HTMLDivElement>({ threshold: 0.1 });
   const { ref: expertsRef, inView: expertsInView } = useInViewOnce<HTMLDivElement>({
     threshold: 0.2,
@@ -606,7 +620,11 @@ export function ClientLandingPage() {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/landing/hero-trusted-badge-icon.svg"
+                src={
+                  isLightMode
+                    ? "/landing/hero-trusted-badge-icon-light.svg"
+                    : "/landing/hero-trusted-badge-icon.svg"
+                }
                 alt=""
                 className="hero-badge-dot-blink h-4 w-4"
               />
@@ -622,6 +640,9 @@ export function ClientLandingPage() {
               cardClassName="h-[calc(var(--cf-card)_+_10px)]"
               autoPlay
               autoPlayInterval={3000}
+              entrance
+              entranceDelay={180}
+              entranceStagger={70}
             />
           </div>
 
@@ -665,6 +686,29 @@ export function ClientLandingPage() {
         </div>
       </section>
 
+      {/* PROCESS STRIP — "Share your need -> Get matched -> Engage directly
+          -> Problem solved". Each step is its own arrow/flag shape, cut
+          with clip-path (see .process-tab, globals.css) rather than shipped
+          as the Figma spec's fixed-width raster arrows, so it stays crisp
+          at any container width, standing apart on a 20px gap; below md,
+          where a squeezed chevron would just look broken, it falls back to
+          a plain stacked list. */}
+      <section className="bg-mkt-sand py-10 md:py-[50px]">
+        <div className="container-tight">
+          <div ref={processStripRef} className="flex flex-col gap-3 md:flex-row md:gap-5">
+            {PROCESS_STEPS.map((step, i) => (
+              <div
+                key={step}
+                className="process-tab flex min-w-0 items-center justify-center rounded-2xl bg-mkt-card px-6 py-5 text-center md:h-[98px] md:py-0"
+                style={cardEntranceStyle(processStripInView, i * 90, reducedMotion)}
+              >
+                <span className="text-lg font-semibold text-mkt-text md:text-[22px]">{step}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* HOW IT WORKS — "From Challenge to Clarity". Photos are pre-composed
           marketing assets (the chat/report/call/playbook UI mockups,
           including rounded corners, are baked into the images themselves,
@@ -674,7 +718,7 @@ export function ClientLandingPage() {
         className="bg-mkt-panel pb-8 pt-8 scroll-mt-[calc(var(--nav-height)+2rem)] md:pb-0 md:pt-24"
       >
         <div className="container-tight text-center">
-          <h2 className="text-[26px] font-semibold tracking-normal md:text-5xl">
+          <h2 className="text-[26px] font-semibold tracking-normal text-mkt-heading md:text-5xl">
             From Challenge to Clarity
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
@@ -691,7 +735,7 @@ export function ClientLandingPage() {
       <section className="bg-mkt-sand py-8 md:py-32">
         <div className="container-tight">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-[26px] font-semibold tracking-normal md:text-5xl">
+            <h2 className="text-[26px] font-semibold tracking-normal text-mkt-heading md:text-5xl">
               What Your Playbook Includes
             </h2>
             <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
@@ -721,10 +765,18 @@ export function ClientLandingPage() {
                   />
                   <div
                     className="relative mb-3 flex h-11 w-11 items-center justify-center rounded-full transition-[filter] duration-200 ease-out group-hover:brightness-110"
-                    style={{ background: "linear-gradient(180deg, #3d3b33 0%, #55524a 100%)" }}
+                    style={{
+                      background: isLightMode
+                        ? "#eed7ae"
+                        : "linear-gradient(180deg, #3d3b33 0%, #55524a 100%)",
+                    }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={item.icon} alt="" className="h-6 w-6" />
+                    <img
+                      src={isLightMode ? item.iconLight : item.icon}
+                      alt=""
+                      className="h-6 w-6"
+                    />
                   </div>
                   <h3 className="relative font-display text-[20px] font-semibold text-mkt-text">
                     {item.title}
@@ -823,15 +875,33 @@ export function ClientLandingPage() {
 
               <Link
                 href={getStartedHref}
-                className="mt-8 inline-flex items-center gap-2 rounded-full bg-mkt-cta px-5 py-3 text-base font-semibold text-mkt-cta-ink transition-[scale,filter] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02] hover:brightness-110 motion-reduce:hover:scale-100"
+                className={cn(
+                  "mt-8 inline-flex items-center gap-2 rounded-full px-5 py-3 text-base font-semibold transition-[scale,filter] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.02] hover:brightness-110 motion-reduce:hover:scale-100",
+                  !isLightMode && "bg-mkt-cta text-mkt-cta-ink",
+                )}
+                style={
+                  isLightMode
+                    ? { background: "#5d400a", color: "#ffffff" }
+                    : undefined
+                }
               >
-                Download Sample
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/landing/playbook/arrow-down-03.svg"
-                  alt=""
-                  className="invert-on-light h-6 w-6"
-                />
+                {isLightMode ? (
+                  <>
+                    Get your action plan
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/landing/playbook/arrow-up-right-01.svg" alt="" className="h-6 w-6" />
+                  </>
+                ) : (
+                  <>
+                    Download Sample
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/landing/playbook/arrow-down-03.svg"
+                      alt=""
+                      className="invert-on-light h-6 w-6"
+                    />
+                  </>
+                )}
               </Link>
             </div>
 
@@ -848,10 +918,18 @@ export function ClientLandingPage() {
                   />
                   <div
                     className="relative mb-3 flex h-11 w-11 items-center justify-center rounded-full transition-[filter] duration-200 ease-out group-hover:brightness-110"
-                    style={{ background: "linear-gradient(180deg, #3d3b33 0%, #55524a 100%)" }}
+                    style={{
+                      background: isLightMode
+                        ? "#eed7ae"
+                        : "linear-gradient(180deg, #3d3b33 0%, #55524a 100%)",
+                    }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={item.icon} alt="" className="h-6 w-6" />
+                    <img
+                      src={isLightMode ? item.iconLight : item.icon}
+                      alt=""
+                      className="h-6 w-6"
+                    />
                   </div>
                   <h3 className="relative font-display text-[20px] font-semibold text-mkt-text">
                     {item.title}
@@ -883,7 +961,7 @@ export function ClientLandingPage() {
         <div className="container-tight">
           <div className="mb-[42px] flex flex-wrap items-start justify-between gap-6">
             <div className={`experts-header ${expertsInView ? "experts-in" : ""}`}>
-              <h2 className="whitespace-nowrap text-[26px] font-semibold tracking-normal md:text-5xl">
+              <h2 className="whitespace-nowrap text-[26px] font-semibold tracking-normal text-mkt-heading md:text-5xl">
                 Meet the experts
               </h2>
               <p className="mt-4 max-w-md text-lg text-muted-foreground">
@@ -981,7 +1059,7 @@ export function ClientLandingPage() {
             className="mb-10 flex flex-wrap items-start justify-between gap-8 md:mb-14"
             style={cardEntranceStyle(challengesInView, 0, reducedMotion)}
           >
-            <h2 className="max-w-md text-[26px] font-semibold tracking-normal md:text-5xl">
+            <h2 className="max-w-md text-[26px] font-semibold tracking-normal text-mkt-heading md:text-5xl">
               Challenges We Help Solve
             </h2>
             <p className="max-w-xs text-lg text-muted-foreground">
@@ -1062,7 +1140,7 @@ export function ClientLandingPage() {
       >
         <div className="container-tight">
           <div className="mx-auto mb-14 max-w-xl text-center">
-            <h2 className="text-[26px] font-semibold tracking-normal md:text-5xl">Testimonials</h2>
+            <h2 className="text-[26px] font-semibold tracking-normal text-mkt-heading md:text-5xl">Testimonials</h2>
             <p className="mt-4 text-lg text-muted-foreground">
               Hear how founders, CEOs, executives, and senior leaders use TailoredIQ to make better
               decisions with greater confidence.
@@ -1106,7 +1184,7 @@ export function ClientLandingPage() {
           </div>
           <div className="mx-auto mt-5 flex max-w-[293px] flex-col items-center gap-5 text-center">
             <div className="flex flex-col gap-[11px]">
-              <h2 className="text-[26px] font-semibold leading-[1.4] text-mkt-text">
+              <h2 className="text-[26px] font-semibold leading-[1.4] text-mkt-heading">
                 The best decisions are backed by experience.
               </h2>
               <p className="text-sm leading-[1.4] text-mkt-text-soft">
@@ -1183,7 +1261,7 @@ export function ClientLandingPage() {
           <div
             className={`mosaic-text relative mx-auto w-full max-w-xl px-4 text-center ${mosaicInView ? "mosaic-in" : ""}`}
           >
-            <h2 className="text-[26px] font-semibold tracking-normal md:text-5xl">
+            <h2 className="text-[26px] font-semibold tracking-normal text-mkt-heading md:text-5xl">
               The best decisions are backed by experience.
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">

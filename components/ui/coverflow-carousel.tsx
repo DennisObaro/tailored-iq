@@ -49,6 +49,15 @@ export interface CoverflowCarouselProps {
   /** Passed to each slide's `<img>` — e.g. an `object-[...]` position when
    *  a centre crop cuts into the subject. */
   imageClassName?: string;
+  /** Fade+scale each image in on mount, staggered from the outer cards
+   *  inward so the row reads as assembling toward the centre card rather
+   *  than popping in as one flat block. Off by default since a carousel
+   *  used mid-page (already in view before its own mount) doesn't need it. */
+  entrance?: boolean;
+  /** Delay before the first (outermost) card starts, ms. */
+  entranceDelay?: number;
+  /** Additional delay per step toward the centre, ms. */
+  entranceStagger?: number;
 }
 
 export function CoverflowCarousel({
@@ -70,9 +79,26 @@ showPagination = false,
   className,
   cardClassName,
   imageClassName,
+  entrance = false,
+  entranceDelay = 0,
+  entranceStagger = 70,
 }: CoverflowCarouselProps) {
   const count = slides.length;
   const reducedMotion = useReducedMotion();
+
+  // Same fold `paint()` uses to find each card's distance from centre, but
+  // fixed to the mount-time layout (pos 0) rather than the live position —
+  // the entrance only ever plays once, over the row's starting arrangement.
+  const maxDistance = Math.floor(count / 2);
+  const entranceDelayFor = React.useCallback(
+    (index: number) => {
+      let offset = index % count;
+      if (offset > count / 2) offset -= count;
+      const distance = Math.abs(offset);
+      return entranceDelay + (maxDistance - distance) * entranceStagger;
+    },
+    [count, entranceDelay, entranceStagger, maxDistance],
+  );
 
   const frameRef = React.useRef<HTMLDivElement>(null);
   const cardRefs = React.useRef<(HTMLDivElement | null)[]>([]);
@@ -337,7 +363,12 @@ showPagination = false,
                   src={slide.src}
                   alt={slide.alt}
                   draggable={false}
-                  className={cn("h-full w-full select-none object-cover", imageClassName)}
+                  className={cn(
+                    "h-full w-full select-none object-cover",
+                    entrance && "coverflow-card-entrance",
+                    imageClassName,
+                  )}
+                  style={entrance ? { animationDelay: `${entranceDelayFor(index)}ms` } : undefined}
                 />
               </div>
             ))}

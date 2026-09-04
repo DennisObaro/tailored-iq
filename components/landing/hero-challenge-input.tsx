@@ -73,7 +73,7 @@ export function HeroChallengeInput() {
         disabled={busy}
         className="flex h-14 w-full shrink-0 items-center justify-center self-center whitespace-nowrap rounded-full bg-primary-500 px-6 text-[15px] font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary-400 sm:h-auto sm:w-auto sm:self-stretch"
       >
-        {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : "Generate My Playbook"}
+        {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : "Get Insights"}
       </button>
     </form>
   );
