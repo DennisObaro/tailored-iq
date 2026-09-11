@@ -1,5 +1,7 @@
 "use client";
 
+import { ExpertCtaPanel } from "@/components/landing/expert-cta-panel";
+import { ExpertHowItWorks } from "@/components/landing/expert-how-it-works";
 import { MarketingLanding } from "@/components/landing/marketing-landing";
 import { CATEGORIES } from "@/lib/constants/categories";
 
@@ -30,13 +32,8 @@ export function ExpertsLanding() {
       prioritiesTitle="Your experience, where it matters most"
       prioritiesIntro="Users come to the network with real decisions on the line, across every business function. The categories below are where the network needs your perspective most."
       priorities={CATEGORIES}
-      whyEmphasis="experts"
-      bottomCta={{
-        heading: "Your experience is someone else's shortcut.",
-        body: "Apply to join as an expert and share what you have learned through advisory conversations, contributed documents, and case studies.",
-        primaryLabel: "Apply as an Expert",
-        secondaryLabel: "Learn more",
-      }}
+      afterHero={<ExpertHowItWorks />}
+      bottomCta={<ExpertCtaPanel />}
     />
   );
 }

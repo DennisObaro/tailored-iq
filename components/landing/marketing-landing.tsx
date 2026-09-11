@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Check, Compass, Users } from "@/components/icons";
+import { ArrowRight, Check } from "@/components/icons";
 import { Navigation } from "@/components/landing/navigation";
 import { Footer } from "@/components/landing/footer";
 import { FounderNote } from "@/components/landing/founder-note";
@@ -58,41 +58,6 @@ const HERO_SAMPLE_EXCHANGE = [
   },
 ];
 
-const FOR_USERS = {
-  icon: Users,
-  title: "For Users",
-  points: [
-    "Access experienced professionals without the delay of traditional search",
-    "Gain practical insight shaped by real operating experience",
-    "Find support across strategy, leadership, growth, people, operations, and market understanding",
-  ],
-};
-
-const FOR_EXPERTS = {
-  icon: BookOpen,
-  title: "For Experts",
-  points: [
-    "Join a curated network of trusted professionals",
-    "Share your experience in meaningful advisory engagements",
-    "Contribute your expertise while maintaining flexibility in how you engage",
-  ],
-};
-
-const PROMISE_ITEMS = [
-  {
-    title: "Curated, not crowded",
-    body: "Every expert is personally vetted. Every match is intentional. We do not scale by lowering the bar.",
-  },
-  {
-    title: "Context-first matching",
-    body: "We pair you with operators who have navigated the same decisions in similar markets — not just the same sector.",
-  },
-  {
-    title: "Confidential by design",
-    body: "Sensitive decisions stay between you and your advisor. No public profiles. No marketplace visibility.",
-  },
-];
-
 export interface MarketingLandingHero {
   eyebrow: string;
   title: ReactNode;
@@ -113,7 +78,7 @@ export function MarketingLanding({
   prioritiesTitle,
   prioritiesIntro,
   priorities,
-  whyEmphasis,
+  afterHero,
   bottomCta,
 }: {
   hero: MarketingLandingHero;
@@ -121,8 +86,10 @@ export function MarketingLanding({
   prioritiesTitle: ReactNode;
   prioritiesIntro: string;
   priorities: readonly string[];
-  whyEmphasis: "clients" | "experts";
-  bottomCta: MarketingLandingBottomCta;
+  /** Section slot rendered between the hero and "what it covers". */
+  afterHero?: ReactNode;
+  /** Closing CTA section, rendered just above the footer. */
+  bottomCta: ReactNode;
 }) {
   const hydrated = useHydrated();
   const user = useSessionStore((s) => s.user);
@@ -132,8 +99,6 @@ export function MarketingLanding({
   // /signup route to preselect the audience — this app's sign-up has no such
   // param, so the distinction is dropped rather than faked.
   const primaryHref = signedIn ? (user.activeRole === "expert" ? "/expert/dashboard" : "/dashboard") : "/sign-up";
-
-  const whyCards = whyEmphasis === "experts" ? [FOR_EXPERTS, FOR_USERS] : [FOR_USERS, FOR_EXPERTS];
 
   return (
     <div className="marketing-shell flex min-h-screen flex-col bg-mkt-page">
@@ -238,6 +203,8 @@ export function MarketingLanding({
         </div>
       </section>
 
+      {afterHero}
+
       {/* WHAT IT COVERS */}
       <section className="container-tight py-24 md:py-32">
         <div className="mx-auto max-w-3xl text-center">
@@ -261,71 +228,6 @@ export function MarketingLanding({
           If it is on your plate this quarter, someone in the network has done it before — at your
           scale, in your context.
         </p>
-      </section>
-
-      {/* WHY TAILOREDIQ */}
-      <section className="bg-surface">
-        <div className="container-tight py-24 md:py-32">
-          <div className="mx-auto max-w-3xl text-center">
-            <span className="eyebrow">Why TailoredIQ</span>
-            <h2 className="mt-4 text-balance text-[54px] font-semibold leading-[1.2] tracking-normal">
-              Built for both sides of the table
-            </h2>
-            <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-              Whether you are a user seeking insight or an expert ready to share it, TailoredIQ was
-              designed to make the connection meaningful, fast, and confidential.
-            </p>
-          </div>
-
-          <div className="mx-auto mt-14 grid max-w-4xl gap-6 md:grid-cols-2">
-            {whyCards.map((d) => (
-              <div
-                key={d.title}
-                className="card-panel group p-8 transition-colors hover:border-gold/60"
-              >
-                <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gold text-primary-foreground shadow-[0_10px_30px_-10px_color-mix(in_oklch,var(--gold)_70%,transparent)]">
-                  <d.icon className="size-6" aria-hidden />
-                </div>
-                <h3 className="mb-4 text-2xl text-gold">{d.title}</h3>
-                <ul className="space-y-3">
-                  {d.points.map((point) => (
-                    <li key={point} className="flex items-start gap-3">
-                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold">
-                        <Check className="size-3 text-primary-foreground" aria-hidden />
-                      </span>
-                      <span className="text-lg leading-relaxed text-muted-foreground [text-wrap:pretty]">
-                        {point}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* OUR PROMISE */}
-      <section className="container-tight py-24 md:py-32">
-        <div className="mx-auto max-w-3xl text-center">
-          <span className="eyebrow">Our Promise</span>
-          <h2 className="mt-4 text-balance text-[54px] font-semibold leading-[1.2] tracking-normal">
-            How we show up every time
-          </h2>
-        </div>
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
-          {PROMISE_ITEMS.map((item) => (
-            <div
-              key={item.title}
-              className="card-panel group p-8 transition-colors hover:border-gold/60"
-            >
-              <h3 className="mb-3 text-2xl">{item.title}</h3>
-              <p className="text-lg leading-relaxed text-muted-foreground [text-wrap:pretty]">
-                {item.body}
-              </p>
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* QUOTE */}
@@ -357,30 +259,7 @@ export function MarketingLanding({
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="container-tight pb-24 pt-24">
-        <div className="card-panel relative overflow-hidden p-12 text-center md:p-20">
-          <div className="relative">
-            <Compass className="mx-auto mb-6 size-8 text-gold" aria-hidden />
-            <h2 className="mx-auto max-w-2xl text-balance text-[54px] font-semibold leading-[1.2] tracking-normal">
-              {bottomCta.heading}
-            </h2>
-            <p className="mx-auto mt-6 max-w-xl text-muted-foreground">{bottomCta.body}</p>
-            <div className="mt-10 flex flex-wrap justify-center gap-4">
-              <Link
-                href={primaryHref}
-                className="inline-flex items-center gap-2 rounded-full bg-mkt-cta px-5 py-3 text-base font-semibold text-mkt-cta-ink transition hover:bg-mkt-cta/90"
-              >
-                {signedIn ? "Go to dashboard" : bottomCta.primaryLabel}{" "}
-                <ArrowRight className="size-4" aria-hidden />
-              </Link>
-              <Link href="/about" className="btn-ghost">
-                {bottomCta.secondaryLabel}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      {bottomCta}
 
       <Footer />
     </div>
