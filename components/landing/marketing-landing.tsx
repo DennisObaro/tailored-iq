@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Check } from "@/components/icons";
 import { Navigation } from "@/components/landing/navigation";
 import { Footer } from "@/components/landing/footer";
+import { Reveal } from "@/components/landing/reveal";
 import { FounderNote } from "@/components/landing/founder-note";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import { useHydrated } from "@/hooks/use-hydrated";
@@ -79,6 +80,7 @@ export function MarketingLanding({
   prioritiesIntro,
   priorities,
   afterHero,
+  afterPriorities,
   bottomCta,
 }: {
   hero: MarketingLandingHero;
@@ -88,6 +90,8 @@ export function MarketingLanding({
   priorities: readonly string[];
   /** Section slot rendered between the hero and "what it covers". */
   afterHero?: ReactNode;
+  /** Section slot rendered just after "what it covers". */
+  afterPriorities?: ReactNode;
   /** Closing CTA section, rendered just above the footer. */
   bottomCta: ReactNode;
 }) {
@@ -207,37 +211,42 @@ export function MarketingLanding({
 
       {/* WHAT IT COVERS */}
       <section className="container-tight py-24 md:py-32">
-        <div className="mx-auto max-w-3xl text-center">
+        <Reveal className="mx-auto max-w-3xl text-center">
           <span className="eyebrow">{prioritiesEyebrow}</span>
-          <h2 className="mt-4 text-balance text-[54px] font-semibold leading-[1.2] tracking-normal">
+          <h2 className="mt-4 text-balance text-[34px] font-semibold leading-[1.2] tracking-normal md:text-[48px]">
             {prioritiesTitle}
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-muted-foreground">{prioritiesIntro}</p>
-        </div>
+        </Reveal>
 
         <div className="mt-14 grid gap-x-10 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-          {priorities.map((p) => (
-            <div key={p} className="flex items-start gap-3">
+          {priorities.map((p, i) => (
+            // Capped so a ten-item list still finishes arriving inside 300ms.
+            <Reveal key={p} delay={Math.min(i, 5) * 60} y={12} className="flex items-start gap-3">
               <Check className="mt-1 size-4.5 shrink-0 text-gold" aria-hidden />
               <span className="text-lg text-foreground/90">{p}</span>
-            </div>
+            </Reveal>
           ))}
         </div>
 
-        <p className="mx-auto mt-12 max-w-2xl text-center text-lg italic text-muted-foreground">
-          If it is on your plate this quarter, someone in the network has done it before — at your
-          scale, in your context.
-        </p>
+        <Reveal delay={120} y={12}>
+          <p className="mx-auto mt-12 max-w-2xl text-center text-lg italic text-muted-foreground">
+            If it is on your plate this quarter, someone in the network has done it before — at your
+            scale, in your context.
+          </p>
+        </Reveal>
       </section>
+
+      {afterPriorities}
 
       {/* QUOTE */}
       <section className="container-tight py-20 md:py-28">
-        <div className="mx-auto max-w-4xl text-center">
+        <Reveal className="mx-auto max-w-4xl text-center">
           <blockquote className="font-display text-lg leading-tight md:text-2xl">
             &ldquo;The right insight can change the quality of a decision. TailoredIQ exists to help
             leaders move forward with greater clarity, confidence, and context.&rdquo;
           </blockquote>
-        </div>
+        </Reveal>
       </section>
 
       <FounderNote />

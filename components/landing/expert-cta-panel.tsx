@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Reveal } from "@/components/landing/reveal";
 import { useInViewOnce } from "@/hooks/use-in-view-once";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { useHydrated } from "@/hooks/use-hydrated";
@@ -62,10 +63,10 @@ export function ExpertCtaPanel() {
 
   return (
     <section className="container-tight py-24 md:py-28">
-      <div className="card-panel overflow-hidden rounded-[28px] px-7 py-12 md:px-14 md:py-16">
+      <Reveal className="card-panel overflow-hidden rounded-[28px] px-7 py-12 md:px-14 md:py-16">
         <div className="grid items-center gap-14 lg:grid-cols-[1.08fr_0.92fr] lg:gap-16">
           <div>
-            <h2 className="text-[32px] font-semibold leading-[1.15] tracking-normal text-mkt-text md:text-[40px]">
+            <h2 className="text-[34px] font-semibold leading-[1.15] tracking-normal text-mkt-text md:text-[48px]">
               Your experience is someone else&rsquo;s shortcut.
             </h2>
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-mkt-text-soft">
@@ -147,7 +148,7 @@ export function ExpertCtaPanel() {
             </div>
           </div>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }

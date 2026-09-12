@@ -20,6 +20,15 @@ export function useInViewOnce<T extends HTMLElement>({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    // IntersectionObserver callbacks are throttled in background tabs, which
+    // would leave a consumer's content stuck in its pre-entrance state. An
+    // element that is already on screen at mount doesn't need the observer to
+    // tell it so — read the rectangle directly and skip straight to visible.
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      setInView(true);
+      return;
+    }
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return;
