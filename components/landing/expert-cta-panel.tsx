@@ -57,7 +57,10 @@ export function ExpertCtaPanel() {
   const [raised, setRaised] = useState(1);
   useEffect(() => {
     if (!inView || reduced) return;
-    const id = setInterval(() => setRaised((i) => (i + 1) % FEATURED_EXPERTS.length), ROTATION_MS);
+    const id = setInterval(
+      () => setRaised((i) => (i + 1) % FEATURED_EXPERTS.length),
+      ROTATION_MS,
+    );
     return () => clearInterval(id);
   }, [inView, reduced]);
 
@@ -70,8 +73,8 @@ export function ExpertCtaPanel() {
               Your experience is someone else&rsquo;s shortcut.
             </h2>
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-mkt-text-soft">
-              Apply to join as an expert and share what you have learned through advisory
-              conversations, contributed documents, and case studies.
+              Apply to join as an expert and share what you have learned through
+              advisory conversations, contributed documents, and case studies.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <Link
@@ -95,57 +98,57 @@ export function ExpertCtaPanel() {
             </div>
           </div>
 
-          {/* Card stack: three experts inside one quiet container, with the
-              matched one lifted clear of it — wider than the container on
-              both sides, brighter, and carrying the only shadow here. */}
+          {/* Card stack. The matched expert is the only one drawn as a card:
+              full contrast, a border, and the only shadow here. The other two
+              sit on the ground at low opacity with nothing around them. */}
           <div ref={ref} className="relative">
             <div
               aria-hidden
-              className="dot-grid-bg pointer-events-none absolute -inset-10 [mask-image:radial-gradient(ellipse_at_center,black,transparent_72%)]"
+              className="dot-grid-bg pointer-events-none absolute -inset-8 [mask-image:radial-gradient(ellipse_at_center,black,transparent_72%)]"
             />
-            <div className="relative rounded-[22px] border border-mkt-hairline/60 bg-mkt-card/35 p-3">
-              <ul className="flex flex-col gap-1">
-                {FEATURED_EXPERTS.map((expert, i) => {
-                  const isRaised = i === raised;
-                  return (
-                    <li
-                      key={expert.name}
-                      className={`relative flex items-center gap-4 rounded-2xl border transition-all duration-500 ease-out ${
-                        isRaised
-                          ? "z-10 -mx-4 border-mkt-hairline bg-mkt-card px-5 py-4 shadow-[0_26px_55px_-26px_rgba(0,0,0,0.5)] sm:-mx-6"
-                          : "border-transparent px-3 py-3 opacity-55"
-                      }`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={expert.photo}
-                        alt=""
-                        className="size-11 shrink-0 rounded-full object-cover"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div
-                          className={`truncate text-[15px] font-semibold transition-colors duration-500 ${
-                            isRaised ? "text-mkt-text" : "text-mkt-text-soft"
-                          }`}
-                        >
-                          {expert.name}
-                        </div>
-                        <div className="truncate text-[13px] text-mkt-text-mute">
-                          {expert.expertise}
-                        </div>
-                      </div>
+            <ul className="relative flex flex-col gap-2.5">
+              {FEATURED_EXPERTS.map((expert, i) => {
+                const isRaised = i === raised;
+                return (
+                  <li
+                    key={expert.name}
+                    className={`flex items-center gap-4 rounded-2xl border px-4 py-4 transition-all duration-500 ease-out sm:px-5 ${
+                      isRaised
+                        ? "border-mkt-hairline bg-mkt-card shadow-[0_28px_60px_-28px_rgba(0,0,0,0.55)] sm:-mx-3"
+                        : "border-transparent opacity-55"
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={expert.photo}
+                      alt=""
+                      className="size-11 shrink-0 rounded-full object-cover"
+                    />
+                    <div className="min-w-0 flex-1">
                       <div
-                        className={`shrink-0 text-[15px] tabular-nums transition-colors duration-500 ${
-                          isRaised ? "font-semibold text-mkt-text" : "text-mkt-text-mute"
+                        className={`truncate text-[15px] font-semibold transition-colors duration-500 ${
+                          isRaised ? "text-mkt-text" : "text-mkt-text-soft"
                         }`}
                       >
-                        {expert.years} yrs
+                        {expert.name}
                       </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
+                      <div className="truncate text-[13px] text-mkt-text-mute">
+                        {expert.expertise}
+                      </div>
+                    </div>
+                    <div
+                      className={`shrink-0 text-[15px] tabular-nums transition-colors duration-500 ${
+                        isRaised
+                          ? "font-semibold text-mkt-text"
+                          : "text-mkt-text-mute"
+                      }`}
+                    >
+                      {expert.years} yrs
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </div>
       </Reveal>

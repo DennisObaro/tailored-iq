@@ -124,10 +124,13 @@ export function ExpertEngagements() {
 
       {/* The scroll track: one viewport to pin in, plus a step's worth of
           scroll for each engagement after the first. No transform on this or
-          any ancestor — that would break the sticky child. */}
+          any ancestor — that would break the sticky child.
+          The negative top margin absorbs the sticky box's own centring space,
+          which would otherwise read as a hole between the heading and the
+          panel before the pin takes hold. */}
       <div
         ref={trackRef}
-        className="relative"
+        className="relative -mt-[12svh]"
         style={{ height: `calc(100svh + ${(ENGAGEMENTS.length - 1) * STEP_SVH}svh)` }}
       >
         <div className="sticky top-0 flex min-h-[100svh] items-center">

@@ -4,6 +4,7 @@ import { ExpertCtaPanel } from "@/components/landing/expert-cta-panel";
 import { ExpertEngagements } from "@/components/landing/expert-engagements";
 import { ExpertHowItWorks } from "@/components/landing/expert-how-it-works";
 import { ExpertNetworkRow } from "@/components/landing/expert-network-row";
+import { ExpertPromise } from "@/components/landing/expert-promise";
 import { MarketingLanding } from "@/components/landing/marketing-landing";
 import { CATEGORIES } from "@/lib/constants/categories";
 
@@ -40,7 +41,12 @@ export function ExpertsLanding() {
           <ExpertEngagements />
         </>
       }
-      afterPriorities={<ExpertNetworkRow />}
+      afterPriorities={
+        <>
+          <ExpertNetworkRow />
+          <ExpertPromise />
+        </>
+      }
       bottomCta={<ExpertCtaPanel />}
     />
   );
