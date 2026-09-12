@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowRight, Check } from "@/components/icons";
+import { ArrowRight } from "@/components/icons";
 import { Navigation } from "@/components/landing/navigation";
 import { Footer } from "@/components/landing/footer";
 import { Reveal } from "@/components/landing/reveal";
@@ -40,7 +40,10 @@ const CLIENT_LOGOS = [
   { name: "Kendor", mono: "/landing/clients/kendor-mono.png" },
   { name: "FITC", mono: "/landing/clients/fitc-mono.png" },
   { name: "Candor Consulting", mono: "/landing/clients/candor-mono.png" },
-  { name: "Continental Reinsurance", mono: "/landing/clients/continental-reinsurance-mono.png" },
+  {
+    name: "Continental Reinsurance",
+    mono: "/landing/clients/continental-reinsurance-mono.png",
+  },
   { name: "Oryo", mono: "/landing/clients/oryo-mono.png" },
   { name: "AshLuxury", mono: "/landing/clients/ashluxury-mono.png" },
   { name: "Branch", mono: "/landing/clients/branch-mono.png" },
@@ -61,38 +64,19 @@ const HERO_SAMPLE_EXCHANGE = [
 ];
 
 export interface MarketingLandingHero {
-  eyebrow: string;
   title: ReactNode;
   subtitle: string;
   ctaLabel: string;
 }
 
-export interface MarketingLandingBottomCta {
-  heading: ReactNode;
-  body: string;
-  primaryLabel: string;
-  secondaryLabel: string;
-}
-
 export function MarketingLanding({
   hero,
-  prioritiesEyebrow,
-  prioritiesTitle,
-  prioritiesIntro,
-  priorities,
-  afterHero,
-  afterPriorities,
+  sections,
   bottomCta,
 }: {
   hero: MarketingLandingHero;
-  prioritiesEyebrow: string;
-  prioritiesTitle: ReactNode;
-  prioritiesIntro: string;
-  priorities: readonly string[];
-  /** Section slot rendered between the hero and "what it covers". */
-  afterHero?: ReactNode;
-  /** Section slot rendered just after "what it covers". */
-  afterPriorities?: ReactNode;
+  /** Everything between the hero and the closing quote. */
+  sections?: ReactNode;
   /** Closing CTA section, rendered just above the footer. */
   bottomCta: ReactNode;
 }) {
@@ -103,7 +87,11 @@ export function MarketingLanding({
   // sign-up. The source threaded a `role` search param through to its own
   // /signup route to preselect the audience — this app's sign-up has no such
   // param, so the distinction is dropped rather than faked.
-  const primaryHref = signedIn ? (user.activeRole === "expert" ? "/expert/dashboard" : "/dashboard") : "/sign-up";
+  const primaryHref = signedIn
+    ? user.activeRole === "expert"
+      ? "/expert/dashboard"
+      : "/dashboard"
+    : "/sign-up";
 
   return (
     <div className="marketing-shell flex min-h-screen flex-col bg-mkt-page">
@@ -136,11 +124,6 @@ export function MarketingLanding({
           ) : (
             <div className="grid items-start gap-8 md:grid-cols-[1.4fr_1fr] md:gap-12">
               <div>
-                <span className="eyebrow mb-6 inline-flex items-center gap-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/landing/brand-icon.png" alt="" className="size-3.5 object-contain" />{" "}
-                  {hero.eyebrow}
-                </span>
                 <h1 className="text-balance text-[54px] font-semibold leading-[1.2] tracking-normal text-mkt-text">
                   {hero.title}
                 </h1>
@@ -208,37 +191,7 @@ export function MarketingLanding({
         </div>
       </section>
 
-      {afterHero}
-
-      {/* WHAT IT COVERS */}
-      <section className="container-tight py-24 md:py-32">
-        <Reveal className="mx-auto max-w-3xl text-center">
-          <SectionLabel>{prioritiesEyebrow}</SectionLabel>
-          <h2 className="mt-5 text-balance text-[34px] font-semibold leading-[1.2] tracking-normal md:text-[48px]">
-            {prioritiesTitle}
-          </h2>
-          <p className="mt-6 text-lg leading-relaxed text-muted-foreground">{prioritiesIntro}</p>
-        </Reveal>
-
-        <div className="mt-14 grid gap-x-10 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
-          {priorities.map((p, i) => (
-            // Capped so a ten-item list still finishes arriving inside 300ms.
-            <Reveal key={p} delay={Math.min(i, 5) * 60} y={12} className="flex items-start gap-3">
-              <Check className="mt-1 size-4.5 shrink-0 text-gold" aria-hidden />
-              <span className="text-lg text-foreground/90">{p}</span>
-            </Reveal>
-          ))}
-        </div>
-
-        <Reveal delay={120} y={12}>
-          <p className="mx-auto mt-12 max-w-2xl text-center text-lg italic text-muted-foreground">
-            If it is on your plate this quarter, someone in the network has done it before — at your
-            scale, in your context.
-          </p>
-        </Reveal>
-      </section>
-
-      {afterPriorities}
+      {sections}
 
       {/* QUOTE */}
       <section className="container-tight py-20 md:py-28">

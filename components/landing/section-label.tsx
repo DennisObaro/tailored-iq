@@ -9,13 +9,7 @@ import { cn } from "@/lib/utils/cn";
  * Kept as one component rather than a repeated utility string: five sections
  * share it, and they have to stay identical to read as one system.
  */
-export function SectionLabel({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+export function SectionLabel({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <span
       className={cn(

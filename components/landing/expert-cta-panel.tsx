@@ -57,10 +57,7 @@ export function ExpertCtaPanel() {
   const [raised, setRaised] = useState(1);
   useEffect(() => {
     if (!inView || reduced) return;
-    const id = setInterval(
-      () => setRaised((i) => (i + 1) % FEATURED_EXPERTS.length),
-      ROTATION_MS,
-    );
+    const id = setInterval(() => setRaised((i) => (i + 1) % FEATURED_EXPERTS.length), ROTATION_MS);
     return () => clearInterval(id);
   }, [inView, reduced]);
 
@@ -73,8 +70,8 @@ export function ExpertCtaPanel() {
               Your experience is someone else&rsquo;s shortcut.
             </h2>
             <p className="mt-6 max-w-lg text-lg leading-relaxed text-mkt-text-soft">
-              Apply to join as an expert and share what you have learned through
-              advisory conversations, contributed documents, and case studies.
+              Apply to join as an expert and share what you have learned through advisory
+              conversations, contributed documents, and case studies.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <Link
@@ -138,9 +135,7 @@ export function ExpertCtaPanel() {
                     </div>
                     <div
                       className={`shrink-0 text-[15px] tabular-nums transition-colors duration-500 ${
-                        isRaised
-                          ? "font-semibold text-mkt-text"
-                          : "text-mkt-text-mute"
+                        isRaised ? "font-semibold text-mkt-text" : "text-mkt-text-mute"
                       }`}
                     >
                       {expert.years} yrs

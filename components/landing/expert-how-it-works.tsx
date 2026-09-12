@@ -63,10 +63,7 @@ export function ExpertHowItWorks() {
       </div>
 
       <div className="border-t border-mkt-hairline">
-        <div
-          ref={ref}
-          className="container-tight relative border-x border-mkt-hairline"
-        >
+        <div ref={ref} className="container-tight relative border-x border-mkt-hairline">
           {/* The one accent: a light rule tracing 01 -> 04 along the hairline
               above the row. */}
           <span
