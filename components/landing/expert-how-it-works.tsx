@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight } from "@/components/icons";
 import { useInViewOnce } from "@/hooks/use-in-view-once";
+import { SectionLabel } from "@/components/landing/section-label";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 /**
@@ -55,16 +56,17 @@ export function ExpertHowItWorks() {
       {/* Header cell — left-aligned, right half left empty so the frame reads
           as a grid rather than as a banner. */}
       <div className="container-tight border-x border-mkt-hairline py-14 md:py-20">
-        <span className="text-xs font-semibold uppercase tracking-[0.22em] text-mkt-text-mute">
-          How it works
-        </span>
+        <SectionLabel>How it works</SectionLabel>
         <h2 className="mt-5 max-w-2xl text-balance text-[34px] font-semibold leading-[1.15] tracking-normal text-mkt-text md:text-[48px]">
           From your experience to their decision
         </h2>
       </div>
 
       <div className="border-t border-mkt-hairline">
-        <div ref={ref} className="container-tight relative border-x border-mkt-hairline">
+        <div
+          ref={ref}
+          className="container-tight relative border-x border-mkt-hairline"
+        >
           {/* The one accent: a light rule tracing 01 -> 04 along the hairline
               above the row. */}
           <span

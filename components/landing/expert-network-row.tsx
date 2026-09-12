@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTheme } from "next-themes";
 import { ArrowRight, ChevronLeft, ChevronRight } from "@/components/icons";
 import { Reveal } from "@/components/landing/reveal";
+import { SectionLabel } from "@/components/landing/section-label";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
@@ -116,8 +117,8 @@ export function ExpertNetworkRow() {
       <div className="container-tight">
         <Reveal className="flex flex-wrap items-end justify-between gap-8">
           <div className="max-w-2xl">
-            <span className="eyebrow">The network</span>
-            <h2 className="mt-4 text-balance text-[34px] font-semibold leading-[1.2] tracking-normal md:text-[48px]">
+            <SectionLabel>The network</SectionLabel>
+            <h2 className="mt-5 text-balance text-[34px] font-semibold leading-[1.2] tracking-normal md:text-[48px]">
               Experience already at work in the network
             </h2>
             <p className="mt-6 text-lg leading-relaxed text-muted-foreground">

@@ -2,6 +2,7 @@
 
 import { EyeOff, Link2, UserCheck } from "@/components/icons";
 import { Reveal } from "@/components/landing/reveal";
+import { SectionLabel } from "@/components/landing/section-label";
 
 /**
  * "Our Promise" — how the network behaves, for the expert recruitment page.
@@ -38,8 +39,8 @@ export function ExpertPromise() {
   return (
     <section className="container-tight py-24 md:py-32">
       <Reveal className="max-w-2xl">
-        <span className="eyebrow">Our Promise</span>
-        <h2 className="mt-4 text-balance text-[34px] font-semibold leading-[1.2] tracking-normal md:text-[48px]">
+        <SectionLabel>Our Promise</SectionLabel>
+        <h2 className="mt-5 text-balance text-[34px] font-semibold leading-[1.2] tracking-normal md:text-[48px]">
           How we show up every time
         </h2>
       </Reveal>

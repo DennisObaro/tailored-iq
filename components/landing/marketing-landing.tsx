@@ -6,6 +6,7 @@ import { ArrowRight, Check } from "@/components/icons";
 import { Navigation } from "@/components/landing/navigation";
 import { Footer } from "@/components/landing/footer";
 import { Reveal } from "@/components/landing/reveal";
+import { SectionLabel } from "@/components/landing/section-label";
 import { FounderNote } from "@/components/landing/founder-note";
 import { useSessionStore } from "@/lib/store/use-session-store";
 import { useHydrated } from "@/hooks/use-hydrated";
@@ -212,8 +213,8 @@ export function MarketingLanding({
       {/* WHAT IT COVERS */}
       <section className="container-tight py-24 md:py-32">
         <Reveal className="mx-auto max-w-3xl text-center">
-          <span className="eyebrow">{prioritiesEyebrow}</span>
-          <h2 className="mt-4 text-balance text-[34px] font-semibold leading-[1.2] tracking-normal md:text-[48px]">
+          <SectionLabel>{prioritiesEyebrow}</SectionLabel>
+          <h2 className="mt-5 text-balance text-[34px] font-semibold leading-[1.2] tracking-normal md:text-[48px]">
             {prioritiesTitle}
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-muted-foreground">{prioritiesIntro}</p>
@@ -254,7 +255,7 @@ export function MarketingLanding({
       {/* TRUSTED BY — logo marquee */}
       <section className="overflow-hidden bg-surface py-14">
         <div className="container-tight mb-8 text-center">
-          <span className="eyebrow">Trusted by</span>
+          <SectionLabel>Trusted by</SectionLabel>
         </div>
         <div className="logo-marquee">
           <div className="logo-marquee-track">

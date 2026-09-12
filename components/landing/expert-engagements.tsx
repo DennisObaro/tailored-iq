@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Reveal } from "@/components/landing/reveal";
+import { SectionLabel } from "@/components/landing/section-label";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 
 /**
@@ -112,8 +113,8 @@ export function ExpertEngagements() {
   return (
     <section className="container-tight pt-24 md:pt-32">
       <Reveal className="mx-auto max-w-3xl text-center">
-        <span className="eyebrow">Ways to engage</span>
-        <h2 className="mt-4 text-balance text-[34px] font-semibold leading-[1.2] tracking-normal md:text-[48px]">
+        <SectionLabel>Ways to engage</SectionLabel>
+        <h2 className="mt-5 text-balance text-[34px] font-semibold leading-[1.2] tracking-normal md:text-[48px]">
           Share your expertise in ways that matter
         </h2>
         <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
